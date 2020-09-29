@@ -1,0 +1,100 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Booking Backend"
+basePath: "/"
+host: "localhost:3000"
+schemes:
+  - 'http'
+paths:
+  /weekdays:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "success"
+  /weekdays/{name}:
+    post:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Weekday"
+      responses:
+        "201":
+          description: "Created weekday"
+    delete:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "204":
+          description: "success"
+  /timeslots:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "success"
+    post:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Timeslot"
+      responses:
+        "201":
+          description: "Created timeslot"
+definitions:
+  Weekday:
+    type: "object"
+    properties: {}
+  Timeslot:
+    type: "object"
+    properties:
+      weekdayName:
+        type: "string"
+      startHours:
+        type: "integer"
+        minimum: 0
+        maximum: 23
+      startMinutes:
+        type: "integer"
+        minimum: 0
+        maximum: 59
+      endHours:
+        type: "integer"
+        minimum: 0
+        maximum: 23
+      endMinutes:
+        type: "integer"
+        minimum: 0
+        maximum: 59
