@@ -1,27 +1,36 @@
 import React from 'react';
 import '../App.css';
-import {nameSorter, Weekday, weekdayNames, weekdayNameToISOWeekday} from "../models/Weekday";
+import {nameSorter, Weekday, weekdayNames} from "../models/Weekday";
 import {Button, ButtonGroup, ListGroup, Container, Row, Col, Modal, DropdownButton, Dropdown} from 'react-bootstrap';
 import {faPlus, faMinus} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import _ from 'lodash';
 import '../utils/map_extensions'
+import {boundClass} from "autobind-decorator";
+import {InteractionState, ViewingTimeslots} from "../InteractionState";
+import {Client} from "../Client";
 
+@boundClass
 class WeekdaysView extends React.Component<Properties, State> {
     constructor(props: Properties) {
         super(props);
 
-        this.launchAddWeekdayModal = this.launchAddWeekdayModal.bind(this);
-        this.closeAddWeekdayModal = this.closeAddWeekdayModal.bind(this);
-        this.haveAllWeekdaysBeenCreated = this.haveAllWeekdaysBeenCreated.bind(this);
-        this.getCreatedWeekdayNames = this.getCreatedWeekdayNames.bind(this);
-        this.getMissingWeekdayNames = this.getMissingWeekdayNames.bind(this);
-        this.addWeekday = this.addWeekday.bind(this);
-        this.deleteWeekday = this.deleteWeekday.bind(this);
-
         this.state = {
+            weekdays: [],
             showAddWeekdayModal: false
         }
+    }
+
+    async componentDidMount() {
+        await this.refreshWeekdays();
+    }
+
+    async refreshWeekdays() {
+        const weekdays = await Client.getWeekdays();
+
+        this.setState({
+            weekdays: weekdays
+        })
     }
 
     launchAddWeekdayModal() {
@@ -40,7 +49,7 @@ class WeekdaysView extends React.Component<Properties, State> {
 
     getCreatedWeekdayNames(): Set<string> {
         return new Set<string>(
-            this.props.weekdays
+            this.state.weekdays
                 .map(
                     weekday => weekday.name
                 )
@@ -64,21 +73,21 @@ class WeekdaysView extends React.Component<Properties, State> {
     }
 
     async addWeekday(weekdayName: string) {
-        await fetch(`http://localhost:3000/weekdays/${weekdayName}`, {
-            method: 'POST',
-            body: JSON.stringify({})
-        });
+        await Client.createWeekday(weekdayName);
 
-        await this.props.refreshWeekdays();
+        await this.refreshWeekdays();
     }
 
     async deleteWeekday(weekdayName: string) {
-        await fetch(`http://localhost:3000/weekdays/${weekdayName}`, {
-            method: 'DELETE',
-            body: JSON.stringify({})
-        });
+        await Client.deleteWeekday(weekdayName);
 
-        await this.props.refreshWeekdays();
+        await this.refreshWeekdays();
+    }
+
+    viewTimeslots(weekday: Weekday) {
+        this.props.changeInteractionState(
+            new ViewingTimeslots(weekday)
+        );
     }
 
     render() {
@@ -86,10 +95,10 @@ class WeekdaysView extends React.Component<Properties, State> {
             <div className="WeekdaysView">
                 <ListGroup className="Listing">
                     {
-                        this.props.weekdays
+                        this.state.weekdays
                             .sort((left, right) => nameSorter(left.name, right.name))
                             .map(weekday =>
-                                <ListGroup.Item action>
+                                <ListGroup.Item action onClick={() => this.viewTimeslots(weekday)}>
                                     <Container>
                                         <Row>
                                             <Col style={{textAlign: 'left'}}>
@@ -150,11 +159,11 @@ class WeekdaysView extends React.Component<Properties, State> {
 }
 
 interface Properties {
-    refreshWeekdays: () => Promise<void>;
-    weekdays: Weekday[];
+    changeInteractionState: (interactionState: InteractionState) => unknown
 }
 
 interface State {
+    weekdays: Weekday[],
     showAddWeekdayModal: boolean
 }
 

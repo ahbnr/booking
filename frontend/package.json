@@ -3,9 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@date-io/core": "1.x",
+    "@date-io/luxon": "1.x",
     "@fortawesome/fontawesome-svg-core": "^1.2.30",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@fortawesome/react-fontawesome": "^0.1.11",
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/pickers": "^3.2.10",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -16,6 +21,7 @@
     "autobind-decorator": "^2.4.0",
     "bootstrap": "^4.5.2",
     "lodash": "^4.17.19",
+    "luxon": "^1.25.0",
     "react": "^16.13.1",
     "react-bootstrap": "^1.3.0",
     "react-dom": "^16.13.1",
@@ -46,6 +52,7 @@
   "devDependencies": {
     "@types/bootstrap": "^4.5.0",
     "@types/lodash": "^4.14.159",
+    "@types/luxon": "^1.25.0",
     "@types/react-bootstrap": "^0.32.22"
   }
 }

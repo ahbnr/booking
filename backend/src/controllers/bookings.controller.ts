@@ -3,41 +3,37 @@ import {DestroyOptions, UpdateOptions} from "sequelize";
 import {Booking, BookingInterface, isBookingInterface} from "../models/booking.model";
 import '../utils/array_extensions'
 import {boundClass} from "autobind-decorator";
+import {Timeslot} from "../models/timeslot.model";
 
 @boundClass
 export class BookingsController {
-    public async index(req: Request, res: Response) {
-        const bookings = await Booking.findAll<Booking>({});
-
-        const [old_bookings, valid_bookings] = bookings.partition(booking => booking.hasPassed());
+    public static async validateBookings(bookings: Booking[]): Promise<Booking[]> {
+        const [old_bookings, valid_bookings] = await bookings.asyncPartition(booking => booking.hasPassed());
         for (const booking of old_bookings) {
             await booking.destroy();
         }
 
-        res.json(valid_bookings);
+        return valid_bookings;
     }
 
-    public async create(req: Request, res: Response) {
-        const bookingData = BookingsController.retrieveBookingData(req, res);
+    public async index(req: Request, res: Response) {
+        const bookings = await Booking.findAll<Booking>({
+            include: [Timeslot]
+        });
 
-        if (bookingData != null) {
-            try {
-                const booking = await Booking.create<Booking>(bookingData);
-
-                res.status(201).json(booking);
-            }
-
-            catch (error) {
-                res.status(500).json(error);
-            }
-        }
+        res.json(
+            await BookingsController.validateBookings(bookings)
+        );
     }
 
     public async show(req: Request, res: Response) {
         try {
-            let booking = await Booking.findByPk<Booking>(req.params.id);
+            let booking = await Booking.findByPk<Booking>(
+                req.params.id,
+                {include: [Timeslot]}
+            );
 
-            if (booking?.hasPassed()) {
+            if (booking != null && await booking.hasPassed()) {
                 await booking.destroy();
                 booking = null;
             }
@@ -94,7 +90,7 @@ export class BookingsController {
         }
     }
 
-    private static retrieveBookingData(req: Request, res: Response): BookingInterface | null {
+    public static retrieveBookingData(req: Request, res: Response): BookingInterface | null {
         const timeslotData = req.body;
         if (isBookingInterface(timeslotData)) {
             return timeslotData;

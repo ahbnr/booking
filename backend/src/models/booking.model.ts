@@ -1,56 +1,65 @@
-import {DataTypes, Model} from "sequelize";
-import db from "./index";
-import {Timeslot} from "./timeslots.model";
+import {DataType, Model} from "sequelize-typescript";
+import {Timeslot} from "./timeslot.model";
 import moment from 'moment';
+import {BelongsTo, Column, CreatedAt, ForeignKey, PrimaryKey, Table} from "sequelize-typescript";
+import RuntimeError = WebAssembly.RuntimeError;
 
 // All booking post/update requests must conform to this interface
 export interface BookingInterface {
-    timeslotId: number;
     name: string;
 }
 
 export function isBookingInterface(maybeBookingInterface: any): maybeBookingInterface is BookingInterface {
-    return 'timeslotId' in maybeBookingInterface
-        && Number.isInteger(maybeBookingInterface.timeslotId)
-        && 'name' in maybeBookingInterface
+    return 'name' in maybeBookingInterface
         && maybeBookingInterface.name != null && maybeBookingInterface.name !== ''
 }
 
-export class Booking extends Model {
+@Table
+export class Booking extends Model<Booking> {
+    @PrimaryKey
+    @Column({
+        type: DataType.INTEGER,
+        onDelete: 'CASCADE',
+        autoIncrement: true,
+        allowNull: false
+    })
     public id!: number;
+
+    @ForeignKey(() => Timeslot)
+    @Column
     public timeslotId!: number;
+
+    @Column
     public name!: string;
 
-    public timeslot!: Timeslot;
+    @BelongsTo(() => Timeslot)
+    public timeslot?: Timeslot;
+
+    public get lazyTimeslot(): Promise<Timeslot | undefined> {
+        return (async () => {
+            if (this.timeslot != null) {
+                return this.timeslot;
+            }
+
+            else {
+                return await this.$get('timeslot') as Timeslot | undefined;
+            }
+        })();
+    }
 
     // filled by sequelize
+    @CreatedAt
     public readonly createdAt!: Date;
 
-    public hasPassed(): boolean {
-        return this.timeslot.getPreviousTimeslotEndDate() < moment(this.createdAt);
+    public async hasPassed(): Promise<boolean> {
+        const timeslot = await this.lazyTimeslot;
+
+        if (timeslot != null) {
+            return moment(this.createdAt) <= timeslot.getPreviousTimeslotEndDate();
+        }
+
+        else {
+            throw new Error('Can not retrieve timeslot. Did you ask Sequelize to include the Timeslot relationship when retrieving this Booking instance?');
+        }
     }
 }
-
-export const init = () =>
-    Booking.init(
-        {
-            id: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                autoIncrement: true,
-                allowNull: false,
-                primaryKey: true
-            },
-            timeslotId: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                allowNull: false,
-            },
-            name: {
-                type: new DataTypes.STRING(255),
-                allowNull: false,
-            },
-        },
-        {
-            tableName: 'bookings',
-            sequelize: db.sequelize
-        }
-    );

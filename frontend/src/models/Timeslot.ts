@@ -1,34 +1,42 @@
 import {Booking} from "./Booking";
+import {Weekday} from "./Weekday";
 
-export interface Timeslot {
-    id: number;
-
+export interface TimeslotData {
     startHours: number;
     startMinutes: number;
     endHours: number;
     endMinutes: number;
-
-    booking?: Booking;
+    capacity: number;
 }
 
-export class TimeslotGroup {
-    public readonly timeslots: Timeslot[];
+export interface Timeslot {
+    id: number;
 
-    constructor(timeslots: Timeslot[]) {
-        if (timeslots.length <= 0) {
-            throw new RangeError("A timeslot group must at least have one element.")
-        }
+    data: TimeslotData;
 
-        this.timeslots = timeslots;
+    weekday: Weekday;
+    bookings: Booking[];
+}
+
+export function fromData(id: number, weekday: Weekday, bookings: Booking[], data: TimeslotData): Timeslot {
+    return {
+        id: id,
+        weekday: weekday,
+        bookings: bookings,
+        data: data
+    };
+}
+
+export function compare(left: Timeslot, right: Timeslot): number {
+    if (left.data.startHours < right.data.startHours) {
+        return -1;
     }
 
-    public static compare(left: TimeslotGroup, right: TimeslotGroup): number {
-        if (left.timeslots[0].startHours < right.timeslots[0].startHours) {
-            return -1;
-        }
+    else if (left.data.startHours > right.data.startHours) {
+        return 1;
+    }
 
-        else if (left.timeslots[0].startHours > right.timeslots[0].startHours) {
-
-        }
+    else {
+        return left.data.startMinutes - right.data.startMinutes;
     }
 }

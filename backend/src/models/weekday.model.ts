@@ -1,6 +1,6 @@
-import {Sequelize, Model, DataTypes} from 'sequelize';
-import db from './'
-import {Timeslot, TimeslotInterface} from "./timeslots.model";
+import {Model, DataType} from 'sequelize-typescript';
+import {Timeslot} from "./timeslot.model";
+import {Column, HasMany, PrimaryKey, Table} from "sequelize-typescript";
 
 export type WeekdayName = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 export function isWeekdayName(maybeWeekdayName: string): maybeWeekdayName is WeekdayName {
@@ -20,24 +20,16 @@ export function isWeekdayInterface(maybeWeekdayInterface: any): maybeWeekdayInte
     return true;
 }
 
-export class Weekday extends Model {
+@Table
+export class Weekday extends Model<Weekday> {
+    @PrimaryKey
+    @Column({
+        type: DataType.STRING(10),
+        onDelete: 'CASCADE',
+        allowNull: false
+    })
     public name!: WeekdayName;
 
+    @HasMany(() => Timeslot, {onDelete: 'CASCADE'})
     public timeslots!: Timeslot[];
 }
-
-export const init = () =>
-    Weekday.init(
-        {
-            name: {
-                type: new DataTypes.STRING(10),
-                allowNull: false,
-                primaryKey: true
-            }
-        },
-        {
-            tableName: 'weekdays',
-            sequelize: db.sequelize
-        }
-    );
-

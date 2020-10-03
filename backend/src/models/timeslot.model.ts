@@ -1,30 +1,29 @@
-import {DataTypes, Model} from "sequelize";
-import db from "./index";
+import {BelongsTo, DataType, HasMany, Model} from "sequelize-typescript";
 import {isWeekdayName, Weekday, WeekdayName} from "./weekday.model";
 import moment from 'moment';
 import {getPreviousWeekdayDate} from "../utils/date";
 import {Booking} from "./booking.model";
+import {Column, ForeignKey, HasOne, PrimaryKey, Table} from "sequelize-typescript";
 
 // All timeslot post/update requests must conform to this interface
 export interface TimeslotInterface {
-    weekdayName: WeekdayName;
     startHours: number;
     startMinutes: number;
     endHours: number;
     endMinutes: number;
+    capacity: number;
 }
 
 export function isTimeslotInterface(maybeTimeslotInterface: any): maybeTimeslotInterface is TimeslotInterface {
-    return   'weekdayName' in maybeTimeslotInterface
-        && isWeekdayName(maybeTimeslotInterface.weekdayName)
-        && 'startHours' in maybeTimeslotInterface
+    return 'startHours' in maybeTimeslotInterface
         && isHours(maybeTimeslotInterface.startHours)
         && 'startMinutes' in maybeTimeslotInterface
         && isMinutes(maybeTimeslotInterface.startMinutes)
         && 'endHours' in maybeTimeslotInterface
         && isHours(maybeTimeslotInterface.endHours)
         && 'endMinutes' in maybeTimeslotInterface
-        && isMinutes(maybeTimeslotInterface.endMinutes);
+        && isMinutes(maybeTimeslotInterface.endMinutes)
+        && 'capacity' in maybeTimeslotInterface;
 }
 
 function isHours(value: any): boolean {
@@ -35,16 +34,41 @@ function isMinutes(value: any): boolean {
     return Number.isInteger(value) && value >= 0 && value < 60;
 }
 
-export class Timeslot extends Model {
+@Table
+export class Timeslot extends Model<Timeslot> {
+    @PrimaryKey
+    @Column({
+        type: DataType.INTEGER,
+        onDelete: 'CASCADE',
+        autoIncrement: true,
+        allowNull: false
+    })
     public id!: number;
+
+    @ForeignKey(() => Weekday)
+    @Column(DataType.STRING(10))
     public weekdayName!: WeekdayName;
 
+    @Column(DataType.INTEGER)
     public startHours!: number;
+
+    @Column(DataType.INTEGER)
     public startMinutes!: number;
+
+    @Column(DataType.INTEGER)
     public endHours!: number;
+
+    @Column(DataType.INTEGER)
     public endMinutes!: number;
 
-    public booking?: Booking;
+    @Column(DataType.INTEGER)
+    public capacity!: number;
+
+    @HasMany(() => Booking,  {onDelete: 'CASCADE'})
+    public bookings?: Booking[];
+
+    @BelongsTo(() => Weekday)
+    public weekday?: Weekday;
 
     public getPreviousTimeslotEndDate(): moment.Moment {
         const previousDate = getPreviousWeekdayDate(this.weekdayName);
@@ -54,40 +78,3 @@ export class Timeslot extends Model {
             .add(this.endMinutes, 'minutes');
     }
 }
-
-export const init = () =>
-    Timeslot.init(
-        {
-            id: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                autoIncrement: true,
-                allowNull: false,
-                primaryKey: true
-            },
-            weekdayName: {
-                type: new DataTypes.STRING(10),
-                allowNull: false,
-            },
-            startHours: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                allowNull: false,
-            },
-            startMinutes: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                allowNull: false,
-            },
-            endHours: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                allowNull: false,
-            },
-            endMinutes: {
-                type: DataTypes.INTEGER.UNSIGNED,
-                allowNull: false,
-            },
-        },
-        {
-            tableName: 'timeslots',
-            sequelize: db.sequelize
-        }
-    );
-

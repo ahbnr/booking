@@ -1,9 +1,11 @@
 import {Request, Response} from 'express';
 import {DestroyOptions, UpdateOptions} from "sequelize";
-import {isTimeslotInterface, Timeslot, TimeslotInterface} from "../models/timeslots.model";
-import {Weekday} from "../models/weekday.model";
+import {isTimeslotInterface, Timeslot, TimeslotInterface} from "../models/timeslot.model";
 import {ControllerError} from "./errors";
 import {boundClass} from "autobind-decorator";
+import {Booking} from "../models/booking.model";
+import {BookingsController} from "./bookings.controller";
+import {Weekday} from "../models/weekday.model";
 
 @boundClass
 export class TimeslotsController {
@@ -13,14 +15,31 @@ export class TimeslotsController {
         res.json(timeslots);
     }
 
-    public async create(req: Request, res: Response) {
-        const timeslotData = TimeslotsController.retrieveTimeslotData(req, res);
+    public async show(req: Request, res: Response) {
+        const timeslot = await this.getTimeslot(req, res);
 
-        if (timeslotData != null) {
+        res.json(timeslot);
+    }
+
+    public async getBookings(req: Request, res: Response) {
+        const timeslot = await this.getTimeslot(req, res);
+        const bookings = await BookingsController.validateBookings(timeslot?.bookings || []);
+
+        res.json(bookings);
+    }
+
+    public async createBooking(req: Request, res: Response) {
+        const timeslot = await this.getTimeslot(req, res);
+        const bookingData = BookingsController.retrieveBookingData(req, res);
+
+        if (bookingData != null) {
             try {
-                const timeslot = await Timeslot.create<Timeslot>(timeslotData);
+                const booking = await Booking.create<Booking>({
+                    timeslotId: timeslot.id,
+                    ...bookingData
+                });
 
-                res.status(201).json(timeslot);
+                res.status(201).json(booking);
             }
 
             catch (error) {
@@ -29,27 +48,11 @@ export class TimeslotsController {
         }
     }
 
-    public async show(req: Request, res: Response) {
-        const timeslot = await this.getTimeslot(req, res);
-
-        res.json(timeslot);
-    }
-
-    public async getBooking(req: Request, res: Response) {
-        const timeslot = await this.getTimeslot(req, res);
-        const booking = timeslot?.booking;
-
-        if (booking != null) {
-            res.json(booking);
-        }
-
-        else {
-            throw new ControllerError("No booking for this timeslot", 404);
-        }
-    }
-
-    private async getTimeslot(req: Request, res: Response): Promise<Timeslot> {
-        const timeslot = await Timeslot.findByPk<Timeslot>(req.params.id);
+    private async getTimeslot(req: Request, _: Response): Promise<Timeslot> {
+        const timeslot = await Timeslot.findByPk<Timeslot>(
+            req.params.id,
+            { include: [Booking, Weekday] }
+        );
 
         if (timeslot != null) {
             return timeslot;
@@ -70,7 +73,10 @@ export class TimeslotsController {
             };
 
             try {
-                await Timeslot.update(timeslotData, update);
+                await Timeslot.update(
+                    timeslotData,
+                    update
+                );
 
                 res.status(202).json({ data: "success" })
             }
@@ -98,7 +104,7 @@ export class TimeslotsController {
         }
     }
 
-    private static retrieveTimeslotData(req: Request, res: Response): TimeslotInterface | null {
+    public static retrieveTimeslotData(req: Request, res: Response): TimeslotInterface | null {
         const timeslotData = req.body;
         if (isTimeslotInterface(timeslotData)) {
             return timeslotData;

@@ -1,13 +1,16 @@
 import React from 'react';
 import '../App.css';
-import {nameSorter, Weekday, weekdayNames, weekdayNameToISOWeekday} from "../models/Weekday";
-import {Button, ButtonGroup, ListGroup, Container, Row, Col, Modal, DropdownButton, Dropdown} from 'react-bootstrap';
-import {faPlus, faMinus} from "@fortawesome/free-solid-svg-icons";
+import {Weekday} from "../models/Weekday";
+import {Button, ButtonGroup, ListGroup, Modal} from 'react-bootstrap';
+import {faPlus} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import _ from 'lodash';
+import _ from '../utils/lodash-mixins';
 import '../utils/map_extensions'
-import {Timeslot} from "../models/Timeslot";
+import {compare, Timeslot, TimeslotData} from "../models/Timeslot";
 import {boundClass} from "autobind-decorator";
+import TimeslotView from "./TimeslotView";
+import {Client} from "../Client";
+import {InteractionState} from "../InteractionState";
 
 @boundClass
 class TimeslotsView extends React.Component<Properties, State> {
@@ -16,65 +19,35 @@ class TimeslotsView extends React.Component<Properties, State> {
 
         this.state = {
             timeslots: [],
-            showAddTimeslotModal: false
         }
     }
 
     async componentDidMount() {
-        const timeslotsResponse = await fetch(`http://localhost:3000/weekdays/${this.props.weekday.name}/timeslots`);
-        const timeslots = await timeslotsResponse.json();
-
-        this.setState({
-            ...this.state,
-            timeslots: timeslots
-        })
+        await this.refreshTimeslots();
     }
 
-    launchAddTimeslotModal() {
-        this.setState({
-            ...this.state,
-            showAddTimeslotModal: true
-        })
-    }
+    async addTimeslot() {
+        const data: TimeslotData = {
+            startHours: 0,
+            startMinutes: 0,
+            endHours: 0,
+            endMinutes: 0,
+            capacity: 1
+        }
 
-    closeAddTimeslotModal() {
-        this.setState({
-            ...this.state,
-            showAddTimeslotModal: false
-        })
-    }
-
-    async addTimeslot(
-        startHours: number,
-        startMinutes: number,
-        endHours: number,
-        endMinutes: number
-    ) {
-        await fetch(`http://localhost:3000/timeslots`, {
-            method: 'POST',
-            body: JSON.stringify({
-                weekdayName: this.props.weekday.name,
-                startHours: startHours,
-                startMinutes: startMinutes,
-                endHours: endHours,
-                endMinutes: endMinutes,
-            })
-        });
+        await Client.createTimeslot(this.props.weekday.name, data);
 
         await this.refreshTimeslots();
     }
 
     async deleteTimeslot(timeslotId: number) {
-        await fetch(`http://localhost:3000/timeslots/${timeslotId}`, {
-            method: 'DELETE'
-        });
+        await Client.deleteTimeslot(timeslotId);
 
         await this.refreshTimeslots();
     }
 
     async refreshTimeslots() {
-        const timeslotsResponse = await fetch(`http://localhost:3000/weekdays/${this.props.weekday.name}/timeslots`);
-        const timeslots = await timeslotsResponse.json();
+        const timeslots = await Client.getTimeslots(this.props.weekday.name);
 
         this.setState({
             ...this.state,
@@ -83,84 +56,43 @@ class TimeslotsView extends React.Component<Properties, State> {
     }
 
     render() {
-        _.chain(this.state.timeslots)
-            .groupBy(timeslot => [timeslot.startHours, timeslot.startMinutes, timeslot.endHours, timeslot.endMinutes])
-            .map(timeslotList => new TimeslotGroup)
+        const sortedTimeslots: Timeslot[] = _
+            .sortWith(this.state.timeslots, compare);
 
         return (
-            <div className="WeekdaysView">
+            <div className="TimeslotsView">
                 <ListGroup className="Listing">
                     {
-                        this.state.timeslots
-                            .sort((left, right) => nameSorter(left.name, right.name))
-                            .map(weekday =>
-                                <ListGroup.Item action>
-                                    <Container>
-                                        <Row>
-                                            <Col style={{textAlign: 'left'}}>
-                                                {weekday.name}
-                                            </Col>
-                                            <Col sm="auto">
-                                            <span className="pull-right">
-                                                <Button variant="danger" onClick={() => this.deleteWeekday(weekday.name)}>
-                                                    <FontAwesomeIcon icon={faMinus}/>
-                                                </Button>
-                                            </span>
-                                            </Col>
-                                        </Row>
-                                    </Container>
+                        sortedTimeslots
+                            .map(timeslot =>
+                                <ListGroup.Item>
+                                    <TimeslotView
+                                        changeInteractionState={this.props.changeInteractionState}
+                                        timeslotId={timeslot.id}
+                                        onDelete={this.refreshTimeslots}
+                                    />
                                 </ListGroup.Item>
                             )
                     }
                 </ListGroup>
 
                 <ButtonGroup className="Listing">
-                    { !this.haveAllWeekdaysBeenCreated() &&
-                        <Button onClick={this.launchAddTimeslotModal}>
-                            <FontAwesomeIcon icon={faPlus}/> Wochentag hinzufügen
-                        </Button>
-                    }
+                    <Button onClick={this.addTimeslot}>
+                        <FontAwesomeIcon icon={faPlus}/> Timeslot hinzufügen
+                    </Button>
                 </ButtonGroup>
-
-                <Modal show={this.state.showAddWeekdayModal} onHide={this.closeAddTimeslotModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Welcher Tag soll angelegt werden?</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <ButtonGroup style={{display: 'flex', flexWrap: 'wrap'}}>
-                            {
-                                this.getMissingWeekdayNames()
-                                    .map(name =>
-                                        <Button
-                                            onClick={() => {
-                                                this.closeAddTimeslotModal();
-                                                this.addWeekday(name);
-                                            }}
-                                        >
-                                            {name}
-                                        </Button>
-                                    )
-                            }
-                        </ButtonGroup>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={this.closeAddTimeslotModal}>
-                            Abbrechen
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
             </div>
         );
     }
 }
 
 interface Properties {
-    weekday: Weekday;
+    weekday: Weekday
+    changeInteractionState: (interactionState: InteractionState) => unknown
 }
 
 interface State {
     timeslots: Timeslot[];
-    showAddTimeslotModal: boolean;
 }
 
 export default TimeslotsView;

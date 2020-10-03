@@ -32,24 +32,24 @@ export class Routes {
         app
             .route("/weekdays/:name/timeslots")
             .get(Routes.asyncHandler(this.weekdaysController.getTimeslots))
+            .post(Routes.asyncHandler(this.weekdaysController.createTimeslot))
 
         app
             .route("/timeslots")
             .get(Routes.asyncHandler(this.timeslotsController.index))
-            .post(Routes.asyncHandler(this.timeslotsController.create));
         app
             .route("/timeslots/:id")
             .get(Routes.asyncHandler(this.timeslotsController.show))
             .put(Routes.asyncHandler(this.timeslotsController.update))
             .delete(Routes.asyncHandler(this.timeslotsController.delete));
         app
-            .route("/timeslots/:id/booking")
-            .get(Routes.asyncHandler(this.timeslotsController.getBooking));
+            .route("/timeslots/:id/bookings")
+            .get(Routes.asyncHandler(this.timeslotsController.getBookings))
+            .post(Routes.asyncHandler(this.timeslotsController.createBooking));
 
         app
             .route("/bookings")
             .get(Routes.asyncHandler(this.bookingsController.index))
-            .post(Routes.asyncHandler(this.bookingsController.create));
         app
             .route("/bookings/:id")
             .get(Routes.asyncHandler(this.bookingsController.show))
