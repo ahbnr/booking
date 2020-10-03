@@ -23,22 +23,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a3f9406f-50b9-4ca8-85e5-82fcf2cf14b7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../frontend/.idea/prettier.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/db.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/db.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/bookings.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/bookings.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/errors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/errors.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/timeslots.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/timeslots.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/booking.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/booking.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/timeslot.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/timeslot.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/weekday.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/weekday.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/array_extensions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/array_extensions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/date.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/date.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/Client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/InteractionState.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/InteractionState.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/models/Booking.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/models/Booking.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/models/Timeslot.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/models/Timeslot.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/models/Weekday.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/models/Weekday.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/serviceWorker.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/serviceWorker.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/utils/lodash-mixins.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/utils/lodash-mixins.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/utils/map_extensions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/utils/map_extensions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/BookingView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/BookingView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/BookingsView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/BookingsView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/CreateBookingDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/CreateBookingDialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/TimeslotView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/TimeslotView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/TimeslotsView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/TimeslotsView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/WeekdaysView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/WeekdaysView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +131,7 @@
       <workItem from="1601752058170" duration="267000" />
       <workItem from="1601752341996" duration="42000" />
       <workItem from="1601752395791" duration="25000" />
-      <workItem from="1601752433231" duration="4049000" />
+      <workItem from="1601752433231" duration="5716000" />
     </task>
     <servers />
   </component>
@@ -170,32 +174,32 @@
     </state>
     <state x="737" y="209" width="428" height="476" key="FileChooserDialogImpl/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597008676030" />
     <state x="731" y="149" width="428" height="476" key="FileChooserDialogImpl/0.0.1920.1080@0.0.1920.1080" timestamp="1601756376322" />
-    <state width="1895" height="284" key="GridCell.Tab.0.bottom" timestamp="1601750339094">
+    <state width="1899" height="284" key="GridCell.Tab.0.bottom" timestamp="1601756505276">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="284" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1601750339094" />
+    <state width="1899" height="284" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1601756505276" />
     <state width="1335" height="284" key="GridCell.Tab.0.bottom/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.bottom/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="284" key="GridCell.Tab.0.center" timestamp="1601750339093">
+    <state width="1899" height="284" key="GridCell.Tab.0.center" timestamp="1601756505273">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="284" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1601750339093" />
+    <state width="1899" height="284" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1601756505273" />
     <state width="1335" height="284" key="GridCell.Tab.0.center/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.center/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="284" key="GridCell.Tab.0.left" timestamp="1601750339091">
+    <state width="1899" height="284" key="GridCell.Tab.0.left" timestamp="1601756505272">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="284" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1601750339091" />
+    <state width="1899" height="284" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1601756505272" />
     <state width="1335" height="284" key="GridCell.Tab.0.left/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.left/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="284" key="GridCell.Tab.0.right" timestamp="1601750339093">
+    <state width="1899" height="284" key="GridCell.Tab.0.right" timestamp="1601756505274">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="284" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1601750339093" />
+    <state width="1899" height="284" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1601756505274" />
     <state width="1335" height="284" key="GridCell.Tab.0.right/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.right/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
     <state width="1895" height="350" key="GridCell.Tab.1.bottom" timestamp="1601746765625">
@@ -282,20 +286,20 @@
     <state width="1895" height="350" key="GridCell.Tab.3.right/0.0.1920.1080@0.0.1920.1080" timestamp="1601746765627" />
     <state width="1895" height="350" key="GridCell.Tab.3.right/0.0.1920.2160@0.0.1920.2160" timestamp="1601497339001" />
     <state width="947" height="350" key="GridCell.Tab.3.right/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574577" />
-    <state x="540" y="56" key="SettingsEditor" timestamp="1601752492777">
+    <state x="538" y="36" key="SettingsEditor" timestamp="1601757553396">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="552" y="176" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1596976162435" />
-    <state x="540" y="56" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1601752492777" />
+    <state x="538" y="36" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1601757553396" />
     <state x="622" y="254" key="run.anything.popup" timestamp="1601751526664">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="622" y="254" key="run.anything.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1601751526664" />
-    <state x="623" y="224" width="672" height="678" key="search.everywhere.popup" timestamp="1601754310390">
+    <state x="623" y="224" width="672" height="678" key="search.everywhere.popup" timestamp="1601757550990">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="623" y="224" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597072371183" />
-    <state x="623" y="224" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1601754310390" />
+    <state x="623" y="224" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1601757550990" />
     <state x="623" y="448" width="672" height="1356" key="search.everywhere.popup/0.0.1920.2160@0.0.1920.2160" timestamp="1601498030101" />
   </component>
   <component name="XDebuggerManager">
