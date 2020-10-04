@@ -34,7 +34,7 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   async refreshWeekdays() {
-    const weekdays = await Client.getWeekdays();
+    const weekdays = await this.props.client.getWeekdays();
 
     this.setState({
       weekdays: weekdays,
@@ -76,13 +76,13 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   async addWeekday(weekdayName: string) {
-    await Client.createWeekday(weekdayName);
+    await this.props.client.createWeekday(weekdayName);
 
     await this.refreshWeekdays();
   }
 
   async deleteWeekday(weekdayName: string) {
-    await Client.deleteWeekday(weekdayName);
+    await this.props.client.deleteWeekday(weekdayName);
 
     await this.refreshWeekdays();
   }
@@ -113,12 +113,14 @@ class WeekdaysView extends React.Component<Properties, State> {
                     <Col style={{ textAlign: 'left' }}>{weekday.name}</Col>
                     <Col sm="auto">
                       <span className="pull-right">
-                        <Button
-                          variant="danger"
-                          onClick={() => this.deleteWeekday(weekday.name)}
-                        >
-                          <FontAwesomeIcon icon={faMinus} />
-                        </Button>
+                        {this.props.isAuthenticated && (
+                          <Button
+                            variant="danger"
+                            onClick={() => this.deleteWeekday(weekday.name)}
+                          >
+                            <FontAwesomeIcon icon={faMinus} />
+                          </Button>
+                        )}
                       </span>
                     </Col>
                   </Row>
@@ -127,13 +129,15 @@ class WeekdaysView extends React.Component<Properties, State> {
             ))}
         </ListGroup>
 
-        <ButtonGroup className="Listing">
-          {!this.haveAllWeekdaysBeenCreated() && (
-            <Button onClick={this.launchAddWeekdayModal}>
-              <FontAwesomeIcon icon={faPlus} /> Wochentag hinzufügen
-            </Button>
-          )}
-        </ButtonGroup>
+        {this.props.isAuthenticated && (
+          <ButtonGroup className="Listing">
+            {!this.haveAllWeekdaysBeenCreated() && (
+              <Button onClick={this.launchAddWeekdayModal}>
+                <FontAwesomeIcon icon={faPlus} /> Wochentag hinzufügen
+              </Button>
+            )}
+          </ButtonGroup>
+        )}
 
         <Modal
           show={this.state.showAddWeekdayModal}
@@ -166,6 +170,8 @@ class WeekdaysView extends React.Component<Properties, State> {
 }
 
 interface Properties {
+  isAuthenticated: boolean;
+  client: Client;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }
 

@@ -35,8 +35,13 @@ export class CreateBooking {
   }
 }
 
+export class Authenticating {
+  public readonly type: 'Authenticating' = 'Authenticating';
+}
+
 export type InteractionState =
   | ViewingWeekdays
   | ViewingTimeslots
   | ViewingBookings
-  | CreateBooking;
+  | CreateBooking
+  | Authenticating;

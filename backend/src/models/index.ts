@@ -1,5 +1,6 @@
 import dbConfig from '../config/db.config';
 import { Sequelize } from 'sequelize-typescript';
+import { UsersController } from '../controllers/users.controller';
 
 const sequelize = new Sequelize(
   dbConfig.db,
@@ -18,6 +19,8 @@ const db: DbType = {
   init: async () => {
     try {
       await sequelize.sync();
+
+      await UsersController.initRootUser();
 
       console.log('Synced DB.');
     } catch (error) {

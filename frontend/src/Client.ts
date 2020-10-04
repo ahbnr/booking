@@ -9,35 +9,97 @@ import {
   BookingData,
   fromData as bookingFromData,
 } from './models/Booking';
+import { boundClass } from 'autobind-decorator';
+import { hasProperty } from './utils/typechecking';
 
+const address = 'localhost';
+const port = 3000;
+const baseUrl = `http://${address}:${port}`;
+
+@boundClass
 export class Client {
-  private static readonly address = 'localhost';
-  private static readonly port = 3000;
+  private _jwtStore?: string;
+  private set jsonWebToken(value: string | undefined) {
+    this._jwtStore = value;
 
-  private static readonly baseUrl = `http://${Client.address}:${Client.port}`;
+    if (this.onAuthenticationChanged != null) {
+      this.onAuthenticationChanged(this.isAuthenticated());
+    }
+  }
 
-  private static async request(
+  private get jsonWebToken(): string | undefined {
+    return this._jwtStore;
+  }
+
+  public onAuthenticationChanged?: (isAuthenticated: boolean) => unknown;
+
+  public isAuthenticated(): boolean {
+    return this.jsonWebToken != null;
+  }
+
+  private async request(
     method: 'POST' | 'GET' | 'PUT' | 'DELETE',
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any
   ): Promise<Response> {
+    const headers: HeadersInit = {};
+
+    if (this.jsonWebToken != null) {
+      headers['Authorization'] = `Bearer ${this.jsonWebToken}`;
+    }
+
+    let response: Response;
     if (body != null) {
-      return await fetch(`${this.baseUrl}/${subUrl}`, {
+      headers['Content-Type'] = 'application/json';
+
+      response = await fetch(`${baseUrl}/${subUrl}`, {
         method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify(body),
       });
     } else {
-      return await fetch(`${this.baseUrl}/${subUrl}`, {
+      response = await fetch(`${baseUrl}/${subUrl}`, {
+        headers: headers,
         method: method,
       });
     }
+
+    // If authentication failed
+    if (response.status === 401) {
+      this.jsonWebToken = undefined;
+    }
+
+    return response;
   }
 
-  public static async getTimeslot(timeslotId: number): Promise<Timeslot> {
+  public async authenticate(username: string, password: string) {
+    this.jsonWebToken = undefined;
+
+    const response = await this.request('POST', 'users/auth', {
+      user: username,
+      password: password,
+    });
+
+    if (response.status === 200) {
+      const maybeTokenResponse = await response.json();
+
+      // FIXME use JSON schema validation
+      if (
+        maybeTokenResponse != null &&
+        typeof maybeTokenResponse === 'object' &&
+        hasProperty(maybeTokenResponse, 'jwt')
+      ) {
+        this.jsonWebToken = maybeTokenResponse.jwt;
+      } else {
+        throw Error('Invalid server response format.');
+      }
+    } else {
+      throw Error('Authentication failed.');
+    }
+  }
+
+  public async getTimeslot(timeslotId: number): Promise<Timeslot> {
     const timeslotResponse = await (
       await this.request('GET', `timeslots/${timeslotId}`)
     ).json();
@@ -56,7 +118,7 @@ export class Client {
     );
   }
 
-  public static async getTimeslots(weekdayName: string): Promise<Timeslot[]> {
+  public async getTimeslots(weekdayName: string): Promise<Timeslot[]> {
     const timeslotsResponse = await (
       await this.request('GET', `weekdays/${weekdayName}/timeslots`)
     ).json();
@@ -72,31 +134,31 @@ export class Client {
     );
   }
 
-  public static async createTimeslot(weekdayName: string, data: TimeslotData) {
+  public async createTimeslot(weekdayName: string, data: TimeslotData) {
     await this.request('POST', `weekdays/${weekdayName}/timeslots`, data);
   }
 
-  public static async updateTimeslot(timeslotId: number, data: TimeslotData) {
+  public async updateTimeslot(timeslotId: number, data: TimeslotData) {
     await this.request('PUT', `timeslots/${timeslotId}`, data);
   }
 
-  public static async deleteTimeslot(timeslotId: number) {
+  public async deleteTimeslot(timeslotId: number) {
     await this.request('DELETE', `timeslots/${timeslotId}`);
   }
 
-  public static async getWeekdays(): Promise<Weekday[]> {
+  public async getWeekdays(): Promise<Weekday[]> {
     return await (await this.request('GET', 'weekdays')).json();
   }
 
-  public static async createWeekday(weekdayName: string) {
+  public async createWeekday(weekdayName: string) {
     await this.request('POST', `weekdays/${weekdayName}`);
   }
 
-  public static async deleteWeekday(weekdayName: string) {
+  public async deleteWeekday(weekdayName: string) {
     await this.request('DELETE', `weekdays/${weekdayName}`);
   }
 
-  public static async createBooking(timeslotId: number, data: BookingData) {
+  public async createBooking(timeslotId: number, data: BookingData) {
     const response = await this.request(
       'POST',
       `timeslots/${timeslotId}/bookings`,
@@ -108,7 +170,7 @@ export class Client {
     }
   }
 
-  public static async getBooking(bookingId: number): Promise<Booking> {
+  public async getBooking(bookingId: number): Promise<Booking> {
     const response = await (
       await this.request('GET', `bookings/${bookingId}`)
     ).json();
@@ -118,7 +180,7 @@ export class Client {
     });
   }
 
-  public static async getBookings(timeslotId: number): Promise<Booking[]> {
+  public async getBookings(timeslotId: number): Promise<Booking[]> {
     const response = await this.request(
       'GET',
       `timeslots/${timeslotId}/bookings`
@@ -127,7 +189,7 @@ export class Client {
     return await response.json();
   }
 
-  public static async deleteBooking(bookingId: number) {
+  public async deleteBooking(bookingId: number) {
     await this.request('DELETE', `bookings/${bookingId}`);
   }
 }

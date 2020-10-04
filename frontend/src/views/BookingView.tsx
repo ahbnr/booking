@@ -21,7 +21,7 @@ export default class BookingView extends React.Component<Properties, State> {
   }
 
   async refreshBooking() {
-    const booking = await Client.getBooking(this.props.bookingId);
+    const booking = await this.props.client.getBooking(this.props.bookingId);
 
     this.setState({
       booking: booking,
@@ -30,7 +30,7 @@ export default class BookingView extends React.Component<Properties, State> {
 
   async onDelete() {
     if (this.state.booking != null) {
-      await Client.deleteBooking(this.state.booking.id);
+      await this.props.client.deleteBooking(this.state.booking.id);
 
       this.props.onDelete();
     }
@@ -61,6 +61,7 @@ export default class BookingView extends React.Component<Properties, State> {
 }
 
 interface Properties {
+  client: Client;
   bookingId: number;
   onDelete: () => unknown;
 }

@@ -7,15 +7,70 @@ import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
 import CreateBookingDialog from './views/CreateBookingDialog';
 import BookingsView from './views/BookingsView';
+import { Client } from './Client';
+import AuthenticationDialog from './views/AuthenticationDialog';
+import AppBar from './views/AppBar';
+import {
+  Container,
+  createStyles,
+  CssBaseline,
+  Theme,
+  WithStyles,
+  withStyles,
+} from '@material-ui/core';
+
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      display: 'flex',
+    },
+    appBarSpacer: theme.mixins.toolbar,
+    content: {
+      flexGrow: 1,
+      height: '100vh',
+      overflow: 'auto',
+    },
+    container: {
+      paddingTop: theme.spacing(4),
+      paddingBottom: theme.spacing(4),
+    },
+    paper: {
+      padding: theme.spacing(2),
+      display: 'flex',
+      overflow: 'auto',
+      flexDirection: 'column',
+    },
+    fixedHeight: {
+      height: 240,
+    },
+  });
 
 @boundClass
-class App extends React.Component<AppProps, AppState> {
+class UnstyledApp extends React.Component<AppProps, AppState> {
+  public static displayName = 'App';
+  private client: Client = new Client();
+
   constructor(props: AppProps) {
     super(props);
 
     this.state = {
+      isAuthenticated: false,
       interactionState: new ViewingWeekdays(),
     };
+  }
+
+  componentDidMount() {
+    this.client.onAuthenticationChanged = this.onAuthenticationChanged;
+  }
+
+  componentWillUnmount() {
+    this.client.onAuthenticationChanged = undefined;
+  }
+
+  onAuthenticationChanged(isAuthenticated: boolean) {
+    this.setState({
+      isAuthenticated: isAuthenticated,
+    });
   }
 
   changeInteractionState(interactionState: InteractionState) {
@@ -29,12 +84,18 @@ class App extends React.Component<AppProps, AppState> {
     switch (this.state.interactionState.type) {
       case 'ViewingWeekdays':
         view = (
-          <WeekdaysView changeInteractionState={this.changeInteractionState} />
+          <WeekdaysView
+            isAuthenticated={this.state.isAuthenticated}
+            client={this.client}
+            changeInteractionState={this.changeInteractionState}
+          />
         );
         break;
       case 'ViewingTimeslots':
         view = (
           <TimeslotsView
+            isAuthenticated={this.state.isAuthenticated}
+            client={this.client}
             changeInteractionState={this.changeInteractionState}
             weekday={this.state.interactionState.weekday}
           />
@@ -43,31 +104,59 @@ class App extends React.Component<AppProps, AppState> {
 
       case 'ViewingBookings':
         view = (
-          <BookingsView timeslotId={this.state.interactionState.timeslot.id} />
+          <BookingsView
+            client={this.client}
+            timeslotId={this.state.interactionState.timeslot.id}
+          />
         );
         break;
 
       case 'CreateBooking':
         view = (
           <CreateBookingDialog
+            client={this.client}
             changeInteractionState={this.changeInteractionState}
             timeslot={this.state.interactionState.timeslot}
+          />
+        );
+        break;
+
+      case 'Authenticating':
+        view = (
+          <AuthenticationDialog
+            client={this.client}
+            changeInteractionState={this.changeInteractionState}
           />
         );
         break;
     }
 
     return (
-      <div className="App">
-        <header className="App-header">{view}</header>
-      </div>
+      <>
+        <div className={this.props.classes.root}>
+          <CssBaseline />
+          <AppBar
+            isAuthenticated={this.state.isAuthenticated}
+            changeInteractionState={this.changeInteractionState}
+          />
+          <main className={this.props.classes.content}>
+            <div className={this.props.classes.appBarSpacer} />
+            <Container maxWidth="lg" className={this.props.classes.container}>
+              {view}
+            </Container>
+          </main>
+        </div>
+      </>
     );
   }
 }
 
-interface AppProps {}
+const App = withStyles(styles)(UnstyledApp);
+
+interface AppProps extends WithStyles<typeof styles> {}
 
 interface AppState {
+  isAuthenticated: boolean;
   interactionState: InteractionState;
 }
 

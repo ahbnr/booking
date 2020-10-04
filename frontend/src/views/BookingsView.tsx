@@ -22,7 +22,7 @@ export default class BookingsView extends React.Component<Properties, State> {
   }
 
   async refreshBookings() {
-    const bookings = await Client.getBookings(this.props.timeslotId);
+    const bookings = await this.props.client.getBookings(this.props.timeslotId);
 
     this.setState({
       ...this.state,
@@ -37,6 +37,7 @@ export default class BookingsView extends React.Component<Properties, State> {
           {this.state.bookings.map((booking) => (
             <ListGroup.Item key={booking.id}>
               <BookingView
+                client={this.props.client}
                 bookingId={booking.id}
                 onDelete={this.refreshBookings}
               />
@@ -49,6 +50,7 @@ export default class BookingsView extends React.Component<Properties, State> {
 }
 
 interface Properties {
+  client: Client;
   timeslotId: number;
 }
 

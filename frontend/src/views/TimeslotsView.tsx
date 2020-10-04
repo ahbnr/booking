@@ -35,13 +35,15 @@ class TimeslotsView extends React.Component<Properties, State> {
       capacity: 1,
     };
 
-    await Client.createTimeslot(this.props.weekday.name, data);
+    await this.props.client.createTimeslot(this.props.weekday.name, data);
 
     await this.refreshTimeslots();
   }
 
   async refreshTimeslots() {
-    const timeslots = await Client.getTimeslots(this.props.weekday.name);
+    const timeslots = await this.props.client.getTimeslots(
+      this.props.weekday.name
+    );
 
     this.setState({
       ...this.state,
@@ -61,6 +63,8 @@ class TimeslotsView extends React.Component<Properties, State> {
           {sortedTimeslots.map((timeslot) => (
             <ListGroup.Item key={timeslot.id}>
               <TimeslotView
+                isAuthenticated={this.props.isAuthenticated}
+                client={this.props.client}
                 changeInteractionState={this.props.changeInteractionState}
                 timeslotId={timeslot.id}
                 onDelete={this.refreshTimeslots}
@@ -69,17 +73,21 @@ class TimeslotsView extends React.Component<Properties, State> {
           ))}
         </ListGroup>
 
-        <ButtonGroup className="Listing">
-          <Button onClick={this.addTimeslot}>
-            <FontAwesomeIcon icon={faPlus} /> Timeslot hinzufügen
-          </Button>
-        </ButtonGroup>
+        {this.props.isAuthenticated && (
+          <ButtonGroup className="Listing">
+            <Button onClick={this.addTimeslot}>
+              <FontAwesomeIcon icon={faPlus} /> Timeslot hinzufügen
+            </Button>
+          </ButtonGroup>
+        )}
       </div>
     );
   }
 }
 
 interface Properties {
+  client: Client;
+  isAuthenticated: boolean;
   weekday: Weekday;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }

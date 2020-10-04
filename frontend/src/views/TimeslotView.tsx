@@ -35,7 +35,7 @@ class TimeslotView extends React.Component<Properties, State> {
   }
 
   async refreshTimeslot() {
-    const timeslot = await Client.getTimeslot(this.props.timeslotId);
+    const timeslot = await this.props.client.getTimeslot(this.props.timeslotId);
 
     this.setState({
       timeslot: timeslot,
@@ -55,7 +55,10 @@ class TimeslotView extends React.Component<Properties, State> {
 
   async updateTimeslot(timeslotData: TimeslotData) {
     if (this.state.timeslot != null) {
-      await Client.updateTimeslot(this.state.timeslot.id, timeslotData);
+      await this.props.client.updateTimeslot(
+        this.state.timeslot.id,
+        timeslotData
+      );
 
       await this.refreshTimeslot();
     }
@@ -113,7 +116,7 @@ class TimeslotView extends React.Component<Properties, State> {
 
   async onDelete() {
     if (this.state.timeslot != null) {
-      await Client.deleteTimeslot(this.state.timeslot.id);
+      await this.props.client.deleteTimeslot(this.state.timeslot.id);
 
       this.props.onDelete();
     }
@@ -142,6 +145,9 @@ class TimeslotView extends React.Component<Properties, State> {
               <TimePicker
                 variant="inline"
                 label="Startzeit"
+                InputProps={{
+                  readOnly: !this.props.isAuthenticated,
+                }}
                 ampm={false}
                 value={this.state.startTime}
                 onChange={this.onChangeStartTime}
@@ -149,6 +155,9 @@ class TimeslotView extends React.Component<Properties, State> {
               <TimePicker
                 variant="inline"
                 label="Endzeit"
+                InputProps={{
+                  readOnly: !this.props.isAuthenticated,
+                }}
                 ampm={false}
                 value={this.state.endTime}
                 onChange={this.onChangeEndTime}
@@ -157,18 +166,23 @@ class TimeslotView extends React.Component<Properties, State> {
                 label="Kapazität"
                 value={this.state.capacity}
                 type="number"
+                InputProps={{
+                  readOnly: !this.props.isAuthenticated,
+                }}
                 error={this.state.capacityError != null}
                 helperText={this.state.capacityError}
                 onChange={this.onChangeCapacity}
               />
-              {this.state.changed && (
+              {this.state.changed && this.props.isAuthenticated && (
                 <Button onClick={this.setChangedTime} color="primary">
                   Festlegen
                 </Button>
               )}
-              <Button onClick={this.viewBookings}>
-                {this.state.timeslot.bookings.length} Buchungen
-              </Button>
+              {this.props.isAuthenticated && (
+                <Button onClick={this.viewBookings}>
+                  {this.state.timeslot.bookings.length} Buchungen
+                </Button>
+              )}
               <Button
                 disabled={
                   this.state.timeslot.bookings.length >=
@@ -181,9 +195,11 @@ class TimeslotView extends React.Component<Properties, State> {
                   ? 'Buchen'
                   : 'Ausgebucht'}
               </Button>
-              <IconButton onClick={this.onDelete}>
-                <DeleteIcon />
-              </IconButton>
+              {this.props.isAuthenticated && (
+                <IconButton onClick={this.onDelete}>
+                  <DeleteIcon />
+                </IconButton>
+              )}
             </Fragment>
           </MuiPickersUtilsProvider>
         </>
@@ -193,6 +209,8 @@ class TimeslotView extends React.Component<Properties, State> {
 }
 
 interface Properties {
+  isAuthenticated: boolean;
+  client: Client;
   timeslotId: number;
   changeInteractionState: (interactionState: InteractionState) => unknown;
   onDelete: () => unknown;

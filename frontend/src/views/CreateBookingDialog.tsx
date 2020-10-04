@@ -53,7 +53,7 @@ export default class CreateBookingDialog extends React.Component<
   }
 
   async onSubmit() {
-    await Client.createBooking(this.props.timeslot.id, {
+    await this.props.client.createBooking(this.props.timeslot.id, {
       name: `${this.state.firstName} ${this.state.lastName}`,
     });
 
@@ -92,6 +92,7 @@ export default class CreateBookingDialog extends React.Component<
 }
 
 interface Properties {
+  client: Client;
   timeslot: Timeslot;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }
