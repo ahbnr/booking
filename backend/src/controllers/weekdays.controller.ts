@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
 import {
   isWeekdayInterface,
-  isWeekdayName,
   Weekday,
   WeekdayInterface,
-  WeekdayName,
 } from '../models/weekday.model';
 import { DestroyOptions, UpdateOptions } from 'sequelize';
 import { ControllerError } from './errors';
@@ -20,26 +18,6 @@ export class WeekdaysController {
     res.json(weekdays);
   }
 
-  public async create(req: Request, res: Response) {
-    const weekdayName = WeekdaysController.retrieveWeekdayName(req, res);
-    if (weekdayName != null) {
-      const weekdayData = WeekdaysController.retrieveWeekdayData(req, res);
-
-      if (weekdayData != null) {
-        try {
-          const weekday = await Weekday.create({
-            ...weekdayData,
-            name: weekdayName,
-          });
-
-          res.status(201).json(weekday);
-        } catch (error) {
-          res.status(500).json(error);
-        }
-      }
-    }
-  }
-
   public async show(req: Request, res: Response) {
     const weekday = await this.getWeekday(req, res);
 
@@ -53,7 +31,7 @@ export class WeekdaysController {
     if (timeslotData != null) {
       try {
         const timeslot = await Timeslot.create<Timeslot>({
-          weekdayName: weekday.name,
+          weekdayId: weekday.id,
           ...timeslotData,
         });
 
@@ -76,9 +54,8 @@ export class WeekdaysController {
   }
 
   // noinspection JSMethodCanBeStatic
-  private async getWeekday(req: Request, res: Response): Promise<Weekday> {
-    const weekdayName = WeekdaysController.retrieveWeekdayName(req, res);
-    const weekday = await Weekday.findByPk<Weekday>(weekdayName, {
+  private async getWeekday(req: Request, _: Response): Promise<Weekday> {
+    const weekday = await Weekday.findByPk<Weekday>(req.params.id, {
       include: [Timeslot],
     });
 
@@ -90,23 +67,19 @@ export class WeekdaysController {
   }
 
   public async update(req: Request, res: Response) {
-    const weekdayName = WeekdaysController.retrieveWeekdayName(req, res);
+    const weekdayData = WeekdaysController.retrieveWeekdayData(req, res);
+    if (weekdayData != null) {
+      const update: UpdateOptions = {
+        where: { id: req.params.id },
+        limit: 1,
+      };
 
-    if (weekdayName != null) {
-      const weekdayData = WeekdaysController.retrieveWeekdayData(req, res);
-      if (weekdayData != null) {
-        const update: UpdateOptions = {
-          where: { name: weekdayName },
-          limit: 1,
-        };
+      try {
+        await Weekday.update(weekdayData, update);
 
-        try {
-          await Weekday.update(weekdayData, update);
-
-          res.status(202).json({ data: 'success' });
-        } catch (error) {
-          res.status(500).json(error);
-        }
+        res.status(202).json({ data: 'success' });
+      } catch (error) {
+        res.status(500).json(error);
       }
     }
   }
@@ -132,16 +105,7 @@ export class WeekdaysController {
     }
   }
 
-  private static retrieveWeekdayName(req: Request, _: Response): WeekdayName {
-    const weekdayName = req.params.name;
-    if (isWeekdayName(weekdayName)) {
-      return weekdayName;
-    } else {
-      throw new ControllerError('No such weekday', 500);
-    }
-  }
-
-  private static retrieveWeekdayData(
+  public static retrieveWeekdayData(
     req: Request,
     res: Response
   ): WeekdayInterface | null {

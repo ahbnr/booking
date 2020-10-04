@@ -3,7 +3,7 @@ import {
   Timeslot,
   TimeslotData,
 } from './models/Timeslot';
-import { Weekday } from './models/Weekday';
+import { Weekday, weekdayFromResponseData } from './models/Weekday';
 import {
   Booking,
   BookingData,
@@ -11,6 +11,7 @@ import {
 } from './models/Booking';
 import { boundClass } from 'autobind-decorator';
 import { hasProperty } from './utils/typechecking';
+import { Resource } from './models/Resource';
 
 const address = 'localhost';
 const port = 3000;
@@ -118,9 +119,9 @@ export class Client {
     );
   }
 
-  public async getTimeslots(weekdayName: string): Promise<Timeslot[]> {
+  public async getTimeslots(weekdayId: number): Promise<Timeslot[]> {
     const timeslotsResponse = await (
-      await this.request('GET', `weekdays/${weekdayName}/timeslots`)
+      await this.request('GET', `weekdays/${weekdayId}/timeslots`)
     ).json();
 
     return timeslotsResponse.map((timeslot: any) =>
@@ -134,8 +135,8 @@ export class Client {
     );
   }
 
-  public async createTimeslot(weekdayName: string, data: TimeslotData) {
-    await this.request('POST', `weekdays/${weekdayName}/timeslots`, data);
+  public async createTimeslot(weekdayId: number, data: TimeslotData) {
+    await this.request('POST', `weekdays/${weekdayId}/timeslots`, data);
   }
 
   public async updateTimeslot(timeslotId: number, data: TimeslotData) {
@@ -146,16 +147,36 @@ export class Client {
     await this.request('DELETE', `timeslots/${timeslotId}`);
   }
 
-  public async getWeekdays(): Promise<Weekday[]> {
-    return await (await this.request('GET', 'weekdays')).json();
+  public async getResources(): Promise<Resource[]> {
+    return await (await this.request('GET', 'resources')).json();
   }
 
-  public async createWeekday(weekdayName: string) {
-    await this.request('POST', `weekdays/${weekdayName}`);
+  public async createResource(resourceName: string) {
+    await this.request('POST', `resources/${resourceName}`);
   }
 
-  public async deleteWeekday(weekdayName: string) {
-    await this.request('DELETE', `weekdays/${weekdayName}`);
+  public async deleteResource(weekdayName: string) {
+    await this.request('DELETE', `resources/${weekdayName}`);
+  }
+
+  public async getWeekdays(resourceName: string): Promise<Weekday[]> {
+    const weekdaysResponse = await (
+      await this.request('GET', `resources/${resourceName}/weekdays`)
+    ).json();
+
+    return weekdaysResponse.map((weekdayResponseData: any) =>
+      weekdayFromResponseData(weekdayResponseData)
+    );
+  }
+
+  public async createWeekday(resourceName: string, weekdayName: string) {
+    await this.request('POST', `resources/${resourceName}/weekdays`, {
+      name: weekdayName,
+    });
+  }
+
+  public async deleteWeekday(weekdayId: number) {
+    await this.request('DELETE', `weekdays/${weekdayId}`);
   }
 
   public async createBooking(timeslotId: number, data: BookingData) {

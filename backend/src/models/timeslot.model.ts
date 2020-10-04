@@ -64,8 +64,8 @@ export class Timeslot extends Model<Timeslot> {
   public id!: number;
 
   @ForeignKey(() => Weekday)
-  @Column(DataType.STRING(10))
-  public weekdayName!: WeekdayName;
+  @Column
+  public weekdayId!: number;
 
   @Column(DataType.INTEGER)
   public startHours!: number;

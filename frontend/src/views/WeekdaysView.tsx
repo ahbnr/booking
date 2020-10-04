@@ -17,6 +17,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { InteractionState, ViewingTimeslots } from '../InteractionState';
 import { Client } from '../Client';
+import { Resource } from '../models/Resource';
 
 @boundClass
 class WeekdaysView extends React.Component<Properties, State> {
@@ -34,7 +35,9 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   async refreshWeekdays() {
-    const weekdays = await this.props.client.getWeekdays();
+    const weekdays = await this.props.client.getWeekdays(
+      this.props.resource.name
+    );
 
     this.setState({
       weekdays: weekdays,
@@ -58,7 +61,7 @@ class WeekdaysView extends React.Component<Properties, State> {
   getCreatedWeekdayNames(): Set<string> {
     return new Set<string>(
       this.state.weekdays
-        .map((weekday) => weekday.name)
+        .map((weekday) => weekday.data.name)
         .filter((weekdayName) => weekdayNames.has(weekdayName))
     );
   }
@@ -76,13 +79,16 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   async addWeekday(weekdayName: string) {
-    await this.props.client.createWeekday(weekdayName);
+    await this.props.client.createWeekday(
+      this.props.resource.name,
+      weekdayName
+    );
 
     await this.refreshWeekdays();
   }
 
-  async deleteWeekday(weekdayName: string) {
-    await this.props.client.deleteWeekday(weekdayName);
+  async deleteWeekday(weekdayId: number) {
+    await this.props.client.deleteWeekday(weekdayId);
 
     await this.refreshWeekdays();
   }
@@ -101,22 +107,22 @@ class WeekdaysView extends React.Component<Properties, State> {
       <div className="WeekdaysView">
         <ListGroup className="Listing">
           {this.state.weekdays
-            .sort((left, right) => nameSorter(left.name, right.name))
+            .sort((left, right) => nameSorter(left.data.name, right.data.name))
             .map((weekday) => (
               <ListGroup.Item
                 action
-                key={weekday.name}
+                key={weekday.data.name}
                 onClick={() => this.viewTimeslots(weekday)}
               >
                 <Container>
                   <Row>
-                    <Col style={{ textAlign: 'left' }}>{weekday.name}</Col>
+                    <Col style={{ textAlign: 'left' }}>{weekday.data.name}</Col>
                     <Col sm="auto">
                       <span className="pull-right">
                         {this.props.isAuthenticated && (
                           <Button
                             variant="danger"
-                            onClick={() => this.deleteWeekday(weekday.name)}
+                            onClick={() => this.deleteWeekday(weekday.id)}
                           >
                             <FontAwesomeIcon icon={faMinus} />
                           </Button>
@@ -170,6 +176,7 @@ class WeekdaysView extends React.Component<Properties, State> {
 }
 
 interface Properties {
+  resource: Resource;
   isAuthenticated: boolean;
   client: Client;
   changeInteractionState: (interactionState: InteractionState) => unknown;

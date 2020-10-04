@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import WeekdaysView from './views/WeekdaysView';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { InteractionState, ViewingWeekdays } from './InteractionState';
+import { InteractionState, ViewingResources } from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
 import CreateBookingDialog from './views/CreateBookingDialog';
@@ -18,6 +18,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
+import ResourcesView from './views/ResourcesView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -55,7 +56,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
     this.state = {
       isAuthenticated: false,
-      interactionState: new ViewingWeekdays(),
+      interactionState: new ViewingResources(),
     };
   }
 
@@ -82,9 +83,19 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   render() {
     let view;
     switch (this.state.interactionState.type) {
+      case 'ViewingResources':
+        view = (
+          <ResourcesView
+            isAuthenticated={this.state.isAuthenticated}
+            client={this.client}
+            changeInteractionState={this.changeInteractionState}
+          />
+        );
+        break;
       case 'ViewingWeekdays':
         view = (
           <WeekdaysView
+            resource={this.state.interactionState.resource}
             isAuthenticated={this.state.isAuthenticated}
             client={this.client}
             changeInteractionState={this.changeInteractionState}

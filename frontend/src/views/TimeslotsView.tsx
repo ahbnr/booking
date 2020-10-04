@@ -35,14 +35,14 @@ class TimeslotsView extends React.Component<Properties, State> {
       capacity: 1,
     };
 
-    await this.props.client.createTimeslot(this.props.weekday.name, data);
+    await this.props.client.createTimeslot(this.props.weekday.id, data);
 
     await this.refreshTimeslots();
   }
 
   async refreshTimeslots() {
     const timeslots = await this.props.client.getTimeslots(
-      this.props.weekday.name
+      this.props.weekday.id
     );
 
     this.setState({

@@ -1,8 +1,19 @@
 import { Weekday } from './models/Weekday';
 import { Timeslot } from './models/Timeslot';
+import { Resource } from './models/Resource';
+
+export class ViewingResources {
+  public readonly type: 'ViewingResources' = 'ViewingResources';
+}
 
 export class ViewingWeekdays {
   public readonly type: 'ViewingWeekdays' = 'ViewingWeekdays';
+
+  public readonly resource: Resource;
+
+  constructor(resource: Resource) {
+    this.resource = resource;
+  }
 }
 
 export class ViewingTimeslots {
@@ -40,6 +51,7 @@ export class Authenticating {
 }
 
 export type InteractionState =
+  | ViewingResources
   | ViewingWeekdays
   | ViewingTimeslots
   | ViewingBookings

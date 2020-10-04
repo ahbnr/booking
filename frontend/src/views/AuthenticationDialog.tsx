@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { boundClass } from 'autobind-decorator';
 import { Button, Paper, TextField } from '@material-ui/core';
 import { Client } from '../Client';
-import { InteractionState, ViewingWeekdays } from '../InteractionState';
+import { InteractionState, ViewingResources } from '../InteractionState';
 
 @boundClass
 export default class AuthenticationDialog extends React.Component<
@@ -57,7 +57,7 @@ export default class AuthenticationDialog extends React.Component<
       this.state.password
     );
 
-    this.props.changeInteractionState(new ViewingWeekdays());
+    this.props.changeInteractionState(new ViewingResources());
   }
 
   render() {

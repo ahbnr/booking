@@ -24,18 +24,15 @@
   <component name="ChangeListManager">
     <list default="true" id="a3f9406f-50b9-4ca8-85e5-82fcf2cf14b7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/timeslot.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/timeslot.model.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/weekday.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/weekday.model.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/Client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Client.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/InteractionState.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/InteractionState.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/views/BookingView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/BookingView.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/views/BookingsView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/BookingsView.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/views/CreateBookingDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/CreateBookingDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/views/TimeslotView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/TimeslotView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/models/Weekday.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/models/Weekday.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/views/AuthenticationDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/AuthenticationDialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/views/TimeslotsView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/TimeslotsView.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/views/WeekdaysView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/views/WeekdaysView.tsx" afterDir="false" />
     </list>
@@ -66,7 +63,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="14.12.0" />
     <property name="javascript.nodejs.core.library.typings.version" value="14.11.2" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../frontend" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/controllers" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -87,9 +84,9 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/controllers" />
       <recent name="$PROJECT_DIR$/src/models" />
       <recent name="$PROJECT_DIR$/src/utils" />
-      <recent name="$PROJECT_DIR$/src/controllers" />
     </key>
   </component>
   <component name="RunManager" selected="npm.start">
@@ -128,7 +125,7 @@
       <workItem from="1601752395791" duration="25000" />
       <workItem from="1601752433231" duration="5719000" />
       <workItem from="1601792662358" duration="2763000" />
-      <workItem from="1601797712472" duration="13451000" />
+      <workItem from="1601797712472" duration="18393000" />
     </task>
     <servers />
   </component>
@@ -162,10 +159,10 @@
     <state x="414" y="129" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1596976355479" />
     <state x="398" y="19" width="1084" height="562" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1601718545542" />
     <state x="404" y="158" width="1084" height="756" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.2160@0.0.1920.2160" timestamp="1601499207028" />
-    <state x="681" y="181" width="528" height="491" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1601836479899">
+    <state x="681" y="161" width="528" height="491" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1601847223909">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="681" y="181" width="528" height="491" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1601836479899" />
+    <state x="681" y="161" width="528" height="491" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1601847223909" />
     <state x="705" y="371" width="495" height="272" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1601839055585">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -175,32 +172,32 @@
     </state>
     <state x="737" y="209" width="428" height="476" key="FileChooserDialogImpl/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597008676030" />
     <state x="729" y="129" width="428" height="476" key="FileChooserDialogImpl/0.0.1920.1080@0.0.1920.1080" timestamp="1601820645632" />
-    <state width="1895" height="270" key="GridCell.Tab.0.bottom" timestamp="1601839056075">
+    <state width="1895" height="270" key="GridCell.Tab.0.bottom" timestamp="1601847386031">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1601839056075" />
+    <state width="1895" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1601847386031" />
     <state width="1335" height="284" key="GridCell.Tab.0.bottom/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.bottom/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="270" key="GridCell.Tab.0.center" timestamp="1601839056074">
+    <state width="1895" height="270" key="GridCell.Tab.0.center" timestamp="1601847386028">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="270" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1601839056074" />
+    <state width="1895" height="270" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1601847386028" />
     <state width="1335" height="284" key="GridCell.Tab.0.center/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.center/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="270" key="GridCell.Tab.0.left" timestamp="1601839056073">
+    <state width="1895" height="270" key="GridCell.Tab.0.left" timestamp="1601847386027">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="270" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1601839056073" />
+    <state width="1895" height="270" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1601847386027" />
     <state width="1335" height="284" key="GridCell.Tab.0.left/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.left/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
-    <state width="1895" height="270" key="GridCell.Tab.0.right" timestamp="1601839056074">
+    <state width="1895" height="270" key="GridCell.Tab.0.right" timestamp="1601847386029">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1895" height="350" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1597169015340" />
-    <state width="1895" height="270" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1601839056074" />
+    <state width="1895" height="270" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1601847386029" />
     <state width="1335" height="284" key="GridCell.Tab.0.right/0.0.1920.2160@0.0.1920.2160" timestamp="1601504905880" />
     <state width="947" height="350" key="GridCell.Tab.0.right/0.1080.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1601642574575" />
     <state width="1895" height="350" key="GridCell.Tab.1.bottom" timestamp="1601838891564">
