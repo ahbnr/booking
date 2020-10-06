@@ -50,10 +50,26 @@ export class Authenticating {
   public readonly type: 'Authenticating' = 'Authenticating';
 }
 
+export class InvitingAdmin {
+  public readonly type: 'InvitingAdmin' = 'InvitingAdmin';
+}
+
+export class SigningUp {
+  public readonly type: 'SigningUp' = 'SigningUp';
+
+  public readonly signupToken: string;
+
+  constructor(signupToken: string) {
+    this.signupToken = signupToken;
+  }
+}
+
 export type InteractionState =
   | ViewingResources
   | ViewingWeekdays
   | ViewingTimeslots
   | ViewingBookings
   | CreateBooking
-  | Authenticating;
+  | Authenticating
+  | InvitingAdmin
+  | SigningUp;

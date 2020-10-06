@@ -6,16 +6,15 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  Paper,
   TextField,
   Theme,
   Typography,
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,54 +38,33 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
+class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
     this.state = {
-      userName: '',
-      userNameError: undefined,
-      password: '',
-      passwordError: undefined,
+      email: '',
+      emailError: undefined,
     };
   }
 
-  onUsernameChanged(
+  onEmailChanged(
     changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) {
     const value = changeEvent.target.value;
 
     this.setState({
-      userName: value,
-      userNameError: value.length > 0 ? undefined : 'Bitte ausfüllen',
-    });
-  }
-
-  onPasswordChanged(
-    changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
-    const value = changeEvent.target.value;
-
-    this.setState({
-      password: value,
-      passwordError: value.length > 0 ? undefined : 'Bitte ausfüllen',
+      email: value,
+      emailError: value.length > 0 ? undefined : 'Bitte ausfüllen',
     });
   }
 
   canBeSubmitted(): boolean {
-    return (
-      this.state.userName.length > 0 &&
-      this.state.userNameError == null &&
-      this.state.password.length > 0 &&
-      this.state.passwordError == null
-    );
+    return this.state.email.length > 0 && this.state.emailError == null;
   }
 
   async onSubmit() {
-    await this.props.client.authenticate(
-      this.state.userName,
-      this.state.password
-    );
+    await this.props.client.inviteForSignup(this.state.email, '');
 
     this.props.changeInteractionState(new ViewingResources());
   }
@@ -98,10 +76,10 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
           <CssBaseline />
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
-              <LockOutlinedIcon />
+              <PersonAddIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Login
+              Admin Hinzufügen
             </Typography>
             <form className={this.props.classes.form} noValidate>
               <TextField
@@ -109,25 +87,13 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                label={'Nutzer'}
+                label={'E-Mail'}
+                autoComplete="email"
                 autoFocus
-                value={this.state.userName}
-                error={this.state.userNameError != null}
-                helperText={this.state.userNameError}
-                onChange={this.onUsernameChanged}
-              />
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                label={'Passwort'}
-                type="password"
-                autoComplete="current-password"
-                value={this.state.password}
-                error={this.state.passwordError != null}
-                helperText={this.state.passwordError}
-                onChange={this.onPasswordChanged}
+                value={this.state.email}
+                error={this.state.email != null}
+                helperText={this.state.emailError}
+                onChange={this.onEmailChanged}
               />
               <Button
                 fullWidth
@@ -137,7 +103,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 disabled={!this.canBeSubmitted()}
                 onClick={this.onSubmit}
               >
-                Einloggen
+                Einladen
               </Button>
             </form>
           </div>
@@ -147,8 +113,8 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
   }
 }
 
-const AuthenticationDialog = withStyles(styles)(UnstyledAuthenticationDialog);
-export default AuthenticationDialog;
+const InviteAdminDialog = withStyles(styles)(UnstyledInviteAdminDialog);
+export default InviteAdminDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
@@ -156,8 +122,6 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  userName: string;
-  userNameError?: string;
-  password: string;
-  passwordError?: string;
+  email: string;
+  emailError?: string;
 }

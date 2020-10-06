@@ -2,7 +2,11 @@ import React from 'react';
 import './App.css';
 import WeekdaysView from './views/WeekdaysView';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { InteractionState, ViewingResources } from './InteractionState';
+import {
+  InteractionState,
+  SigningUp,
+  ViewingResources,
+} from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
 import CreateBookingDialog from './views/CreateBookingDialog';
@@ -19,6 +23,8 @@ import {
   withStyles,
 } from '@material-ui/core';
 import ResourcesView from './views/ResourcesView';
+import InviteAdminDialog from './views/InviteAdminDialog';
+import SignupDialog from './views/SignupDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -62,6 +68,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
   componentDidMount() {
     this.client.onAuthenticationChanged = this.onAuthenticationChanged;
+
+    const search = window.location.search;
+    const signupToken = new URLSearchParams(search).get('token');
+    if (signupToken != null) {
+      this.changeInteractionState(new SigningUp(signupToken));
+    }
   }
 
   componentWillUnmount() {
@@ -137,6 +149,25 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           <AuthenticationDialog
             client={this.client}
             changeInteractionState={this.changeInteractionState}
+          />
+        );
+        break;
+
+      case 'InvitingAdmin':
+        view = (
+          <InviteAdminDialog
+            client={this.client}
+            changeInteractionState={this.changeInteractionState}
+          />
+        );
+        break;
+
+      case 'SigningUp':
+        view = (
+          <SignupDialog
+            client={this.client}
+            changeInteractionState={this.changeInteractionState}
+            signupToken={this.state.interactionState.signupToken}
           />
         );
         break;

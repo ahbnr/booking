@@ -8,6 +8,23 @@ import {
 import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { CreateOptions } from 'ts-node';
 import bcrypt from 'bcrypt';
+import { hasProperty } from '../utils/typechecking';
+
+interface UserInterface {
+  name: string;
+  password: string;
+}
+
+export function isUserInterface(data: unknown): data is UserInterface {
+  return (
+    typeof data === 'object' &&
+    data != null &&
+    hasProperty(data, 'name') &&
+    typeof data.name === 'string' &&
+    hasProperty(data, 'password') &&
+    typeof data.password === 'string'
+  );
+}
 
 @Table
 export class User extends Model<User> {

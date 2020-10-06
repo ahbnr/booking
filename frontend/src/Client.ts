@@ -74,14 +74,23 @@ export class Client {
     return response;
   }
 
-  public async authenticate(username: string, password: string) {
-    this.jsonWebToken = undefined;
-
-    const response = await this.request('POST', 'users/auth', {
-      user: username,
-      password: password,
+  public async isSignupTokenOk(signupToken: string): Promise<boolean> {
+    const response = await this.request('POST', 'users/isSignupTokenOk', {
+      token: signupToken,
     });
 
+    if (response.status === 200) {
+      const isTokenOk = await response.json();
+
+      if (typeof isTokenOk === 'boolean') {
+        return isTokenOk;
+      }
+    }
+
+    return false;
+  }
+
+  private async evaluateSigninResponse(response: Response) {
     if (response.status === 200) {
       const maybeTokenResponse = await response.json();
 
@@ -93,11 +102,39 @@ export class Client {
       ) {
         this.jsonWebToken = maybeTokenResponse.jwt;
       } else {
-        throw Error('Invalid server response format.');
+        throw new Error('Invalid server response format.');
       }
     } else {
-      throw Error('Authentication failed.');
+      throw new Error('Authentication failed.');
     }
+  }
+
+  public async signup(signupToken: string, username: string, password: string) {
+    const response = await this.request('POST', 'users/signup', {
+      token: signupToken,
+      name: username,
+      password: password,
+    });
+
+    await this.evaluateSigninResponse(response);
+  }
+
+  public async authenticate(username: string, password: string) {
+    this.jsonWebToken = undefined;
+
+    const response = await this.request('POST', 'users/auth', {
+      user: username,
+      password: password,
+    });
+
+    await this.evaluateSigninResponse(response);
+  }
+
+  public async inviteForSignup(email: string, signupPath: string) {
+    await this.request('POST', 'users/inviteForSignup', {
+      email: email,
+      targetUrl: `${window.location.protocol}//${window.location.host}/${signupPath}`,
+    });
   }
 
   public async getTimeslot(timeslotId: number): Promise<Timeslot> {
