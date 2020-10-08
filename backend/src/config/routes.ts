@@ -9,7 +9,7 @@ import { WeekdaysController } from '../controllers/weekdays.controller';
 import { TimeslotsController } from '../controllers/timeslots.controller';
 import { BookingsController } from '../controllers/bookings.controller';
 import { UsersController } from '../controllers/users.controller';
-import { authHandler } from './passport';
+import { authHandler, optionalAuthHandler } from './passport';
 import { ResourcesController } from '../controllers/resources.controller';
 
 export class Routes {
@@ -101,11 +101,14 @@ export class Routes {
         authHandler,
         Routes.asyncHandler(this.timeslotsController.getBookings)
       )
-      .post(Routes.asyncHandler(this.timeslotsController.createBooking));
+      .post(Routes.asyncHandler(this.bookingsController.createBooking));
 
     app
       .route('/bookings')
-      .get(authHandler, Routes.asyncHandler(this.bookingsController.index));
+      .get(
+        optionalAuthHandler,
+        Routes.asyncHandler(this.bookingsController.index)
+      );
     app
       .route('/bookings/:id')
       .get(authHandler, Routes.asyncHandler(this.bookingsController.show))

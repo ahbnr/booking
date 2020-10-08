@@ -2,6 +2,7 @@ import { Timeslot } from './Timeslot';
 
 export interface BookingData {
   name: string;
+  email: string;
 }
 
 export interface Booking {

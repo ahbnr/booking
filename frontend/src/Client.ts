@@ -235,6 +235,7 @@ export class Client {
 
     return bookingFromData(response.id, response.timeslot, {
       name: response.name,
+      email: response.email,
     });
   }
 
@@ -243,6 +244,14 @@ export class Client {
       'GET',
       `timeslots/${timeslotId}/bookings`
     );
+
+    return await response.json();
+  }
+
+  public async getBookingsByToken(lookupToken: string): Promise<Booking[]> {
+    const response = await this.request('GET', `bookings?token=${lookupToken}`);
+
+    // FIXME: Check JSON schema
 
     return await response.json();
   }

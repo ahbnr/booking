@@ -50,6 +50,13 @@ export default class BookingView extends React.Component<Properties, State> {
                 readOnly: true,
               }}
             />
+            <TextField
+              label="E-Mail"
+              value={this.state.booking.data.email}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
             <IconButton onClick={this.onDelete}>
               <DeleteIcon />
             </IconButton>

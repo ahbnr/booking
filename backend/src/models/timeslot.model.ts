@@ -1,10 +1,11 @@
 import { BelongsTo, DataType, HasMany, Model } from 'sequelize-typescript';
 import { Weekday, WeekdayName } from './weekday.model';
 import moment from 'moment';
-import { getPreviousWeekdayDate } from '../utils/date';
+import { getNextWeekdayDate, getPreviousWeekdayDate } from '../utils/date';
 import { Booking } from './booking.model';
 import { Column, ForeignKey, PrimaryKey, Table } from 'sequelize-typescript';
 import { hasProperty } from '../utils/typechecking';
+import { DateTime, Duration, Interval } from 'luxon';
 
 // All timeslot post/update requests must conform to this interface
 export interface TimeslotInterface {
@@ -89,10 +90,21 @@ export class Timeslot extends Model<Timeslot> {
   public weekday?: Weekday;
 
   public getPreviousTimeslotEndDate(): moment.Moment {
-    const previousDate = getPreviousWeekdayDate(this.weekdayName);
+    const previousDate = getPreviousWeekdayDate(this.weekday!.name);
 
     return previousDate
       .add(this.endHours, 'hours')
       .add(this.endMinutes, 'minutes');
+  }
+
+  public getNextTimeslotEndDate(): DateTime {
+    const nextDate = getNextWeekdayDate(this.weekday!.name).plus(
+      Duration.fromObject({
+        hours: this.endHours,
+        minutes: this.endMinutes,
+      })
+    );
+
+    return nextDate;
   }
 }

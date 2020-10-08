@@ -64,6 +64,16 @@ export class SigningUp {
   }
 }
 
+export class LookingUpBookings {
+  public readonly type: 'LookingUpBookings' = 'LookingUpBookings';
+
+  public readonly lookupToken: string;
+
+  constructor(lookupToken: string) {
+    this.lookupToken = lookupToken;
+  }
+}
+
 export type InteractionState =
   | ViewingResources
   | ViewingWeekdays
@@ -72,4 +82,5 @@ export type InteractionState =
   | CreateBooking
   | Authenticating
   | InvitingAdmin
-  | SigningUp;
+  | SigningUp
+  | LookingUpBookings;

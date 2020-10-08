@@ -1,4 +1,4 @@
-import { DataType, Model } from 'sequelize-typescript';
+import { DataType, IsEmail, Model } from 'sequelize-typescript';
 import { Timeslot } from './timeslot.model';
 import moment from 'moment';
 import {
@@ -9,24 +9,24 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { hasProperty } from '../utils/typechecking';
+import { EMail, NonEmptyString, validateJson } from '../utils/typechecking';
+import * as t from 'io-ts';
+import { DateTime, Duration, Interval } from 'luxon';
 
 // All booking post/update requests must conform to this interface
-export interface BookingInterface {
-  name: string;
-}
+export const BookingInterface = t.type({
+  name: NonEmptyString,
+  email: EMail,
+});
 
-export function isBookingInterface(
-  maybeBookingInterface: unknown
-): maybeBookingInterface is BookingInterface {
-  return (
-    typeof maybeBookingInterface === 'object' &&
-    maybeBookingInterface != null &&
-    hasProperty(maybeBookingInterface, 'name') &&
-    maybeBookingInterface.name != null &&
-    maybeBookingInterface.name !== ''
-  );
-}
+export type BookingInterface = t.TypeOf<typeof BookingInterface>;
+
+export const BookingPostInterface = t.type({
+  ...BookingInterface.props,
+  lookupUrl: t.string,
+});
+
+export type BookingPostInterface = t.TypeOf<typeof BookingPostInterface>;
 
 @Table
 export class Booking extends Model<Booking> {
@@ -46,6 +46,10 @@ export class Booking extends Model<Booking> {
   @Column
   public name!: string;
 
+  @IsEmail
+  @Column
+  public email!: string;
+
   @BelongsTo(() => Timeslot)
   public timeslot?: Timeslot;
 
@@ -62,6 +66,18 @@ export class Booking extends Model<Booking> {
   // filled by sequelize
   @CreatedAt
   public readonly createdAt!: Date;
+
+  public async timeTillDue(): Promise<Duration> {
+    const timeslot = await this.lazyTimeslot;
+
+    if (timeslot != null) {
+      const nextEndDate = timeslot.getNextTimeslotEndDate();
+
+      return Interval.fromDateTimes(DateTime.local(), nextEndDate).toDuration();
+    } else {
+      throw new Error('Could not retrieve timeslot.');
+    }
+  }
 
   public async hasPassed(): Promise<boolean> {
     const timeslot = await this.lazyTimeslot;

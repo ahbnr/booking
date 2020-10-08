@@ -4,6 +4,7 @@ import WeekdaysView from './views/WeekdaysView';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {
   InteractionState,
+  LookingUpBookings,
   SigningUp,
   ViewingResources,
 } from './InteractionState';
@@ -25,6 +26,7 @@ import {
 import ResourcesView from './views/ResourcesView';
 import InviteAdminDialog from './views/InviteAdminDialog';
 import SignupDialog from './views/SignupDialog';
+import BookingsLookupView from './views/BookingsLookupView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -70,9 +72,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     this.client.onAuthenticationChanged = this.onAuthenticationChanged;
 
     const search = window.location.search;
-    const signupToken = new URLSearchParams(search).get('token');
+    const signupToken = new URLSearchParams(search).get('signupToken');
+    const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
     if (signupToken != null) {
       this.changeInteractionState(new SigningUp(signupToken));
+    } else if (bookingsLookupToken != null) {
+      this.changeInteractionState(new LookingUpBookings(bookingsLookupToken));
     }
   }
 
@@ -168,6 +173,15 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
             client={this.client}
             changeInteractionState={this.changeInteractionState}
             signupToken={this.state.interactionState.signupToken}
+          />
+        );
+        break;
+
+      case 'LookingUpBookings':
+        view = (
+          <BookingsLookupView
+            client={this.client}
+            lookupToken={this.state.interactionState.lookupToken}
           />
         );
         break;

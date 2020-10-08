@@ -1,5 +1,6 @@
 import { WeekdayName } from '../models/weekday.model';
 import moment from 'moment';
+import { DateTime, Duration } from 'luxon';
 
 function weekdayToInt(weekday: WeekdayName): number {
   switch (weekday) {
@@ -20,6 +21,7 @@ function weekdayToInt(weekday: WeekdayName): number {
   }
 }
 
+// FIXME: Replace moment with luxon
 export function getPreviousWeekdayDate(weekday: WeekdayName): moment.Moment {
   const targetWeekdayInt = weekdayToInt(weekday);
   const today = moment().isoWeekday();
@@ -32,6 +34,24 @@ export function getPreviousWeekdayDate(weekday: WeekdayName): moment.Moment {
   } else {
     // otherwise we can just use the target day from the current week
     result = moment().isoWeekday(targetWeekdayInt);
+  }
+
+  return result.startOf('day');
+}
+export function getNextWeekdayDate(weekday: WeekdayName): DateTime {
+  const targetWeekdayInt = weekdayToInt(weekday);
+  const today = DateTime.local().weekday;
+
+  let result: DateTime;
+  // We did not yet pass the target weekday in the current week...
+  if (today <= targetWeekdayInt) {
+    // hence, we can just use the target day from the current week
+    result = DateTime.local().set({ weekday: targetWeekdayInt });
+  } else {
+    // otherwise we need to get the target day from the next week
+    result = DateTime.local()
+      .plus(Duration.fromObject({ weeks: 1 }))
+      .set({ weekday: targetWeekdayInt });
   }
 
   return result.startOf('day');

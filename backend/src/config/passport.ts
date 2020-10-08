@@ -5,6 +5,7 @@ import {
   StrategyOptions,
 } from 'passport-jwt';
 import { User } from '../models/user.model';
+import { Request, Response, NextFunction } from 'express';
 
 // FIXME: Load proper secret from somewhere else
 export const jwtSecret = 'secret';
@@ -36,3 +37,26 @@ export const initializedPassport = passport;
 export const authHandler = initializedPassport.authenticate('jwt', {
   session: false,
 });
+
+declare module 'express-serve-static-core' {
+  export interface Request {
+    authenticated?: boolean;
+  }
+}
+
+export function optionalAuthHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  initializedPassport.authenticate(
+    'jwt',
+    {
+      session: false,
+    },
+    (err, user, _) => {
+      req.authenticated = user != null;
+      next();
+    }
+  )(req, res, next);
+}
