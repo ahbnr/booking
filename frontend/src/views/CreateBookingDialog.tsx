@@ -1,13 +1,11 @@
 import React, { ChangeEvent } from 'react';
 import { boundClass } from 'autobind-decorator';
-import { Timeslot } from '../models/Timeslot';
 import {
   Avatar,
   Button,
   Container,
   createStyles,
   CssBaseline,
-  Paper,
   TextField,
   Theme,
   Typography,
@@ -17,6 +15,8 @@ import { Client } from '../Client';
 import { InteractionState, ViewingTimeslots } from '../InteractionState';
 import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
+import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
+import getBaseUrl from '../utils/getBaseUrl';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,13 +101,16 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
 
   async onSubmit() {
     await this.props.client.createBooking(this.props.timeslot.id, {
-      name: `${this.state.firstName} ${this.state.lastName}`,
-      email: this.state.email,
+      name: `${this.state.firstName} ${this.state.lastName}` as NonEmptyString,
+      email: this.state.email as EMailString,
+      lookupUrl: `${getBaseUrl()}/`,
     });
 
-    this.props.changeInteractionState(
-      new ViewingTimeslots(this.props.timeslot.weekday)
+    const weekday = await this.props.client.getWeekday(
+      this.props.timeslot.weekdayId
     );
+
+    this.props.changeInteractionState(new ViewingTimeslots(weekday));
   }
 
   render() {
@@ -183,7 +186,7 @@ export default CreateBookingDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
-  timeslot: Timeslot;
+  timeslot: TimeslotGetInterface;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }
 

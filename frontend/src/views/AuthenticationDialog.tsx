@@ -6,7 +6,6 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  Paper,
   TextField,
   Theme,
   Typography,

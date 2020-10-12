@@ -1,7 +1,6 @@
 import React, { ChangeEvent, Fragment } from 'react';
 import '../App.css';
 import { boundClass } from 'autobind-decorator';
-import { Timeslot, TimeslotData } from '../models/Timeslot';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
 import LuxonUtils from '@date-io/luxon';
 import { DateTime } from 'luxon';
@@ -15,6 +14,11 @@ import {
   ViewingBookings,
 } from '../InteractionState';
 import DeleteIcon from '@material-ui/icons/Delete';
+import {
+  noRefinementChecks,
+  TimeslotGetInterface,
+  TimeslotPostInterface,
+} from 'common/dist';
 
 @boundClass
 class TimeslotView extends React.Component<Properties, State> {
@@ -40,20 +44,20 @@ class TimeslotView extends React.Component<Properties, State> {
     this.setState({
       timeslot: timeslot,
       startTime: DateTime.fromObject({
-        hour: timeslot.data.startHours,
-        minute: timeslot.data.startMinutes,
+        hour: timeslot.startHours,
+        minute: timeslot.startMinutes,
       }),
       endTime: DateTime.fromObject({
-        hour: timeslot.data.endHours,
-        minute: timeslot.data.endMinutes,
+        hour: timeslot.endHours,
+        minute: timeslot.endMinutes,
       }),
-      capacity: timeslot.data.capacity,
+      capacity: timeslot.capacity,
       capacityError: undefined,
       changed: false,
     });
   }
 
-  async updateTimeslot(timeslotData: TimeslotData) {
+  async updateTimeslot(timeslotData: TimeslotPostInterface) {
     if (this.state.timeslot != null) {
       await this.props.client.updateTimeslot(
         this.state.timeslot.id,
@@ -98,13 +102,16 @@ class TimeslotView extends React.Component<Properties, State> {
 
   async setChangedTime() {
     if (this.state.startTime != null && this.state.endTime != null) {
-      await this.updateTimeslot({
-        startHours: this.state.startTime.hour,
-        startMinutes: this.state.startTime.minute,
-        endHours: this.state.endTime.hour,
-        endMinutes: this.state.endTime.minute,
-        capacity: this.state.capacity,
-      });
+      await this.updateTimeslot(
+        // We don't check the refinement types here. The server will perform checks anyway
+        noRefinementChecks<TimeslotPostInterface>({
+          startHours: this.state.startTime.hour,
+          startMinutes: this.state.startTime.minute,
+          endHours: this.state.endTime.hour,
+          endMinutes: this.state.endTime.minute,
+          capacity: this.state.capacity,
+        })
+      );
     }
   }
 
@@ -180,18 +187,18 @@ class TimeslotView extends React.Component<Properties, State> {
               )}
               {this.props.isAuthenticated && (
                 <Button onClick={this.viewBookings}>
-                  {this.state.timeslot.bookings.length} Buchungen
+                  {this.state.timeslot.bookingIds.length} Buchungen
                 </Button>
               )}
               <Button
                 disabled={
-                  this.state.timeslot.bookings.length >=
-                  this.state.timeslot.data.capacity
+                  this.state.timeslot.bookingIds.length >=
+                  this.state.timeslot.capacity
                 }
                 onClick={this.createBooking}
               >
-                {this.state.timeslot.bookings.length <
-                this.state.timeslot.data.capacity
+                {this.state.timeslot.bookingIds.length <
+                this.state.timeslot.capacity
                   ? 'Buchen'
                   : 'Ausgebucht'}
               </Button>
@@ -217,7 +224,7 @@ interface Properties {
 }
 
 interface State {
-  timeslot?: Timeslot;
+  timeslot?: TimeslotGetInterface;
   startTime?: DateType;
   endTime?: DateType;
   capacity: number;

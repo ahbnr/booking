@@ -1,60 +1,75 @@
 import { Request, Response } from 'express';
-import {
-  isWeekdayInterface,
-  Weekday,
-  WeekdayInterface,
-} from '../models/weekday.model';
+import { Weekday } from '../models/weekday.model';
 import { DestroyOptions, UpdateOptions } from 'sequelize';
 import { ControllerError } from './errors';
 import { boundClass } from 'autobind-decorator';
 import { Timeslot } from '../models/timeslot.model';
 import { TimeslotsController } from './timeslots.controller';
+import {
+  checkType,
+  TimeslotGetInterface,
+  TimeslotPostInterface,
+  WeekdayGetInterface,
+  WeekdayPostInterface,
+} from 'common/dist';
 
 @boundClass
 export class WeekdaysController {
-  public async index(req: Request, res: Response) {
+  public async index(req: Request, res: Response<WeekdayGetInterface[]>) {
     const weekdays = await Weekday.findAll({});
 
-    res.json(weekdays);
+    res.json(weekdays.map((booking) => booking.toTypedJSON()));
   }
 
-  public async show(req: Request, res: Response) {
-    const weekday = await this.getWeekday(req, res);
+  public async show(req: Request, res: Response<WeekdayGetInterface>) {
+    const weekday = await this.getWeekday(req);
 
-    res.json(weekday);
+    res.json(weekday.toTypedJSON());
   }
 
-  public async createTimeslot(req: Request, res: Response) {
-    const weekday = await this.getWeekday(req, res);
+  public async createTimeslot(
+    req: Request,
+    res: Response<TimeslotGetInterface>
+  ) {
+    const weekday = await this.getWeekday(req);
 
-    const timeslotData = TimeslotsController.retrieveTimeslotData(req, res);
-    if (timeslotData != null) {
-      try {
-        const timeslot = await Timeslot.create<Timeslot>({
-          weekdayId: weekday.id,
-          ...timeslotData,
-        });
+    const timeslotData = checkType(req.body, TimeslotPostInterface);
+    try {
+      const timeslot = await Timeslot.create<Timeslot>({
+        weekdayId: weekday.id,
+        ...timeslotData,
+      });
 
-        res.status(201).json(timeslot);
-      } catch (error) {
-        res.status(500).json(error);
-      }
+      res
+        .status(201)
+        .json(await TimeslotsController.timeslotAsGetInterface(timeslot));
+    } catch (error) {
+      res.status(500).json(error);
     }
   }
 
-  public async getTimeslots(req: Request, res: Response) {
-    const weekday = await this.getWeekday(req, res);
+  public async getTimeslots(
+    req: Request,
+    res: Response<TimeslotGetInterface[]>
+  ) {
+    const weekday = await this.getWeekday(req);
     const timeslots = weekday?.timeslots;
 
     if (timeslots != null) {
-      res.json(timeslots);
+      res.json(
+        await Promise.all(
+          timeslots.map((timeslot) =>
+            TimeslotsController.timeslotAsGetInterface(timeslot)
+          )
+        )
+      );
     } else {
       res.json([]);
     }
   }
 
   // noinspection JSMethodCanBeStatic
-  private async getWeekday(req: Request, _: Response): Promise<Weekday> {
+  private async getWeekday(req: Request): Promise<Weekday> {
     const weekday = await Weekday.findByPk<Weekday>(req.params.id, {
       include: [Timeslot],
     });
@@ -67,20 +82,19 @@ export class WeekdaysController {
   }
 
   public async update(req: Request, res: Response) {
-    const weekdayData = WeekdaysController.retrieveWeekdayData(req, res);
-    if (weekdayData != null) {
-      const update: UpdateOptions = {
-        where: { id: req.params.id },
-        limit: 1,
-      };
+    const weekdayData = checkType(req.body, WeekdayPostInterface);
 
-      try {
-        await Weekday.update(weekdayData, update);
+    const update: UpdateOptions = {
+      where: { id: req.params.id },
+      limit: 1,
+    };
 
-        res.status(202).json({ data: 'success' });
-      } catch (error) {
-        res.status(500).json(error);
-      }
+    try {
+      await Weekday.update(weekdayData, update);
+
+      res.status(202).json({ data: 'success' });
+    } catch (error) {
+      res.status(500).json(error);
     }
   }
 
@@ -102,19 +116,6 @@ export class WeekdaysController {
       }
     } else {
       res.status(500).json({ data: 'Weekday not specified.' });
-    }
-  }
-
-  public static retrieveWeekdayData(
-    req: Request,
-    res: Response
-  ): WeekdayInterface | null {
-    const weekdayData = req.body;
-    if (isWeekdayInterface(weekdayData)) {
-      return weekdayData;
-    } else {
-      res.status(500).json({ errors: ['Invalid weekday data format.'] });
-      return null;
     }
   }
 }

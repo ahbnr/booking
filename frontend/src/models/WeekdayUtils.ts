@@ -1,21 +1,3 @@
-export interface WeekdayData {
-  name: string;
-}
-
-export interface Weekday {
-  id: number;
-  data: WeekdayData;
-}
-
-export function weekdayFromResponseData(responseData: any): Weekday {
-  return {
-    id: responseData.id,
-    data: {
-      name: responseData.name,
-    },
-  };
-}
-
 export const weekdayNameToISOWeekday: Map<string, number> = new Map([
   ['sunday', 0],
   ['monday', 1],

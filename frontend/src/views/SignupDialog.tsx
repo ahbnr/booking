@@ -6,7 +6,6 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  Paper,
   TextField,
   Theme,
   Typography,
@@ -16,6 +15,7 @@ import {
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
+import { NonEmptyString, noRefinementChecks } from 'common/dist';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -96,9 +96,9 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
   async onSubmit() {
     if (this.props.signupToken != null) {
       await this.props.client.signup(
-        this.props.signupToken,
-        this.state.userName,
-        this.state.password
+        noRefinementChecks<NonEmptyString>(this.props.signupToken),
+        noRefinementChecks<NonEmptyString>(this.state.userName),
+        noRefinementChecks<NonEmptyString>(this.state.password)
       );
 
       this.props.changeInteractionState(new ViewingResources());

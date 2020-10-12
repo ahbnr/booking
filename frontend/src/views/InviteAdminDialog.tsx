@@ -15,6 +15,8 @@ import {
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import getBaseUrl from '../utils/getBaseUrl';
+import { EMailString } from 'common/dist';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -64,7 +66,10 @@ class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
   }
 
   async onSubmit() {
-    await this.props.client.inviteForSignup(this.state.email, '');
+    await this.props.client.inviteForSignup(
+      this.state.email as EMailString,
+      `${getBaseUrl()}/`
+    );
 
     this.props.changeInteractionState(new ViewingResources());
   }

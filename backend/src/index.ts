@@ -4,7 +4,7 @@ import { Routes } from './config/routes';
 import cors from 'cors';
 import db from './models';
 import { ControllerError } from './controllers/errors';
-import { DataValidationError } from './utils/typechecking';
+import { DataValidationError } from 'common/dist';
 
 db.init();
 
@@ -26,6 +26,8 @@ app.use(
     res: express.Response,
     next: express.NextFunction
   ) => {
+    console.error(err);
+
     if (res.headersSent) {
       return next(err);
     } else if (err instanceof ControllerError) {

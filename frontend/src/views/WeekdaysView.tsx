@@ -1,6 +1,6 @@
 import React from 'react';
 import '../App.css';
-import { nameSorter, Weekday, weekdayNames } from '../models/Weekday';
+import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
 import {
   Button,
   ButtonGroup,
@@ -17,7 +17,11 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { InteractionState, ViewingTimeslots } from '../InteractionState';
 import { Client } from '../Client';
-import { Resource } from '../models/Resource';
+import {
+  ResourceGetInterface,
+  WeekdayGetInterface,
+  WeekdayName,
+} from 'common/dist';
 
 @boundClass
 class WeekdaysView extends React.Component<Properties, State> {
@@ -61,7 +65,7 @@ class WeekdaysView extends React.Component<Properties, State> {
   getCreatedWeekdayNames(): Set<string> {
     return new Set<string>(
       this.state.weekdays
-        .map((weekday) => weekday.data.name)
+        .map((weekday) => weekday.name)
         .filter((weekdayName) => weekdayNames.has(weekdayName))
     );
   }
@@ -79,10 +83,9 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   async addWeekday(weekdayName: string) {
-    await this.props.client.createWeekday(
-      this.props.resource.name,
-      weekdayName
-    );
+    await this.props.client.createWeekday(this.props.resource.name, {
+      name: weekdayName as WeekdayName, // We trust here that the UI delivers the correct type. If not, the server performs checks and will reject it
+    });
 
     await this.refreshWeekdays();
   }
@@ -93,7 +96,7 @@ class WeekdaysView extends React.Component<Properties, State> {
     await this.refreshWeekdays();
   }
 
-  viewTimeslots(weekday: Weekday) {
+  viewTimeslots(weekday: WeekdayGetInterface) {
     this.props.changeInteractionState(new ViewingTimeslots(weekday));
   }
 
@@ -107,16 +110,16 @@ class WeekdaysView extends React.Component<Properties, State> {
       <div className="WeekdaysView">
         <ListGroup className="Listing">
           {this.state.weekdays
-            .sort((left, right) => nameSorter(left.data.name, right.data.name))
+            .sort((left, right) => nameSorter(left.name, right.name))
             .map((weekday) => (
               <ListGroup.Item
                 action
-                key={weekday.data.name}
+                key={weekday.name}
                 onClick={() => this.viewTimeslots(weekday)}
               >
                 <Container>
                   <Row>
-                    <Col style={{ textAlign: 'left' }}>{weekday.data.name}</Col>
+                    <Col style={{ textAlign: 'left' }}>{weekday.name}</Col>
                     <Col sm="auto">
                       <span className="pull-right">
                         {this.props.isAuthenticated && (
@@ -176,14 +179,14 @@ class WeekdaysView extends React.Component<Properties, State> {
 }
 
 interface Properties {
-  resource: Resource;
+  resource: ResourceGetInterface;
   isAuthenticated: boolean;
   client: Client;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }
 
 interface State {
-  weekdays: Weekday[];
+  weekdays: WeekdayGetInterface[];
   showAddWeekdayModal: boolean;
 }
 

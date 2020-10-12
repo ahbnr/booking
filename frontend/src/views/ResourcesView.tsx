@@ -4,7 +4,6 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { InteractionState, ViewingWeekdays } from '../InteractionState';
 import { Client } from '../Client';
-import { Resource } from '../models/Resource';
 import {
   Button,
   createStyles,
@@ -23,6 +22,7 @@ import {
 } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
+import { ResourceGetInterface } from 'common/dist';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -109,7 +109,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
     await this.refreshResources();
   }
 
-  viewWeekdays(resource: Resource) {
+  viewWeekdays(resource: ResourceGetInterface) {
     this.props.changeInteractionState(new ViewingWeekdays(resource));
   }
 
@@ -178,7 +178,7 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  resources: Resource[];
+  resources: ResourceGetInterface[];
   showAddResourceModal: boolean;
   newResourceName: string;
 }

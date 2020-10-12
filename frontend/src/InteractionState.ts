@@ -1,6 +1,5 @@
-import { Weekday } from './models/Weekday';
-import { Timeslot } from './models/Timeslot';
-import { Resource } from './models/Resource';
+import { ResourceGetInterface } from 'common';
+import { TimeslotGetInterface, WeekdayGetInterface } from 'common/dist';
 
 export class ViewingResources {
   public readonly type: 'ViewingResources' = 'ViewingResources';
@@ -9,9 +8,9 @@ export class ViewingResources {
 export class ViewingWeekdays {
   public readonly type: 'ViewingWeekdays' = 'ViewingWeekdays';
 
-  public readonly resource: Resource;
+  public readonly resource: ResourceGetInterface;
 
-  constructor(resource: Resource) {
+  constructor(resource: ResourceGetInterface) {
     this.resource = resource;
   }
 }
@@ -19,9 +18,9 @@ export class ViewingWeekdays {
 export class ViewingTimeslots {
   public readonly type: 'ViewingTimeslots' = 'ViewingTimeslots';
 
-  public readonly weekday: Weekday;
+  public readonly weekday: WeekdayGetInterface;
 
-  constructor(weekday: Weekday) {
+  constructor(weekday: WeekdayGetInterface) {
     this.weekday = weekday;
   }
 }
@@ -29,9 +28,9 @@ export class ViewingTimeslots {
 export class ViewingBookings {
   public readonly type: 'ViewingBookings' = 'ViewingBookings';
 
-  public readonly timeslot: Timeslot;
+  public readonly timeslot: TimeslotGetInterface;
 
-  constructor(timeslot: Timeslot) {
+  constructor(timeslot: TimeslotGetInterface) {
     this.timeslot = timeslot;
   }
 }
@@ -39,9 +38,9 @@ export class ViewingBookings {
 export class CreateBooking {
   public readonly type: 'CreateBooking' = 'CreateBooking';
 
-  public readonly timeslot: Timeslot;
+  public readonly timeslot: TimeslotGetInterface;
 
-  constructor(timeslot: Timeslot) {
+  constructor(timeslot: TimeslotGetInterface) {
     this.timeslot = timeslot;
   }
 }

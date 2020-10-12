@@ -1,11 +1,9 @@
-import { WeekdayName } from '../models/weekday.model';
 import moment from 'moment';
 import { DateTime, Duration } from 'luxon';
+import { WeekdayName } from 'common/dist';
 
-function weekdayToInt(weekday: WeekdayName): number {
+export function weekdayToInt(weekday: WeekdayName): number {
   switch (weekday) {
-    case 'sunday':
-      return 0;
     case 'monday':
       return 1;
     case 'tuesday':
@@ -18,6 +16,8 @@ function weekdayToInt(weekday: WeekdayName): number {
       return 5;
     case 'saturday':
       return 6;
+    case 'sunday':
+      return 7;
   }
 }
 

@@ -1,21 +1,34 @@
-import {
-  fromData as timeslotFromData,
-  Timeslot,
-  TimeslotData,
-} from './models/Timeslot';
-import { Weekday, weekdayFromResponseData } from './models/Weekday';
-import {
-  Booking,
-  BookingData,
-  fromData as bookingFromData,
-} from './models/Booking';
+import * as t from 'io-ts';
+import { Type } from 'io-ts';
 import { boundClass } from 'autobind-decorator';
-import { hasProperty } from './utils/typechecking';
-import { Resource } from './models/Resource';
+import {
+  AuthRequestData,
+  BookingGetInterface,
+  BookingPostInterface,
+  checkType,
+  EMailString,
+  InviteForSignupData,
+  IsSignupTokenOkRequestData,
+  NonEmptyString,
+  ResourceGetInterface,
+  SignupRequestData,
+  TimeslotGetInterface,
+  TimeslotPostInterface,
+  WeekdayGetInterface,
+  WeekdayPostInterface,
+} from 'common/dist';
 
 const address = 'localhost';
 const port = 3000;
 const baseUrl = `http://${address}:${port}`;
+
+class RequestError {
+  public readonly response: Response;
+
+  constructor(response: Response) {
+    this.response = response;
+  }
+}
 
 @boundClass
 export class Client {
@@ -36,6 +49,19 @@ export class Client {
 
   public isAuthenticated(): boolean {
     return this.jsonWebToken != null;
+  }
+
+  private async typedRequest<A, O, I>(
+    type: Type<A, O, I>,
+    method: 'POST' | 'GET' | 'PUT' | 'DELETE',
+    subUrl: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body?: any
+  ): Promise<A> {
+    const response = await this.request(method, subUrl, body);
+    const parsed = await response.json();
+
+    return checkType(parsed, type);
   }
 
   private async request(
@@ -71,112 +97,96 @@ export class Client {
       this.jsonWebToken = undefined;
     }
 
+    if (!response.ok) {
+      throw new RequestError(response);
+    }
+
     return response;
   }
 
   public async isSignupTokenOk(signupToken: string): Promise<boolean> {
-    const response = await this.request('POST', 'users/isSignupTokenOk', {
-      token: signupToken,
-    });
+    const postData: IsSignupTokenOkRequestData = signupToken;
 
-    if (response.status === 200) {
-      const isTokenOk = await response.json();
-
-      if (typeof isTokenOk === 'boolean') {
-        return isTokenOk;
-      }
-    }
-
-    return false;
+    return await this.typedRequest(
+      t.boolean,
+      'POST',
+      'users/isSignupTokenOk',
+      postData
+    );
   }
 
-  private async evaluateSigninResponse(response: Response) {
-    if (response.status === 200) {
-      const maybeTokenResponse = await response.json();
+  public async signup(
+    signupToken: NonEmptyString,
+    username: NonEmptyString,
+    password: NonEmptyString
+  ) {
+    this.jsonWebToken = undefined;
 
-      // FIXME use JSON schema validation
-      if (
-        maybeTokenResponse != null &&
-        typeof maybeTokenResponse === 'object' &&
-        hasProperty(maybeTokenResponse, 'jwt')
-      ) {
-        this.jsonWebToken = maybeTokenResponse.jwt;
-      } else {
-        throw new Error('Invalid server response format.');
-      }
-    } else {
-      throw new Error('Authentication failed.');
-    }
-  }
+    const data: SignupRequestData = {
+      signupToken: signupToken,
+      userData: {
+        name: username,
+        password: password,
+        email: undefined,
+      },
+    };
 
-  public async signup(signupToken: string, username: string, password: string) {
-    const response = await this.request('POST', 'users/signup', {
-      token: signupToken,
-      name: username,
-      password: password,
-    });
-
-    await this.evaluateSigninResponse(response);
+    this.jsonWebToken = await this.typedRequest(
+      NonEmptyString,
+      'POST',
+      'users/signup',
+      data
+    );
   }
 
   public async authenticate(username: string, password: string) {
     this.jsonWebToken = undefined;
 
-    const response = await this.request('POST', 'users/auth', {
-      user: username,
+    const data: AuthRequestData = {
+      username: username,
       password: password,
-    });
+    };
 
-    await this.evaluateSigninResponse(response);
+    this.jsonWebToken = await this.typedRequest(
+      NonEmptyString,
+      'POST',
+      'users/auth',
+      data
+    );
   }
 
-  public async inviteForSignup(email: string, signupPath: string) {
-    await this.request('POST', 'users/inviteForSignup', {
+  public async inviteForSignup(email: EMailString, signupPath: string) {
+    const data: InviteForSignupData = {
       email: email,
-      targetUrl: `${window.location.protocol}//${window.location.host}/${signupPath}`,
-    });
+      targetUrl: signupPath,
+    };
+
+    await this.request('POST', 'users/inviteForSignup', data);
   }
 
-  public async getTimeslot(timeslotId: number): Promise<Timeslot> {
-    const timeslotResponse = await (
-      await this.request('GET', `timeslots/${timeslotId}`)
-    ).json();
-
-    return timeslotFromData(
-      timeslotResponse.id,
-      timeslotResponse.weekday,
-      timeslotResponse.bookings,
-      {
-        startHours: timeslotResponse.startHours,
-        startMinutes: timeslotResponse.startMinutes,
-        endHours: timeslotResponse.endHours,
-        endMinutes: timeslotResponse.endMinutes,
-        capacity: timeslotResponse.capacity,
-      }
+  public async getTimeslot(timeslotId: number): Promise<TimeslotGetInterface> {
+    return await this.typedRequest(
+      TimeslotGetInterface,
+      'GET',
+      `timeslots/${timeslotId}`
     );
   }
 
-  public async getTimeslots(weekdayId: number): Promise<Timeslot[]> {
-    const timeslotsResponse = await (
-      await this.request('GET', `weekdays/${weekdayId}/timeslots`)
-    ).json();
-
-    return timeslotsResponse.map((timeslot: any) =>
-      timeslotFromData(timeslot.id, timeslot.weekday, timeslot.bookings, {
-        startHours: timeslot.startHours,
-        startMinutes: timeslot.startMinutes,
-        endHours: timeslot.startMinutes,
-        endMinutes: timeslot.startMinutes,
-        capacity: timeslot.capacity,
-      })
+  public async getTimeslots(
+    weekdayId: number
+  ): Promise<TimeslotGetInterface[]> {
+    return await this.typedRequest(
+      t.array(TimeslotGetInterface),
+      'GET',
+      `weekdays/${weekdayId}/timeslots`
     );
   }
 
-  public async createTimeslot(weekdayId: number, data: TimeslotData) {
+  public async createTimeslot(weekdayId: number, data: TimeslotPostInterface) {
     await this.request('POST', `weekdays/${weekdayId}/timeslots`, data);
   }
 
-  public async updateTimeslot(timeslotId: number, data: TimeslotData) {
+  public async updateTimeslot(timeslotId: number, data: TimeslotPostInterface) {
     await this.request('PUT', `timeslots/${timeslotId}`, data);
   }
 
@@ -184,8 +194,12 @@ export class Client {
     await this.request('DELETE', `timeslots/${timeslotId}`);
   }
 
-  public async getResources(): Promise<Resource[]> {
-    return await (await this.request('GET', 'resources')).json();
+  public async getResources(): Promise<ResourceGetInterface[]> {
+    return await this.typedRequest(
+      t.array(ResourceGetInterface),
+      'GET',
+      'resources'
+    );
   }
 
   public async createResource(resourceName: string) {
@@ -196,64 +210,60 @@ export class Client {
     await this.request('DELETE', `resources/${weekdayName}`);
   }
 
-  public async getWeekdays(resourceName: string): Promise<Weekday[]> {
-    const weekdaysResponse = await (
-      await this.request('GET', `resources/${resourceName}/weekdays`)
-    ).json();
-
-    return weekdaysResponse.map((weekdayResponseData: any) =>
-      weekdayFromResponseData(weekdayResponseData)
+  public async getWeekday(weekdayId: number): Promise<WeekdayGetInterface> {
+    return await this.typedRequest(
+      WeekdayGetInterface,
+      'GET',
+      `weekdays/${weekdayId}`
     );
   }
 
-  public async createWeekday(resourceName: string, weekdayName: string) {
-    await this.request('POST', `resources/${resourceName}/weekdays`, {
-      name: weekdayName,
-    });
+  public async getWeekdays(
+    resourceName: string
+  ): Promise<WeekdayGetInterface[]> {
+    return await this.typedRequest(
+      t.array(WeekdayGetInterface),
+      'GET',
+      `resources/${resourceName}/weekdays`
+    );
+  }
+
+  public async createWeekday(resourceName: string, data: WeekdayPostInterface) {
+    await this.request('POST', `resources/${resourceName}/weekdays`, data);
   }
 
   public async deleteWeekday(weekdayId: number) {
     await this.request('DELETE', `weekdays/${weekdayId}`);
   }
 
-  public async createBooking(timeslotId: number, data: BookingData) {
-    const response = await this.request(
-      'POST',
-      `timeslots/${timeslotId}/bookings`,
-      data
+  public async createBooking(timeslotId: number, data: BookingPostInterface) {
+    await this.request('POST', `timeslots/${timeslotId}/bookings`, data);
+  }
+
+  public async getBooking(bookingId: number): Promise<BookingGetInterface> {
+    return await this.typedRequest(
+      BookingGetInterface,
+      'GET',
+      `bookings/${bookingId}`
     );
-
-    if (!response.ok) {
-      throw new Error(`Creating booking failed: ${response.body}`);
-    }
   }
 
-  public async getBooking(bookingId: number): Promise<Booking> {
-    const response = await (
-      await this.request('GET', `bookings/${bookingId}`)
-    ).json();
-
-    return bookingFromData(response.id, response.timeslot, {
-      name: response.name,
-      email: response.email,
-    });
-  }
-
-  public async getBookings(timeslotId: number): Promise<Booking[]> {
-    const response = await this.request(
+  public async getBookings(timeslotId: number): Promise<BookingGetInterface[]> {
+    return await this.typedRequest(
+      t.array(BookingGetInterface),
       'GET',
       `timeslots/${timeslotId}/bookings`
     );
-
-    return await response.json();
   }
 
-  public async getBookingsByToken(lookupToken: string): Promise<Booking[]> {
-    const response = await this.request('GET', `bookings?token=${lookupToken}`);
-
-    // FIXME: Check JSON schema
-
-    return await response.json();
+  public async getBookingsByToken(
+    lookupToken: string
+  ): Promise<BookingGetInterface[]> {
+    return await this.typedRequest(
+      t.array(BookingGetInterface),
+      'GET',
+      `bookings?token=${lookupToken}`
+    );
   }
 
   public async deleteBooking(bookingId: number) {

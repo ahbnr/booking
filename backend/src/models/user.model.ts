@@ -3,39 +3,27 @@ import {
   BeforeBulkUpdate,
   BeforeCreate,
   BeforeUpdate,
-  Model,
+  IsEmail,
+  NotEmpty,
 } from 'sequelize-typescript';
 import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { CreateOptions } from 'ts-node';
 import bcrypt from 'bcrypt';
-import { hasProperty } from '../utils/typechecking';
-
-interface UserInterface {
-  name: string;
-  password: string;
-}
-
-export function isUserInterface(data: unknown): data is UserInterface {
-  return (
-    typeof data === 'object' &&
-    data != null &&
-    hasProperty(data, 'name') &&
-    typeof data.name === 'string' &&
-    hasProperty(data, 'password') &&
-    typeof data.password === 'string'
-  );
-}
+import { BaseModel } from './BaseModel';
 
 @Table
-export class User extends Model<User> {
+export class User extends BaseModel<User> {
   @PrimaryKey
+  @NotEmpty
   @Column
   public name!: string;
 
+  @IsEmail
   @Column({ allowNull: true })
   public email?: string;
 
-  @Column
+  @NotEmpty
+  @Column({ allowNull: false })
   public password!: string;
 
   @BeforeCreate

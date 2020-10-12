@@ -1,16 +1,21 @@
 import React from 'react';
 import '../App.css';
-import { Weekday } from '../models/Weekday';
 import { Button, ButtonGroup, ListGroup } from 'react-bootstrap';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from '../utils/lodash-mixins';
 import '../utils/map_extensions';
-import { compare, Timeslot, TimeslotData } from '../models/Timeslot';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
 import { InteractionState } from '../InteractionState';
+import {
+  compare,
+  noRefinementChecks,
+  TimeslotGetInterface,
+  TimeslotPostInterface,
+  WeekdayGetInterface,
+} from 'common/dist';
 
 @boundClass
 class TimeslotsView extends React.Component<Properties, State> {
@@ -27,13 +32,15 @@ class TimeslotsView extends React.Component<Properties, State> {
   }
 
   async addTimeslot() {
-    const data: TimeslotData = {
+    const data: TimeslotPostInterface = noRefinementChecks<
+      TimeslotPostInterface
+    >({
       startHours: 0,
       startMinutes: 0,
       endHours: 0,
       endMinutes: 0,
       capacity: 1,
-    };
+    });
 
     await this.props.client.createTimeslot(this.props.weekday.id, data);
 
@@ -52,7 +59,7 @@ class TimeslotsView extends React.Component<Properties, State> {
   }
 
   render() {
-    const sortedTimeslots: Timeslot[] = _.sortWith(
+    const sortedTimeslots: TimeslotGetInterface[] = _.sortWith(
       this.state.timeslots,
       compare
     );
@@ -88,12 +95,12 @@ class TimeslotsView extends React.Component<Properties, State> {
 interface Properties {
   client: Client;
   isAuthenticated: boolean;
-  weekday: Weekday;
+  weekday: WeekdayGetInterface;
   changeInteractionState: (interactionState: InteractionState) => unknown;
 }
 
 interface State {
-  timeslots: Timeslot[];
+  timeslots: TimeslotGetInterface[];
 }
 
 export default TimeslotsView;

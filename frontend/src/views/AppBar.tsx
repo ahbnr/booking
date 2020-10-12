@@ -23,7 +23,6 @@ import {
   Authenticating,
   InteractionState,
   InvitingAdmin,
-  ViewingResources,
 } from '../InteractionState';
 import clsx from 'clsx';
 

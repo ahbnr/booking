@@ -4,8 +4,8 @@ import { ListGroup } from 'react-bootstrap';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
-import { Booking } from '../models/Booking';
 import BookingView from './BookingView';
+import { BookingGetInterface } from 'common/dist';
 
 @boundClass
 export default class BookingsView extends React.Component<Properties, State> {
@@ -55,5 +55,5 @@ interface Properties {
 }
 
 interface State {
-  bookings: Booking[];
+  bookings: BookingGetInterface[];
 }

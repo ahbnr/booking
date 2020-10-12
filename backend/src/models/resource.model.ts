@@ -1,19 +1,12 @@
-import { Model } from 'sequelize-typescript';
+import { NotEmpty } from 'sequelize-typescript';
 import { Column, HasMany, PrimaryKey, Table } from 'sequelize-typescript';
 import { Weekday } from './weekday.model';
-
-// All weekday post/update requests must conform to this interface
-export interface ResourceInterface {}
-
-export function isResourceInterface(
-  maybeWeekdayInterface: unknown
-): maybeWeekdayInterface is ResourceInterface {
-  return true;
-}
+import { BaseModel } from './BaseModel';
 
 @Table
-export class Resource extends Model<Resource> {
+export class Resource extends BaseModel<Resource> {
   @PrimaryKey
+  @NotEmpty
   @Column
   public name!: string;
 

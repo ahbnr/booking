@@ -1,60 +1,26 @@
-import { BelongsTo, DataType, HasMany, Model } from 'sequelize-typescript';
-import { Weekday, WeekdayName } from './weekday.model';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { Weekday } from './weekday.model';
 import moment from 'moment';
-import { getNextWeekdayDate, getPreviousWeekdayDate } from '../utils/date';
+import {
+  getNextWeekdayDate,
+  getPreviousWeekdayDate,
+  weekdayToInt,
+} from '../utils/date';
 import { Booking } from './booking.model';
-import { Column, ForeignKey, PrimaryKey, Table } from 'sequelize-typescript';
-import { hasProperty } from '../utils/typechecking';
-import { DateTime, Duration, Interval } from 'luxon';
-
-// All timeslot post/update requests must conform to this interface
-export interface TimeslotInterface {
-  startHours: number;
-  startMinutes: number;
-  endHours: number;
-  endMinutes: number;
-  capacity: number;
-}
-
-// FIXME: Use JSON schema instead of these functions
-export function isTimeslotInterface(
-  maybeTimeslotInterface: unknown
-): maybeTimeslotInterface is TimeslotInterface {
-  return (
-    typeof maybeTimeslotInterface === 'object' &&
-    maybeTimeslotInterface != null &&
-    hasProperty(maybeTimeslotInterface, 'startHours') &&
-    isHours(maybeTimeslotInterface.startHours) &&
-    hasProperty(maybeTimeslotInterface, 'startMinutes') &&
-    isMinutes(maybeTimeslotInterface.startMinutes) &&
-    hasProperty(maybeTimeslotInterface, 'endHours') &&
-    isHours(maybeTimeslotInterface.endHours) &&
-    hasProperty(maybeTimeslotInterface, 'endMinutes') &&
-    isMinutes(maybeTimeslotInterface.endMinutes) &&
-    hasProperty(maybeTimeslotInterface, 'capacity')
-  );
-}
-
-function isHours(value: unknown): boolean {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value < 24
-  );
-}
-
-function isMinutes(value: unknown): boolean {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value < 60
-  );
-}
+import { DateTime, Duration } from 'luxon';
+import { LazyGetter } from '../utils/LazyGetter';
+import { BaseModel } from './BaseModel';
 
 @Table
-export class Timeslot extends Model<Timeslot> {
+export class Timeslot extends BaseModel<Timeslot> {
   @PrimaryKey
   @Column({
     type: DataType.INTEGER,
@@ -65,46 +31,69 @@ export class Timeslot extends Model<Timeslot> {
   public id!: number;
 
   @ForeignKey(() => Weekday)
-  @Column
+  @Column({ allowNull: false })
   public weekdayId!: number;
 
-  @Column(DataType.INTEGER)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   public startHours!: number;
 
-  @Column(DataType.INTEGER)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   public startMinutes!: number;
 
-  @Column(DataType.INTEGER)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   public endHours!: number;
 
-  @Column(DataType.INTEGER)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   public endMinutes!: number;
 
-  @Column(DataType.INTEGER)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   public capacity!: number;
 
   @HasMany(() => Booking, { onDelete: 'CASCADE' })
   public bookings?: Booking[];
 
+  @LazyGetter<Timeslot>((o) => o.bookings, { convertNullToEmptyArray: true })
+  public readonly lazyBookings!: Promise<Booking[]>;
+
   @BelongsTo(() => Weekday)
   public weekday?: Weekday;
 
-  public getPreviousTimeslotEndDate(): moment.Moment {
-    const previousDate = getPreviousWeekdayDate(this.weekday!.name);
+  @LazyGetter<Timeslot>((o) => o.weekday, { shouldBePresent: true })
+  public readonly lazyWeekday!: Promise<Weekday>;
+
+  public async getPreviousTimeslotEndDate(): Promise<moment.Moment> {
+    const weekday = await this.lazyWeekday;
+    const previousDate = getPreviousWeekdayDate(weekday.name);
 
     return previousDate
       .add(this.endHours, 'hours')
       .add(this.endMinutes, 'minutes');
   }
 
-  public getNextTimeslotEndDate(): DateTime {
-    const nextDate = getNextWeekdayDate(this.weekday!.name).plus(
+  public async getNextTimeslotEndDate(): Promise<DateTime> {
+    const weekday = await this.lazyWeekday;
+
+    let nextWeekdayData = getNextWeekdayDate(weekday.name);
+
+    // is it today?
+    if (nextWeekdayData.weekday === weekdayToInt(weekday.name)) {
+      const now = DateTime.local();
+
+      if (
+        now.hour >= this.endHours ||
+        (now.hour === this.endHours && now.minute >= this.endMinutes)
+      ) {
+        nextWeekdayData = nextWeekdayData.plus(
+          Duration.fromObject({ weeks: 1 })
+        );
+      }
+    }
+
+    return nextWeekdayData.plus(
       Duration.fromObject({
         hours: this.endHours,
         minutes: this.endMinutes,
       })
     );
-
-    return nextDate;
   }
 }

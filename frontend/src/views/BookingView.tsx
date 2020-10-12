@@ -4,7 +4,7 @@ import { boundClass } from 'autobind-decorator';
 import { IconButton, TextField } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Client } from '../Client';
-import { Booking } from '../models/Booking';
+import { BookingGetInterface } from 'common/dist';
 
 @boundClass
 export default class BookingView extends React.Component<Properties, State> {
@@ -45,14 +45,14 @@ export default class BookingView extends React.Component<Properties, State> {
           <Fragment>
             <TextField
               label="Name"
-              value={this.state.booking.data.name}
+              value={this.state.booking.name}
               InputProps={{
                 readOnly: true,
               }}
             />
             <TextField
               label="E-Mail"
-              value={this.state.booking.data.email}
+              value={this.state.booking.email}
               InputProps={{
                 readOnly: true,
               }}
@@ -74,5 +74,5 @@ interface Properties {
 }
 
 interface State {
-  booking?: Booking;
+  booking?: BookingGetInterface;
 }

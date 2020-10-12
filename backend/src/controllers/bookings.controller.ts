@@ -1,32 +1,25 @@
 import { Request, Response } from 'express';
 import { DestroyOptions, UpdateOptions } from 'sequelize';
-import {
-  Booking,
-  BookingInterface,
-  BookingPostInterface,
-} from '../models/booking.model';
+import { Booking } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Timeslot } from '../models/timeslot.model';
-import { EMail, validateJson } from '../utils/typechecking';
 import { sendMail } from '../utils/email';
-import jwt from 'jsonwebtoken';
 import { jwtSecret } from '../config/passport';
-import * as t from 'io-ts';
 import { TimeslotsController } from './timeslots.controller';
 import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
-import validate = WebAssembly.validate;
-
-const BookingLookupTokenData = t.type({
-  type: t.literal('BookingLookupToken'),
-  email: EMail,
-});
-
-type BookingLookupToken = t.TypeOf<typeof BookingLookupTokenData>;
+import {
+  BookingGetInterface,
+  BookingPostInterface,
+  checkType,
+  EMailString,
+} from 'common';
+import { noRefinementChecks } from 'common/dist';
+import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 
 @boundClass
 export class BookingsController {
-  public static async validateBookings(
+  public static async clearPastBookings(
     bookings: Booking[]
   ): Promise<Booking[]> {
     const [
@@ -41,23 +34,33 @@ export class BookingsController {
     return valid_bookings;
   }
 
-  public async index(req: Request, res: Response) {
+  public async index(req: Request, res: Response<BookingGetInterface[]>) {
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
-      res.json(await this.listBookingsByLookupToken(lookupToken));
+      const result: BookingGetInterface[] = noRefinementChecks<
+        BookingGetInterface[]
+      >(await BookingsController.listBookingsByLookupToken(lookupToken));
+
+      res.json(result);
     } else if (req.authenticated) {
       const bookings = await Booking.findAll<Booking>({
         include: [Timeslot],
       });
 
-      res.json(await BookingsController.validateBookings(bookings));
+      res.json(
+        noRefinementChecks<BookingGetInterface[]>(
+          (
+            await BookingsController.clearPastBookings(bookings)
+          ).map((booking) => booking.toTypedJSON())
+        )
+      );
     } else {
       res.status(401).json();
     }
   }
 
-  public async show(req: Request, res: Response) {
+  public async show(req: Request, res: Response<BookingGetInterface>) {
     try {
       let booking = await Booking.findByPk<Booking>(req.params.id, {
         include: [Timeslot],
@@ -69,47 +72,77 @@ export class BookingsController {
       }
 
       if (booking != null) {
-        res.json(booking);
+        res.json(
+          noRefinementChecks<BookingGetInterface>(booking.toTypedJSON())
+        );
       } else {
-        res.status(404).json({ errors: ['Booking not found'] });
+        res.status(404).json();
       }
     } catch (error) {
       res.status(500).json(error);
     }
   }
 
-  public async createBooking(req: Request, res: Response) {
-    const timeslot = await TimeslotsController.getTimeslot(req, res);
-    const bookingPostData = validateJson(BookingPostInterface, req.body);
+  public async createBooking(
+    req: Request,
+    res: Response<BookingGetInterface | string>
+  ) {
+    const timeslot = await TimeslotsController.getTimeslot(req);
+    const bookings = await BookingsController.clearPastBookings(
+      await timeslot.lazyBookings
+    );
 
-    const booking = await Booking.create<Booking>({
-      timeslotId: timeslot.id,
-      ...bookingPostData,
-    });
+    if (bookings.length < timeslot.capacity) {
+      const bookingPostData = checkType(req.body, BookingPostInterface);
 
-    await this.sendBookingLookupMail(bookingPostData.lookupUrl, booking);
+      const booking = await Booking.create<Booking>({
+        timeslotId: timeslot.id,
+        ...bookingPostData,
+      });
 
-    res.status(201).json(booking);
+      await BookingsController.sendBookingLookupMail(
+        bookingPostData.lookupUrl,
+        booking
+      );
+
+      res
+        .status(201)
+        .json(noRefinementChecks<BookingGetInterface>(booking.toTypedJSON()));
+    } else {
+      res
+        .status(409)
+        .json(
+          'Maximum capacity of this timeslot has been reached. No more bookings can be created for it.'
+        );
+    }
   }
 
-  private async createBookingLookupToken(booking: Booking): Promise<string> {
-    const email = validateJson(EMail, booking.email);
+  private static async createBookingLookupToken(
+    booking: Booking
+  ): Promise<string> {
+    const email = checkType(booking.email, EMailString);
     const validDuration = await booking.timeTillDue();
+    const secondsUntilExpiration = Math.floor(
+      validDuration.shiftTo('seconds').seconds
+    );
 
-    const data: BookingLookupToken = {
+    const data: BookingLookupTokenData = {
       type: 'BookingLookupToken',
       email: email,
     };
 
-    const lookupToken = await asyncJwtSign(data, jwtSecret, {
-      expiresIn: validDuration.seconds,
+    return await asyncJwtSign(data, jwtSecret, {
+      expiresIn: secondsUntilExpiration,
     });
-
-    return lookupToken;
   }
 
-  private async sendBookingLookupMail(lookupUrl: string, booking: Booking) {
-    const lookupToken = await this.createBookingLookupToken(booking);
+  private static async sendBookingLookupMail(
+    lookupUrl: string,
+    booking: Booking
+  ) {
+    const lookupToken = await BookingsController.createBookingLookupToken(
+      booking
+    );
 
     await sendMail(
       booking.email,
@@ -119,22 +152,20 @@ export class BookingsController {
     );
   }
 
-  private async listBookingsByLookupToken(
+  private static async listBookingsByLookupToken(
     lookupToken: string
   ): Promise<Booking[]> {
     const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
 
-    const tokenData = validateJson(BookingLookupTokenData, verifiedToken);
+    const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
-    const bookings = await Booking.findAll({
+    return Booking.findAll({
       where: { email: tokenData.email },
     });
-
-    return bookings;
   }
 
   public async update(req: Request, res: Response) {
-    const bookingPostData = validateJson(BookingPostInterface, req.body);
+    const bookingPostData = checkType(req.body, BookingPostInterface);
 
     const update: UpdateOptions = {
       where: { id: req.params.id },
@@ -142,9 +173,13 @@ export class BookingsController {
     };
 
     try {
-      const [_, [booking]] = await Booking.update(bookingPostData, update);
+      // noinspection JSUnusedLocalSymbols
+      const [_, [booking]] = await Booking.update(bookingPostData, update); // eslint-disable-line @typescript-eslint/no-unused-vars
 
-      await this.sendBookingLookupMail(bookingPostData.lookupUrl, booking);
+      await BookingsController.sendBookingLookupMail(
+        bookingPostData.lookupUrl,
+        booking
+      );
 
       res.status(202).json({ data: 'success' });
     } catch (error) {
@@ -165,14 +200,5 @@ export class BookingsController {
     } catch (error) {
       res.status(500).json(error);
     }
-  }
-
-  public static retrieveBookingData(
-    req: Request,
-    res: Response
-  ): BookingInterface {
-    const bookingData = validateJson(BookingInterface, req.body);
-
-    return bookingData;
   }
 }
