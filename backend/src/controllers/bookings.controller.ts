@@ -164,6 +164,25 @@ export class BookingsController {
     });
   }
 
+  private static async getBookingByToken(
+    bookingId: number,
+    lookupToken: string
+  ): Promise<Booking | null> {
+    const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
+
+    const tokenData = checkType(verifiedToken, BookingLookupTokenData);
+
+    const matchingBookings = await Booking.findAll({
+      where: { id: bookingId, email: tokenData.email },
+    });
+
+    if (matchingBookings.length > 0) {
+      return matchingBookings[0];
+    } else {
+      return null;
+    }
+  }
+
   public async update(req: Request, res: Response) {
     const bookingPostData = checkType(req.body, BookingPostInterface);
 
@@ -188,17 +207,33 @@ export class BookingsController {
   }
 
   public async delete(req: Request, res: Response) {
-    const options: DestroyOptions = {
-      where: { id: req.params.id },
-      limit: 1,
-    };
+    const bookingId = parseInt(req.params.id);
+    const lookupToken = req.query.token;
 
-    try {
+    if (lookupToken != null && typeof lookupToken === 'string') {
+      const maybeBooking = await BookingsController.getBookingByToken(
+        bookingId,
+        lookupToken
+      );
+
+      if (maybeBooking != null) {
+        await maybeBooking.destroy();
+
+        res.status(204).json();
+      } else {
+        res.status(404).json();
+      }
+    } else if (req.authenticated) {
+      const options: DestroyOptions = {
+        where: { id: req.params.id },
+        limit: 1,
+      };
+
       await Booking.destroy(options);
 
       res.status(204).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
+    } else {
+      res.status(401).json();
     }
   }
 }

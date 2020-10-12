@@ -7,7 +7,9 @@ import { BaseModel } from './BaseModel';
 export class Resource extends BaseModel<Resource> {
   @PrimaryKey
   @NotEmpty
-  @Column
+  @Column({
+    onDelete: 'CASCADE',
+  })
   public name!: string;
 
   @HasMany(() => Weekday, { onDelete: 'CASCADE' })

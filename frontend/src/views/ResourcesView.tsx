@@ -12,8 +12,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   List,
   ListItem,
+  ListItemSecondaryAction,
   ListItemText,
   TextField,
   Theme,
@@ -22,6 +24,7 @@ import {
 } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 import { ResourceGetInterface } from 'common/dist';
 
 const styles = (theme: Theme) =>
@@ -124,6 +127,17 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
               key={resource.name}
             >
               <ListItemText>{resource.name}</ListItemText>
+              {this.props.isAuthenticated && (
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={() => this.deleteResource(resource.name)}
+                    edge="end"
+                    aria-label="delete"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              )}
             </ListItem>
           ))}
         </List>

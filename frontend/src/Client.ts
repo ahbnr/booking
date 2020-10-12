@@ -269,4 +269,8 @@ export class Client {
   public async deleteBooking(bookingId: number) {
     await this.request('DELETE', `bookings/${bookingId}`);
   }
+
+  public async deleteBookingByToken(bookingId: number, lookupToken: string) {
+    await this.request('DELETE', `bookings/${bookingId}?token=${lookupToken}`);
+  }
 }

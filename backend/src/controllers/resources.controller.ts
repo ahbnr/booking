@@ -133,13 +133,9 @@ export class ResourcesController {
       limit: 1,
     };
 
-    try {
-      await Resource.destroy(options);
+    await Resource.destroy(options);
 
-      res.status(204).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(204).json({ data: 'success' });
   }
 
   private static retrieveResourceName(req: Request): NonEmptyString {

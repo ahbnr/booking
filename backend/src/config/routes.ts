@@ -113,6 +113,9 @@ export class Routes {
       .route('/bookings/:id')
       .get(authHandler, Routes.asyncHandler(this.bookingsController.show))
       .put(authHandler, Routes.asyncHandler(this.bookingsController.update))
-      .delete(authHandler, Routes.asyncHandler(this.bookingsController.delete));
+      .delete(
+        optionalAuthHandler,
+        Routes.asyncHandler(this.bookingsController.delete)
+      );
   }
 }

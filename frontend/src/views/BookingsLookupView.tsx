@@ -5,14 +5,23 @@ import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import {
   createStyles,
+  IconButton,
   List,
   ListItem,
+  ListItemSecondaryAction,
   ListItemText,
   Theme,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
-import { BookingGetInterface } from 'common/dist';
+import {
+  BookingGetInterface,
+  compare,
+  TimeslotGetInterface,
+  WeekdayGetInterface,
+} from 'common/dist';
+import DeleteIcon from '@material-ui/icons/Delete';
+import { nameSorter } from '../models/WeekdayUtils';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,7 +43,7 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
     super(props);
 
     this.state = {
-      bookings: [],
+      remoteData: undefined,
     };
   }
 
@@ -43,25 +52,168 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
   }
 
   async refresh() {
+    const bookings = await this.props.client.getBookingsByToken(
+      this.props.lookupToken
+    );
+
+    const timeslots = new Map<number, TimeslotGetInterface>();
+    const weekdays = new Map<number, WeekdayGetInterface>();
+
+    for (const booking of bookings) {
+      const timeslot = await this.props.client.getTimeslot(booking.timeslotId);
+      timeslots.set(booking.timeslotId, timeslot);
+
+      const weekday = await this.props.client.getWeekday(timeslot.weekdayId);
+      weekdays.set(timeslot.weekdayId, weekday);
+    }
+
     this.setState({
-      bookings: await this.props.client.getBookingsByToken(
-        this.props.lookupToken
-      ),
+      remoteData: {
+        bookings: bookings,
+        timeslots: timeslots,
+        weekdays: weekdays,
+      },
     });
   }
 
-  render() {
-    return (
-      <>
-        <List component="nav">
-          {this.state.bookings.map((booking) => (
-            <ListItem key={booking.id}>
-              <ListItemText>{booking.name}</ListItemText>
-            </ListItem>
-          ))}
-        </List>
-      </>
+  async deleteBooking(bookingId: number) {
+    await this.props.client.deleteBookingByToken(
+      bookingId,
+      this.props.lookupToken
     );
+
+    await this.refresh();
+  }
+
+  render() {
+    if (this.state.remoteData != null) {
+      const renderData = new Map<number, Map<number, BookingGetInterface[]>>();
+
+      for (const booking of this.state.remoteData.bookings) {
+        const timeslot = this.state.remoteData.timeslots.get(
+          booking.timeslotId
+        );
+
+        if (timeslot != null) {
+          const timeslotMap = renderData.getOrDefault(
+            timeslot.weekdayId,
+            new Map<number, BookingGetInterface[]>()
+          );
+
+          const bookingArray = timeslotMap.getOrDefault(timeslot.id, []);
+
+          bookingArray.push(booking);
+
+          timeslotMap.set(timeslot.id, bookingArray);
+          renderData.set(timeslot.weekdayId, timeslotMap);
+        } else {
+          throw new Error(
+            `Timeslot data (id: ${booking.timeslotId}) not downloaded even though it should be. This is a programming error.`
+          );
+        }
+      }
+
+      const remoteData = this.state.remoteData;
+
+      const renderList: [
+        WeekdayGetInterface,
+        [TimeslotGetInterface, BookingGetInterface[]][]
+      ][] = Array.from(renderData.entries()).map(
+        (
+          weekdayAndTimeslotMap: [number, Map<number, BookingGetInterface[]>]
+        ) => {
+          const [weekdayId, timeslotMap] = weekdayAndTimeslotMap;
+
+          const weekday = remoteData.weekdays.get(weekdayId);
+          if (weekday == null) {
+            throw new Error(
+              `Weekday data (id: ${weekdayId}) not downloaded, even though it should be. This should never happen and is a programming error.`
+            );
+          }
+
+          const timeslotBookingsArray: [
+            TimeslotGetInterface,
+            BookingGetInterface[]
+          ][] = Array.from(timeslotMap.entries()).map(
+            (
+              timeslotIdAndBookingIds: [number, BookingGetInterface[]]
+            ): [TimeslotGetInterface, BookingGetInterface[]] => {
+              const [timeslotId, bookings] = timeslotIdAndBookingIds;
+
+              const timeslot = remoteData.timeslots.get(timeslotId);
+
+              if (timeslot == null) {
+                throw new Error(
+                  `Timeslot data (id: ${timeslotId}) not downloaded, even though it should be. This should never happen and is a programming error.`
+                );
+              }
+
+              return [timeslot, bookings];
+            }
+          );
+
+          timeslotBookingsArray.sort(
+            (
+              left: [TimeslotGetInterface, BookingGetInterface[]],
+              right: [TimeslotGetInterface, BookingGetInterface[]]
+            ) => {
+              const [leftTimeslot, _1] = left;
+              const [rightTimeslot, _2] = right;
+
+              return compare(leftTimeslot, rightTimeslot);
+            }
+          );
+
+          return [weekday, timeslotBookingsArray];
+        }
+      );
+
+      renderList.sort((left, right) => {
+        const [leftWeekday, _1] = left;
+        const [rightWeekday, _2] = right;
+
+        return nameSorter(leftWeekday.name, rightWeekday.name);
+      });
+
+      return (
+        <>
+          {renderList.map((weekdayEntry) => {
+            const [weekday, timeslotsAndBookings] = weekdayEntry;
+
+            return (
+              <>
+                {weekday.name}
+                <List component="nav">
+                  {timeslotsAndBookings.map((timeslotEntry) => {
+                    const [timeslot, bookings] = timeslotEntry;
+
+                    return bookings.map((booking) => (
+                      <ListItem key={booking.id}>
+                        <ListItemText>
+                          {timeslot.startHours}:{timeslot.startMinutes} -{' '}
+                          {timeslot.endHours}:{timeslot.endMinutes}
+                        </ListItemText>
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            onClick={() => this.deleteBooking(booking.id)}
+                            edge="end"
+                            aria-label="delete"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ));
+                  })}
+                </List>
+              </>
+            );
+          })}
+        </>
+      );
+    } else {
+      return 'Loading...';
+    }
   }
 }
 
@@ -74,5 +226,11 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  bookings: BookingGetInterface[];
+  remoteData?: RemoteData;
 }
+
+type RemoteData = {
+  bookings: BookingGetInterface[];
+  timeslots: Map<number, TimeslotGetInterface>;
+  weekdays: Map<number, WeekdayGetInterface>;
+};

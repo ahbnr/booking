@@ -52,7 +52,7 @@ export class TimeslotsController {
   public async getBookings(req: Request, res: Response<BookingGetInterface[]>) {
     const timeslot = await TimeslotsController.getTimeslot(req);
     const bookings = await BookingsController.clearPastBookings(
-      timeslot?.bookings || []
+      await timeslot.lazyBookings
     );
 
     res.json(noRefinementChecks<BookingGetInterface[]>(bookings));
