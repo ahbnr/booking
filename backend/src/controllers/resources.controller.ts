@@ -16,7 +16,7 @@ import {
 
 @boundClass
 export class ResourcesController {
-  private static resourceAsGetInterface(
+  public static resourceAsGetInterface(
     resource: Resource
   ): ResourceGetInterface {
     const { weekdays, ...strippedResource } = resource.toTypedJSON();

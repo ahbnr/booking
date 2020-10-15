@@ -1,6 +1,8 @@
 import * as t from 'io-ts';
 import { NonEmptyString } from '../NonEmptyString';
 import { EMailString } from '../EMailString';
+import { ISO8601 } from '../ISO8601';
+import { ResourceGetInterface } from './Resource';
 
 export const BookingData = t.type({
   name: NonEmptyString,
@@ -10,12 +12,23 @@ export const BookingData = t.type({
 export type BookingData = t.TypeOf<typeof BookingData>;
 
 export const BookingGetInterface = t.type({
-  ...BookingData.props,
   id: t.number,
+  ...BookingData.props,
+  startDate: ISO8601,
+  endDate: ISO8601,
   timeslotId: t.number,
 });
 
 export type BookingGetInterface = t.TypeOf<typeof BookingGetInterface>;
+
+export const BookingWithContextGetInterface = t.type({
+  ...BookingGetInterface.props,
+  resource: ResourceGetInterface,
+});
+
+export type BookingWithContextGetInterface = t.TypeOf<
+  typeof BookingWithContextGetInterface
+>;
 
 export const BookingPostInterface = t.type({
   ...BookingData.props,

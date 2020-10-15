@@ -27,6 +27,9 @@ import ResourcesView from './views/ResourcesView';
 import InviteAdminDialog from './views/InviteAdminDialog';
 import SignupDialog from './views/SignupDialog';
 import BookingsLookupView from './views/BookingsLookupView';
+import DayOverviewView from './views/DayOverviewView';
+import { getWeekdayDate } from 'common/dist/typechecking/api/Weekday';
+import { Interval } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -184,6 +187,25 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
             lookupToken={this.state.interactionState.lookupToken}
           />
         );
+        break;
+
+      case 'OverviewingDay':
+        {
+          const weekdayDate = getWeekdayDate(
+            this.state.interactionState.weekdayName
+          );
+          const start = weekdayDate.set({ hour: 0, minute: 0 });
+          const end = weekdayDate.set({ hour: 23, minute: 59 });
+
+          view = (
+            <DayOverviewView
+              isAuthenticated={this.state.isAuthenticated}
+              client={this.client}
+              changeInteractionState={this.changeInteractionState}
+              dateInterval={Interval.fromDateTimes(start, end)}
+            />
+          );
+        }
         break;
     }
 

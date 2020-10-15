@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
+import { DestroyOptions, UpdateOptions, Op } from 'sequelize';
 import { Booking } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
@@ -13,19 +13,42 @@ import {
   BookingPostInterface,
   checkType,
   EMailString,
+  BookingWithContextGetInterface,
+  noRefinementChecks,
+  throwExpr,
+  getCurrentTimeslotEndDate,
+  getCurrentTimeslotStartDate,
 } from 'common';
-import { noRefinementChecks } from 'common/dist';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
+import { Resource } from '../models/resource.model';
+import { Weekday } from '../models/weekday.model';
+import { ResourcesController } from './resources.controller';
+import { BookingIntervalIndexRequestData, TimeslotData } from 'common/dist';
 
 @boundClass
 export class BookingsController {
+  private static bookingAsGetInterface(booking: Booking): BookingGetInterface {
+    const { startDate, endDate, ...rest } = booking.toTypedJSON();
+
+    return noRefinementChecks<BookingGetInterface>({
+      ...rest,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+  }
+
+  private static bookingsAsGetInterfaces(
+    bookings: Booking[]
+  ): BookingGetInterface[] {
+    return bookings.map(this.bookingAsGetInterface);
+  }
+
   public static async clearPastBookings(
     bookings: Booking[]
   ): Promise<Booking[]> {
-    const [
-      old_bookings,
-      valid_bookings,
-    ] = await bookings.asyncPartition((booking) => booking.hasPassed());
+    const [old_bookings, valid_bookings] = bookings.partition((booking) =>
+      booking.hasPassed()
+    );
 
     for (const booking of old_bookings) {
       await booking.destroy();
@@ -38,9 +61,9 @@ export class BookingsController {
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
-      const result: BookingGetInterface[] = noRefinementChecks<
-        BookingGetInterface[]
-      >(await BookingsController.listBookingsByLookupToken(lookupToken));
+      const result: BookingGetInterface[] = BookingsController.bookingsAsGetInterfaces(
+        await BookingsController.listBookingsByLookupToken(lookupToken)
+      );
 
       res.json(result);
     } else if (req.authenticated) {
@@ -49,15 +72,78 @@ export class BookingsController {
       });
 
       res.json(
-        noRefinementChecks<BookingGetInterface[]>(
-          (
-            await BookingsController.clearPastBookings(bookings)
-          ).map((booking) => booking.toTypedJSON())
+        BookingsController.bookingsAsGetInterfaces(
+          await BookingsController.clearPastBookings(bookings)
         )
       );
     } else {
       res.status(401).json();
     }
+  }
+
+  public async getBookingsForDateInterval(
+    req: Request,
+    res: Response<BookingWithContextGetInterface[]>
+  ) {
+    const reqData = checkType(req.body, BookingIntervalIndexRequestData);
+
+    const bookings = await Booking.findAll<Booking>({
+      where: {
+        [Op.or]: [
+          {
+            startDate: {
+              [Op.between]: [reqData.start, reqData.end],
+            },
+          },
+          {
+            endDate: {
+              [Op.between]: [reqData.start, reqData.end],
+            },
+          },
+        ],
+      },
+      include: [
+        {
+          model: Timeslot,
+          include: [
+            {
+              model: Weekday,
+              include: [Resource],
+            },
+          ],
+        },
+      ],
+    });
+
+    const clearedBookings = await BookingsController.clearPastBookings(
+      bookings
+    );
+
+    const bookingsWithContext = clearedBookings.map((booking) => ({
+      ...BookingsController.bookingAsGetInterface(booking),
+      resource: ResourcesController.resourceAsGetInterface(
+        booking.timeslot?.weekday?.resource ||
+          throwExpr<Resource>(
+            new Error(
+              'Can not access related db entities, even though they should have already been loaded. This should never happen and is a programming error.'
+            )
+          )
+      ),
+    }));
+
+    res.json(bookingsWithContext);
+  }
+
+  public async getBookingsForTimeslot(
+    req: Request,
+    res: Response<BookingGetInterface[]>
+  ) {
+    const timeslot = await TimeslotsController.getTimeslot(req);
+    const bookings = await BookingsController.clearPastBookings(
+      await timeslot.lazyBookings
+    );
+
+    res.json(BookingsController.bookingsAsGetInterfaces(bookings));
   }
 
   public async show(req: Request, res: Response<BookingGetInterface>) {
@@ -72,9 +158,7 @@ export class BookingsController {
       }
 
       if (booking != null) {
-        res.json(
-          noRefinementChecks<BookingGetInterface>(booking.toTypedJSON())
-        );
+        res.json(BookingsController.bookingAsGetInterface(booking));
       } else {
         res.status(404).json();
       }
@@ -94,10 +178,19 @@ export class BookingsController {
 
     if (bookings.length < timeslot.capacity) {
       const bookingPostData = checkType(req.body, BookingPostInterface);
+      const weekday = await timeslot.lazyWeekday;
 
       const booking = await Booking.create<Booking>({
-        timeslotId: timeslot.id,
         ...bookingPostData,
+        startDate: getCurrentTimeslotStartDate(
+          noRefinementChecks<TimeslotData>(timeslot),
+          weekday.name
+        ).toJSDate(),
+        endDate: getCurrentTimeslotEndDate(
+          noRefinementChecks<TimeslotData>(timeslot),
+          weekday.name
+        ).toJSDate(),
+        timeslotId: timeslot.id,
       });
 
       await BookingsController.sendBookingLookupMail(
@@ -105,9 +198,7 @@ export class BookingsController {
         booking
       );
 
-      res
-        .status(201)
-        .json(noRefinementChecks<BookingGetInterface>(booking.toTypedJSON()));
+      res.status(201).json(BookingsController.bookingAsGetInterface(booking));
     } else {
       res
         .status(409)

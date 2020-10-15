@@ -16,46 +16,18 @@ import {
 
 @boundClass
 export class TimeslotsController {
-  public static async timeslotAsGetInterface(
-    timeslot: Timeslot
-  ): Promise<TimeslotGetInterface> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { bookings, weekday, ...strippedTimeslot } = timeslot.toTypedJSON();
-
-    const lazyBookings = await timeslot.lazyBookings;
-    const lazyWeekday = await timeslot.lazyWeekday;
-
-    // no refinement checks, we assume the database records are correct at least regarding refinements
-    return noRefinementChecks<TimeslotGetInterface>({
-      ...strippedTimeslot,
-      bookingIds: lazyBookings.map((booking) => booking.id),
-      weekdayId: lazyWeekday.id,
-    });
-  }
-
   public async index(req: Request, res: Response<TimeslotGetInterface[]>) {
     const timeslots = await Timeslot.findAll<Timeslot>({});
 
     res.json(
-      await Promise.all(
-        timeslots.map(TimeslotsController.timeslotAsGetInterface)
-      )
+      await Promise.all(timeslots.map((timeslot) => timeslot.asGetInterface()))
     );
   }
 
   public async show(req: Request, res: Response<TimeslotGetInterface>) {
     const timeslot = await TimeslotsController.getTimeslot(req);
 
-    res.json(await TimeslotsController.timeslotAsGetInterface(timeslot));
-  }
-
-  public async getBookings(req: Request, res: Response<BookingGetInterface[]>) {
-    const timeslot = await TimeslotsController.getTimeslot(req);
-    const bookings = await BookingsController.clearPastBookings(
-      await timeslot.lazyBookings
-    );
-
-    res.json(noRefinementChecks<BookingGetInterface[]>(bookings));
+    res.json(await timeslot.asGetInterface());
   }
 
   // noinspection JSMethodCanBeStatic
@@ -69,6 +41,7 @@ export class TimeslotsController {
     }
   }
 
+  // FIXME: Update booking dates when timeslot is updated?
   public async update(req: Request, res: Response) {
     const timeslotData = checkType(req.body, TimeslotPostInterface);
 
@@ -92,12 +65,8 @@ export class TimeslotsController {
       limit: 1,
     };
 
-    try {
-      await Timeslot.destroy(options);
+    await Timeslot.destroy(options);
 
-      res.status(204).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(204).json({ data: 'success' });
   }
 }

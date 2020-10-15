@@ -99,7 +99,7 @@ export class Routes {
       .route('/timeslots/:id/bookings')
       .get(
         authHandler,
-        Routes.asyncHandler(this.timeslotsController.getBookings)
+        Routes.asyncHandler(this.bookingsController.getBookingsForTimeslot)
       )
       .post(Routes.asyncHandler(this.bookingsController.createBooking));
 
@@ -116,6 +116,13 @@ export class Routes {
       .delete(
         optionalAuthHandler,
         Routes.asyncHandler(this.bookingsController.delete)
+      );
+
+    app
+      .route('/bookings/inInterval')
+      .post(
+        authHandler,
+        Routes.asyncHandler(this.bookingsController.getBookingsForDateInterval)
       );
   }
 }

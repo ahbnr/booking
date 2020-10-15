@@ -40,9 +40,7 @@ export class WeekdaysController {
         ...timeslotData,
       });
 
-      res
-        .status(201)
-        .json(await TimeslotsController.timeslotAsGetInterface(timeslot));
+      res.status(201).json(await timeslot.asGetInterface());
     } catch (error) {
       res.status(500).json(error);
     }
@@ -58,9 +56,7 @@ export class WeekdaysController {
     if (timeslots != null) {
       res.json(
         await Promise.all(
-          timeslots.map((timeslot) =>
-            TimeslotsController.timeslotAsGetInterface(timeslot)
-          )
+          timeslots.map((timeslot) => timeslot.asGetInterface())
         )
       );
     } else {

@@ -7,6 +7,7 @@ export { checkType } from './typechecking/checkType';
 export {
   BookingData,
   BookingGetInterface,
+  BookingWithContextGetInterface,
   BookingPostInterface,
 } from './typechecking/api/Booking';
 export {
@@ -21,7 +22,10 @@ export {
   TimeslotGetInterface,
   TimeslotPostInterface,
   compare,
+  getCurrentTimeslotEndDate,
+  getCurrentTimeslotStartDate,
 } from './typechecking/api/Timeslot';
+
 export {
   ResourceData,
   ResourceGetInterface,
@@ -37,8 +41,11 @@ export { InviteForSignupData } from './typechecking/api/InviteForSignupData';
 export { AuthRequestData } from './typechecking/api/AuthRequestData';
 export { IsSignupTokenOkRequestData } from './typechecking/api/IsSignupTokenOkRequestData';
 export { SignupRequestData } from './typechecking/api/SignupRequestData';
+export { BookingIntervalIndexRequestData } from './typechecking/api/BookingIntervalIndexRequestData';
 
 export {
   noRefinementChecks,
   Unbranded,
 } from './typechecking/noRefinementChecks';
+
+export { throwExpr } from './throwExpr';

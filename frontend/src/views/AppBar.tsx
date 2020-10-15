@@ -23,8 +23,10 @@ import {
   Authenticating,
   InteractionState,
   InvitingAdmin,
+  OverviewingDay,
 } from '../InteractionState';
 import clsx from 'clsx';
+import DateRangeIcon from '@material-ui/icons/DateRange';
 
 const drawerWidth = 240;
 
@@ -111,6 +113,10 @@ class UnstyledAppBar extends React.Component<Properties, State> {
     this.props.changeInteractionState(new InvitingAdmin());
   }
 
+  onOverviewButton() {
+    this.props.changeInteractionState(new OverviewingDay('saturday'));
+  }
+
   render() {
     return (
       <>
@@ -175,6 +181,12 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                   <PersonAddIcon />
                 </ListItemIcon>
                 <ListItemText primary="Admin Hinzufügen" />
+              </ListItem>
+              <ListItem button onClick={this.onOverviewButton}>
+                <ListItemIcon>
+                  <DateRangeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Tagesübersicht" />
               </ListItem>
             </List>
           </Drawer>

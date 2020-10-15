@@ -16,7 +16,9 @@ import {
   TimeslotPostInterface,
   WeekdayGetInterface,
   WeekdayPostInterface,
+  BookingWithContextGetInterface,
 } from 'common/dist';
+import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 
 const address = 'localhost';
 const port = 3000;
@@ -263,6 +265,17 @@ export class Client {
       t.array(BookingGetInterface),
       'GET',
       `bookings?token=${lookupToken}`
+    );
+  }
+
+  public async getBookingsInInterval(
+    data: BookingIntervalIndexRequestData
+  ): Promise<BookingWithContextGetInterface[]> {
+    return await this.typedRequest(
+      t.array(BookingWithContextGetInterface),
+      'POST',
+      'bookings/inInterval',
+      data
     );
   }
 

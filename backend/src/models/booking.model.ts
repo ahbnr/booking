@@ -1,10 +1,8 @@
-import { DataType, IsEmail, NotEmpty } from 'sequelize-typescript';
+import { DataType, IsDate, IsEmail, NotEmpty } from 'sequelize-typescript';
 import { Timeslot } from './timeslot.model';
-import moment from 'moment';
 import {
   BelongsTo,
   Column,
-  CreatedAt,
   ForeignKey,
   PrimaryKey,
   Table,
@@ -36,51 +34,30 @@ export class Booking extends BaseModel<Booking> {
   @Column({ allowNull: false })
   public email!: string;
 
-  @BelongsTo(() => Timeslot)
+  @IsDate
+  @Column({ allowNull: false })
+  public startDate!: Date;
+
+  @IsDate
+  @Column({ allowNull: false })
+  public endDate!: Date;
+
+  @BelongsTo(() => Timeslot, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   public timeslot?: Timeslot;
 
   @LazyGetter<Booking>((o) => o.timeslot, { shouldBePresent: true })
   public readonly lazyTimeslot!: Promise<Timeslot>;
 
-  //public get lazyTimeslot(): Promise<Timeslot | undefined> {
-  //  return (async () => {
-  //    if (this.timeslot != null) {
-  //      return this.timeslot;
-  //    } else {
-  //      return (await this.$get('timeslot')) as Timeslot | undefined;
-  //    }
-  //  })();
-  //}
+  public timeTillDue(): Duration {
+    const now = DateTime.local();
+    const interval = Interval.fromDateTimes(now, this.endDate);
 
-  // filled by sequelize
-  @CreatedAt
-  public readonly createdAt!: Date;
-
-  public async timeTillDue(): Promise<Duration> {
-    const timeslot = await this.lazyTimeslot;
-
-    if (timeslot != null) {
-      const currentDate = DateTime.local();
-      const nextEndDate = await timeslot.getNextTimeslotEndDate();
-      const interval = Interval.fromDateTimes(currentDate, nextEndDate);
-
-      return interval.toDuration();
-    } else {
-      throw new Error('Could not retrieve timeslot.');
-    }
+    return interval.toDuration();
   }
 
-  public async hasPassed(): Promise<boolean> {
-    const timeslot = await this.lazyTimeslot;
+  public hasPassed(): boolean {
+    const now = DateTime.local();
 
-    if (timeslot != null) {
-      return (
-        moment(this.createdAt) <= (await timeslot.getPreviousTimeslotEndDate())
-      );
-    } else {
-      throw new Error(
-        'Can not retrieve timeslot. Did you ask Sequelize to include the Timeslot relationship when retrieving this Booking instance?'
-      );
-    }
+    return now >= DateTime.fromJSDate(this.endDate);
   }
 }

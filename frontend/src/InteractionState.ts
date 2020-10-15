@@ -1,5 +1,9 @@
 import { ResourceGetInterface } from 'common';
-import { TimeslotGetInterface, WeekdayGetInterface } from 'common/dist';
+import {
+  TimeslotGetInterface,
+  WeekdayGetInterface,
+  WeekdayName,
+} from 'common/dist';
 
 export class ViewingResources {
   public readonly type: 'ViewingResources' = 'ViewingResources';
@@ -73,6 +77,16 @@ export class LookingUpBookings {
   }
 }
 
+export class OverviewingDay {
+  public readonly type: 'OverviewingDay' = 'OverviewingDay';
+
+  public readonly weekdayName: WeekdayName;
+
+  constructor(weekdayName: WeekdayName) {
+    this.weekdayName = weekdayName;
+  }
+}
+
 export type InteractionState =
   | ViewingResources
   | ViewingWeekdays
@@ -82,4 +96,5 @@ export type InteractionState =
   | Authenticating
   | InvitingAdmin
   | SigningUp
-  | LookingUpBookings;
+  | LookingUpBookings
+  | OverviewingDay;
