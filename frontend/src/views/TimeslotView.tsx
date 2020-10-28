@@ -19,6 +19,7 @@ import {
   TimeslotGetInterface,
   TimeslotPostInterface,
 } from 'common/dist';
+import { changeInteractionStateT } from '../App';
 
 @boundClass
 class TimeslotView extends React.Component<Properties, State> {
@@ -117,7 +118,9 @@ class TimeslotView extends React.Component<Properties, State> {
 
   createBooking() {
     if (this.state.timeslot != null) {
-      this.props.changeInteractionState(new CreateBooking(this.state.timeslot));
+      this.props.changeInteractionState('createBooking', {
+        timeslot: this.state.timeslot,
+      });
     }
   }
 
@@ -131,9 +134,9 @@ class TimeslotView extends React.Component<Properties, State> {
 
   viewBookings() {
     if (this.state.timeslot != null) {
-      this.props.changeInteractionState(
-        new ViewingBookings(this.state.timeslot)
-      );
+      this.props.changeInteractionState('viewingBookings', {
+        timeslot: this.state.timeslot,
+      });
     }
   }
 
@@ -219,7 +222,7 @@ interface Properties {
   isAuthenticated: boolean;
   client: Client;
   timeslotId: number;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
   onDelete: () => unknown;
 }
 

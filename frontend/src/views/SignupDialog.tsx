@@ -16,6 +16,7 @@ import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
 import { NonEmptyString, noRefinementChecks } from 'common/dist';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,7 +102,7 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
         noRefinementChecks<NonEmptyString>(this.state.password)
       );
 
-      this.props.changeInteractionState(new ViewingResources());
+      this.props.changeInteractionState('viewingResources', {});
     }
   }
 
@@ -177,7 +178,7 @@ export default SignupDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
   signupToken: string;
 }
 

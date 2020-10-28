@@ -17,6 +17,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
 import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
 import getBaseUrl from '../utils/getBaseUrl';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -110,7 +111,9 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       this.props.timeslot.weekdayId
     );
 
-    this.props.changeInteractionState(new ViewingTimeslots(weekday));
+    this.props.changeInteractionState('viewingTimeslots', {
+      weekday: weekday,
+    });
   }
 
   render() {
@@ -123,7 +126,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
               <TimelapseIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Login
+              Buchung
             </Typography>
             <form className={this.props.classes.form} noValidate>
               <TextField
@@ -187,7 +190,7 @@ export default CreateBookingDialog;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   timeslot: TimeslotGetInterface;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

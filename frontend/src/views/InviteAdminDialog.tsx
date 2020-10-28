@@ -17,6 +17,7 @@ import { InteractionState, ViewingResources } from '../InteractionState';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import getBaseUrl from '../utils/getBaseUrl';
 import { EMailString } from 'common/dist';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -71,7 +72,7 @@ class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
       `${getBaseUrl()}/`
     );
 
-    this.props.changeInteractionState(new ViewingResources());
+    this.props.changeInteractionState('viewingResources', {});
   }
 
   render() {
@@ -123,7 +124,7 @@ export default InviteAdminDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

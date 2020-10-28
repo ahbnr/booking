@@ -33,6 +33,7 @@ import ReactToPrint from 'react-to-print';
 import { DateTime, Interval } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import _ from 'lodash';
+import { changeInteractionStateT } from '../App';
 
 const localizer = momentLocalizer(moment);
 
@@ -192,7 +193,7 @@ export default DayOverviewView;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
   dateInterval: Interval;
 }
 

@@ -16,6 +16,7 @@ import {
   TimeslotPostInterface,
   WeekdayGetInterface,
 } from 'common/dist';
+import { changeInteractionStateT } from '../App';
 
 @boundClass
 class TimeslotsView extends React.Component<Properties, State> {
@@ -96,7 +97,7 @@ interface Properties {
   client: Client;
   isAuthenticated: boolean;
   weekday: WeekdayGetInterface;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

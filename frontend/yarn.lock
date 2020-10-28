@@ -11131,6 +11131,11 @@ tr46@^1.0.1:
   dependencies:
     punycode "^2.1.0"
 
+ts-adt@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ts-adt/-/ts-adt-1.0.1.tgz#9367b495649bc1f21fbdeacec2a3e58aff8bcf97"
+  integrity sha512-MfSct+iluJ4u6EjJZL5L6J9ebp1oZz2xdBK2+Y522SFK7MIg8GP7QDFrry/g4CjVEqPfKsg1IQOgwMOE+8xRIg==
+
 ts-pnp@1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/ts-pnp/-/ts-pnp-1.1.6.tgz#389a24396d425a0d3162e96d2b4638900fdc289a"

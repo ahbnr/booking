@@ -5,96 +5,106 @@ import {
   WeekdayName,
 } from 'common/dist';
 
-export class ViewingResources {
-  public readonly type: 'ViewingResources' = 'ViewingResources';
+import { ADT, ADTMember } from 'ts-adt';
+import { Int } from 'io-ts';
+
+export interface ViewingResources {}
+
+export interface ViewingWeekdays {
+  resource: ResourceGetInterface;
 }
 
-export class ViewingWeekdays {
-  public readonly type: 'ViewingWeekdays' = 'ViewingWeekdays';
+export interface ViewingTimeslots {
+  weekday: WeekdayGetInterface;
+}
 
-  public readonly resource: ResourceGetInterface;
+export interface ViewingBookings {
+  timeslot: TimeslotGetInterface;
+}
 
-  constructor(resource: ResourceGetInterface) {
-    this.resource = resource;
+export interface CreateBooking {
+  timeslot: TimeslotGetInterface;
+}
+
+export interface Authenticating {}
+
+export interface InvitingAdmin {}
+
+export interface SigningUp {
+  signupToken: string;
+}
+
+export interface LookingUpBookings {
+  lookupToken: string;
+}
+
+export interface OverviewingDay {
+  weekdayName: WeekdayName;
+}
+
+export type Activity = ADT<{
+  viewingResources: ViewingResources;
+  viewingWeekdays: ViewingWeekdays;
+  viewingTimeslots: ViewingTimeslots;
+  viewingBookings: ViewingBookings;
+  createBooking: CreateBooking;
+  authenticating: Authenticating;
+  invitingAdmin: InvitingAdmin;
+  signingUp: SigningUp;
+  lookingUpBookings: LookingUpBookings;
+  overviewingDay: OverviewingDay;
+}>;
+
+export function constructActivity<C extends Activity['_type']>(
+  constructor: C,
+  value: ADTMember<Activity, C>
+): Activity {
+  return {
+    _type: constructor,
+    ...value,
+  } as Activity;
+}
+
+export class InteractionState {
+  public readonly activity: Activity;
+  private readonly previousInteractionState?: InteractionState;
+  private readonly nextInteractionState?: InteractionState;
+
+  constructor(
+    activity: Activity,
+    previousInteractionState?: InteractionState,
+    nextInteractionState?: InteractionState
+  ) {
+    this.activity = activity;
+    this.previousInteractionState = previousInteractionState;
+    this.nextInteractionState = nextInteractionState;
+  }
+
+  goBack(): InteractionState | undefined {
+    if (this.previousInteractionState != null) {
+      return new InteractionState(
+        this.previousInteractionState.activity,
+        this.previousInteractionState.previousInteractionState,
+        this
+      );
+    } else {
+      return undefined;
+    }
+  }
+
+  goNext(): InteractionState | undefined {
+    if (this.nextInteractionState != null) {
+      return new InteractionState(
+        this.nextInteractionState.activity,
+        this,
+        this.nextInteractionState.nextInteractionState
+      );
+    } else {
+      return undefined;
+    }
+  }
+
+  changeActivity(newActivity: Activity): InteractionState {
+    return new InteractionState(newActivity, this);
   }
 }
-
-export class ViewingTimeslots {
-  public readonly type: 'ViewingTimeslots' = 'ViewingTimeslots';
-
-  public readonly weekday: WeekdayGetInterface;
-
-  constructor(weekday: WeekdayGetInterface) {
-    this.weekday = weekday;
-  }
-}
-
-export class ViewingBookings {
-  public readonly type: 'ViewingBookings' = 'ViewingBookings';
-
-  public readonly timeslot: TimeslotGetInterface;
-
-  constructor(timeslot: TimeslotGetInterface) {
-    this.timeslot = timeslot;
-  }
-}
-
-export class CreateBooking {
-  public readonly type: 'CreateBooking' = 'CreateBooking';
-
-  public readonly timeslot: TimeslotGetInterface;
-
-  constructor(timeslot: TimeslotGetInterface) {
-    this.timeslot = timeslot;
-  }
-}
-
-export class Authenticating {
-  public readonly type: 'Authenticating' = 'Authenticating';
-}
-
-export class InvitingAdmin {
-  public readonly type: 'InvitingAdmin' = 'InvitingAdmin';
-}
-
-export class SigningUp {
-  public readonly type: 'SigningUp' = 'SigningUp';
-
-  public readonly signupToken: string;
-
-  constructor(signupToken: string) {
-    this.signupToken = signupToken;
-  }
-}
-
-export class LookingUpBookings {
-  public readonly type: 'LookingUpBookings' = 'LookingUpBookings';
-
-  public readonly lookupToken: string;
-
-  constructor(lookupToken: string) {
-    this.lookupToken = lookupToken;
-  }
-}
-
-export class OverviewingDay {
-  public readonly type: 'OverviewingDay' = 'OverviewingDay';
-
-  public readonly weekdayName: WeekdayName;
-
-  constructor(weekdayName: WeekdayName) {
-    this.weekdayName = weekdayName;
-  }
-}
-
-export type InteractionState =
-  | ViewingResources
-  | ViewingWeekdays
-  | ViewingTimeslots
-  | ViewingBookings
-  | CreateBooking
-  | Authenticating
-  | InvitingAdmin
-  | SigningUp
-  | LookingUpBookings
-  | OverviewingDay;

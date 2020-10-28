@@ -3,10 +3,10 @@ import './App.css';
 import WeekdaysView from './views/WeekdaysView';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {
+  Activity,
+  constructActivity,
   InteractionState,
   LookingUpBookings,
-  SigningUp,
-  ViewingResources,
 } from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
@@ -30,6 +30,7 @@ import BookingsLookupView from './views/BookingsLookupView';
 import DayOverviewView from './views/DayOverviewView';
 import { getWeekdayDate } from 'common/dist/typechecking/api/Weekday';
 import { Interval } from 'luxon';
+import { ADTMember, matchI } from 'ts-adt';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,31 +62,45 @@ const styles = (theme: Theme) =>
 class UnstyledApp extends React.Component<AppProps, AppState> {
   public static displayName = 'App';
   private client: Client = new Client();
+  private originalWindowOnPopState?: Window['onpopstate'];
+  private lastStateId = 0;
 
   constructor(props: AppProps) {
     super(props);
 
     this.state = {
       isAuthenticated: false,
-      interactionState: new ViewingResources(),
+      interactionState: new InteractionState(
+        constructActivity('viewingResources', {})
+      ),
     };
   }
 
   componentDidMount() {
+    window.history.pushState(this.lastStateId, 'init');
+    this.originalWindowOnPopState = window.onpopstate;
+    window.onpopstate = this.historyPopStateListener;
+
     this.client.onAuthenticationChanged = this.onAuthenticationChanged;
 
     const search = window.location.search;
     const signupToken = new URLSearchParams(search).get('signupToken');
     const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
     if (signupToken != null) {
-      this.changeInteractionState(new SigningUp(signupToken));
+      this.changeInteractionState('signingUp', { signupToken: signupToken });
     } else if (bookingsLookupToken != null) {
-      this.changeInteractionState(new LookingUpBookings(bookingsLookupToken));
+      this.changeInteractionState('lookingUpBookings', {
+        lookupToken: bookingsLookupToken,
+      });
     }
   }
 
   componentWillUnmount() {
     this.client.onAuthenticationChanged = undefined;
+    if (this.originalWindowOnPopState != null) {
+      window.onpopstate = this.originalWindowOnPopState;
+    }
+    this.originalWindowOnPopState = undefined;
   }
 
   onAuthenticationChanged(isAuthenticated: boolean) {
@@ -94,120 +109,91 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     });
   }
 
-  changeInteractionState(interactionState: InteractionState) {
+  changeInteractionState<C extends Activity['_type']>(
+    constructor: C,
+    value: ADTMember<Activity, C>
+  ) {
     this.setState({
-      interactionState: interactionState,
+      interactionState: this.state.interactionState.changeActivity(
+        constructActivity(constructor, value)
+      ),
     });
+
+    window.history.pushState(++this.lastStateId, constructor);
   }
 
   render() {
-    let view;
-    switch (this.state.interactionState.type) {
-      case 'ViewingResources':
-        view = (
-          <ResourcesView
+    const view = matchI(this.state.interactionState.activity)({
+      viewingResources: () => (
+        <ResourcesView
+          isAuthenticated={this.state.isAuthenticated}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+        />
+      ),
+      viewingWeekdays: ({ resource }) => (
+        <WeekdaysView
+          resource={resource}
+          isAuthenticated={this.state.isAuthenticated}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+        />
+      ),
+      viewingTimeslots: ({ weekday }) => (
+        <TimeslotsView
+          isAuthenticated={this.state.isAuthenticated}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          weekday={weekday}
+        />
+      ),
+      viewingBookings: ({ timeslot }) => (
+        <BookingsView client={this.client} timeslotId={timeslot.id} />
+      ),
+      createBooking: ({ timeslot }) => (
+        <CreateBookingDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          timeslot={timeslot}
+        />
+      ),
+      authenticating: () => (
+        <AuthenticationDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+        />
+      ),
+      invitingAdmin: () => (
+        <InviteAdminDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+        />
+      ),
+      signingUp: ({ signupToken }) => (
+        <SignupDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          signupToken={signupToken}
+        />
+      ),
+      lookingUpBookings: ({ lookupToken }) => (
+        <BookingsLookupView client={this.client} lookupToken={lookupToken} />
+      ),
+      overviewingDay: ({ weekdayName }) => {
+        const weekdayDate = getWeekdayDate(weekdayName);
+        const start = weekdayDate.set({ hour: 0, minute: 0 });
+        const end = weekdayDate.set({ hour: 23, minute: 59 });
+
+        return (
+          <DayOverviewView
             isAuthenticated={this.state.isAuthenticated}
             client={this.client}
             changeInteractionState={this.changeInteractionState}
+            dateInterval={Interval.fromDateTimes(start, end)}
           />
         );
-        break;
-      case 'ViewingWeekdays':
-        view = (
-          <WeekdaysView
-            resource={this.state.interactionState.resource}
-            isAuthenticated={this.state.isAuthenticated}
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-          />
-        );
-        break;
-      case 'ViewingTimeslots':
-        view = (
-          <TimeslotsView
-            isAuthenticated={this.state.isAuthenticated}
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-            weekday={this.state.interactionState.weekday}
-          />
-        );
-        break;
-
-      case 'ViewingBookings':
-        view = (
-          <BookingsView
-            client={this.client}
-            timeslotId={this.state.interactionState.timeslot.id}
-          />
-        );
-        break;
-
-      case 'CreateBooking':
-        view = (
-          <CreateBookingDialog
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-            timeslot={this.state.interactionState.timeslot}
-          />
-        );
-        break;
-
-      case 'Authenticating':
-        view = (
-          <AuthenticationDialog
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-          />
-        );
-        break;
-
-      case 'InvitingAdmin':
-        view = (
-          <InviteAdminDialog
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-          />
-        );
-        break;
-
-      case 'SigningUp':
-        view = (
-          <SignupDialog
-            client={this.client}
-            changeInteractionState={this.changeInteractionState}
-            signupToken={this.state.interactionState.signupToken}
-          />
-        );
-        break;
-
-      case 'LookingUpBookings':
-        view = (
-          <BookingsLookupView
-            client={this.client}
-            lookupToken={this.state.interactionState.lookupToken}
-          />
-        );
-        break;
-
-      case 'OverviewingDay':
-        {
-          const weekdayDate = getWeekdayDate(
-            this.state.interactionState.weekdayName
-          );
-          const start = weekdayDate.set({ hour: 0, minute: 0 });
-          const end = weekdayDate.set({ hour: 23, minute: 59 });
-
-          view = (
-            <DayOverviewView
-              isAuthenticated={this.state.isAuthenticated}
-              client={this.client}
-              changeInteractionState={this.changeInteractionState}
-              dateInterval={Interval.fromDateTimes(start, end)}
-            />
-          );
-        }
-        break;
-    }
+      },
+    });
 
     return (
       <>
@@ -227,6 +213,33 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       </>
     );
   }
+
+  historyPopStateListener(ev: PopStateEvent) {
+    // FIXME: Handle arbitrary history jump
+    if (ev.state === this.lastStateId - 1) {
+      // back button
+      const previous = this.state.interactionState.goBack();
+
+      if (previous != null) {
+        this.setState({
+          interactionState: previous,
+        });
+
+        this.lastStateId = ev.state;
+      }
+    } else if (ev.state === this.lastStateId + 1) {
+      // forward button
+      const next = this.state.interactionState.goNext();
+
+      if (next != null) {
+        this.setState({
+          interactionState: next,
+        });
+
+        this.lastStateId = ev.state;
+      }
+    }
+  }
 }
 
 const App = withStyles(styles)(UnstyledApp);
@@ -239,3 +252,5 @@ interface AppState {
 }
 
 export default App;
+
+export type changeInteractionStateT = UnstyledApp['changeInteractionState'];

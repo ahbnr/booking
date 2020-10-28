@@ -26,6 +26,8 @@ import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { ResourceGetInterface } from 'common/dist';
+import { changeInteractionStateT } from '../App';
+import { CSSProperties } from '@material-ui/core/styles/withStyles';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,7 +39,16 @@ const styles = (theme: Theme) =>
     extendedIcon: {
       marginRight: theme.spacing(1),
     },
+    fab: fabStyle(theme),
   });
+
+function fabStyle(theme: Theme): CSSProperties {
+  return {
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+  };
+}
 
 @boundClass
 class UnstyledResourcesView extends React.Component<Properties, State> {
@@ -113,7 +124,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   viewWeekdays(resource: ResourceGetInterface) {
-    this.props.changeInteractionState(new ViewingWeekdays(resource));
+    this.props.changeInteractionState('viewingWeekdays', { resource });
   }
 
   render() {
@@ -142,7 +153,11 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
           ))}
         </List>
         {this.props.isAuthenticated && (
-          <Fab variant="extended" onClick={this.launchAddResourceModal}>
+          <Fab
+            className={this.props.classes.fab}
+            variant="extended"
+            onClick={this.launchAddResourceModal}
+          >
             <AddIcon className={this.props.classes.extendedIcon} />
             Neue Resource
           </Fab>
@@ -188,7 +203,7 @@ export default ResourcesView;
 interface Properties extends WithStyles<typeof styles> {
   isAuthenticated: boolean;
   client: Client;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

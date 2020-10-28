@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { Client } from '../Client';
-import { InteractionState, ViewingResources } from '../InteractionState';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -87,7 +87,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
       this.state.password
     );
 
-    this.props.changeInteractionState(new ViewingResources());
+    this.props.changeInteractionState('viewingResources', {});
   }
 
   render() {
@@ -151,7 +151,7 @@ export default AuthenticationDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

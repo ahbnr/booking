@@ -27,6 +27,7 @@ import {
 } from '../InteractionState';
 import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
+import { changeInteractionStateT } from '../App';
 
 const drawerWidth = 240;
 
@@ -106,15 +107,17 @@ class UnstyledAppBar extends React.Component<Properties, State> {
   }
 
   login() {
-    this.props.changeInteractionState(new Authenticating());
+    this.props.changeInteractionState('authenticating', {});
   }
 
   onAddAdminButton() {
-    this.props.changeInteractionState(new InvitingAdmin());
+    this.props.changeInteractionState('invitingAdmin', {});
   }
 
   onOverviewButton() {
-    this.props.changeInteractionState(new OverviewingDay('saturday'));
+    this.props.changeInteractionState('overviewingDay', {
+      weekdayName: 'saturday',
+    });
   }
 
   render() {
@@ -202,7 +205,7 @@ export default AppBar;
 
 interface Properties extends WithStyles<typeof styles> {
   isAuthenticated: boolean;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

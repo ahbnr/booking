@@ -22,6 +22,7 @@ import {
   WeekdayGetInterface,
   WeekdayName,
 } from 'common/dist';
+import { changeInteractionStateT } from '../App';
 
 @boundClass
 class WeekdaysView extends React.Component<Properties, State> {
@@ -97,7 +98,7 @@ class WeekdaysView extends React.Component<Properties, State> {
   }
 
   viewTimeslots(weekday: WeekdayGetInterface) {
-    this.props.changeInteractionState(new ViewingTimeslots(weekday));
+    this.props.changeInteractionState('viewingTimeslots', { weekday });
   }
 
   async openWeekday(name: string) {
@@ -182,7 +183,7 @@ interface Properties {
   resource: ResourceGetInterface;
   isAuthenticated: boolean;
   client: Client;
-  changeInteractionState: (interactionState: InteractionState) => unknown;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {
