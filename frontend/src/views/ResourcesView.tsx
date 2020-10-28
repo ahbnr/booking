@@ -2,7 +2,6 @@ import React, { ChangeEvent } from 'react';
 import '../App.css';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { InteractionState, ViewingWeekdays } from '../InteractionState';
 import { Client } from '../Client';
 import {
   Button,
@@ -27,7 +26,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
-import { CSSProperties } from '@material-ui/core/styles/withStyles';
+import { fabStyle } from '../styles/fab';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,14 +40,6 @@ const styles = (theme: Theme) =>
     },
     fab: fabStyle(theme),
   });
-
-function fabStyle(theme: Theme): CSSProperties {
-  return {
-    position: 'fixed',
-    bottom: theme.spacing(2),
-    right: theme.spacing(2),
-  };
-}
 
 @boundClass
 class UnstyledResourcesView extends React.Component<Properties, State> {
@@ -159,14 +150,14 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             onClick={this.launchAddResourceModal}
           >
             <AddIcon className={this.props.classes.extendedIcon} />
-            Neue Resource
+            Resource
           </Fab>
         )}
         <Dialog
           open={this.state.showAddResourceModal}
           onClose={this.handleCloseAddResourceModal}
         >
-          <DialogTitle id="form-dialog-title">Resource hinzufügen</DialogTitle>
+          <DialogTitle id="form-dialog-title">Resource Hinzufügen</DialogTitle>
           <DialogContent>
             <DialogContentText>TODO Beschreibung</DialogContentText>
             <TextField

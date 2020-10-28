@@ -1,31 +1,54 @@
 import React from 'react';
 import '../App.css';
 import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
-import {
-  Button,
-  ButtonGroup,
-  ListGroup,
-  Container,
-  Row,
-  Col,
-  Modal,
-} from 'react-bootstrap';
-import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { InteractionState, ViewingTimeslots } from '../InteractionState';
-import { Client } from '../Client';
 import {
   ResourceGetInterface,
   WeekdayGetInterface,
   WeekdayName,
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import {
+  Button,
+  createStyles,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Fab,
+  IconButton,
+  List,
+  ListItem,
+  ListItemSecondaryAction,
+  ListItemText,
+  Theme,
+  WithStyles,
+  withStyles,
+} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import AddIcon from '@material-ui/icons/Add';
+import { fabStyle } from '../styles/fab';
+import { Client } from '../Client';
+import SplitButton from './SplitButton';
+
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      width: '100%',
+      maxWidth: 360,
+      backgroundColor: theme.palette.background.paper,
+    },
+    extendedIcon: {
+      marginRight: theme.spacing(1),
+    },
+    fab: fabStyle(theme),
+  });
 
 @boundClass
-class WeekdaysView extends React.Component<Properties, State> {
+class UnstyledWeekdaysView extends React.Component<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
@@ -108,78 +131,69 @@ class WeekdaysView extends React.Component<Properties, State> {
 
   render() {
     return (
-      <div className="WeekdaysView">
-        <ListGroup className="Listing">
+      <>
+        <List component="nav">
           {this.state.weekdays
             .sort((left, right) => nameSorter(left.name, right.name))
             .map((weekday) => (
-              <ListGroup.Item
-                action
+              <ListItem
+                button
                 key={weekday.name}
                 onClick={() => this.viewTimeslots(weekday)}
               >
-                <Container>
-                  <Row>
-                    <Col style={{ textAlign: 'left' }}>{weekday.name}</Col>
-                    <Col sm="auto">
-                      <span className="pull-right">
-                        {this.props.isAuthenticated && (
-                          <Button
-                            variant="danger"
-                            onClick={() => this.deleteWeekday(weekday.id)}
-                          >
-                            <FontAwesomeIcon icon={faMinus} />
-                          </Button>
-                        )}
-                      </span>
-                    </Col>
-                  </Row>
-                </Container>
-              </ListGroup.Item>
+                <ListItemText> {weekday.name} </ListItemText>
+                {this.props.isAuthenticated && (
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="end"
+                      onClick={() => this.deleteWeekday(weekday.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                )}
+              </ListItem>
             ))}
-        </ListGroup>
-
-        {this.props.isAuthenticated && (
-          <ButtonGroup className="Listing">
-            {!this.haveAllWeekdaysBeenCreated() && (
-              <Button onClick={this.launchAddWeekdayModal}>
-                <FontAwesomeIcon icon={faPlus} /> Wochentag hinzufügen
-              </Button>
-            )}
-          </ButtonGroup>
+        </List>
+        {this.props.isAuthenticated && !this.haveAllWeekdaysBeenCreated() && (
+          <Fab
+            className={this.props.classes.fab}
+            variant="extended"
+            onClick={this.launchAddWeekdayModal}
+          >
+            <AddIcon className={this.props.classes.extendedIcon} />
+            Wochentag
+          </Fab>
         )}
 
-        <Modal
-          show={this.state.showAddWeekdayModal}
-          onHide={this.closeAddWeekdayModal}
+        <Dialog
+          open={this.state.showAddWeekdayModal}
+          onClose={this.closeAddWeekdayModal}
         >
-          <Modal.Header closeButton>
-            <Modal.Title>Welcher Tag soll angelegt werden?</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <ButtonGroup style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {this.getMissingWeekdayNames().map((name) => (
-                <Button
-                  key={name}
-                  onClick={async () => await this.openWeekday(name)}
-                >
-                  {name}
-                </Button>
-              ))}
-            </ButtonGroup>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={this.closeAddWeekdayModal}>
+          <DialogTitle> Welcher Tag soll angelegt werden? </DialogTitle>
+          <DialogContent>
+            <DialogContentText>TODO Beschreibung</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <SplitButton
+              onClick={async (name, _) => await this.openWeekday(name)}
+              options={this.getMissingWeekdayNames()}
+            />
+            <Button onClick={this.closeAddWeekdayModal} color="secondary">
               Abbrechen
             </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   }
 }
 
-interface Properties {
+const WeekdaysView = withStyles(styles)(UnstyledWeekdaysView);
+export default WeekdaysView;
+
+interface Properties extends WithStyles<typeof styles> {
   resource: ResourceGetInterface;
   isAuthenticated: boolean;
   client: Client;
@@ -190,5 +204,3 @@ interface State {
   weekdays: WeekdayGetInterface[];
   showAddWeekdayModal: boolean;
 }
-
-export default WeekdaysView;
