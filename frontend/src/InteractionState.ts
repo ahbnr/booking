@@ -42,6 +42,10 @@ export interface OverviewingDay {
   weekdayName: WeekdayName;
 }
 
+export interface EditingTimeslot {
+  timeslot: TimeslotGetInterface;
+}
+
 export type Activity = ADT<{
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
@@ -53,6 +57,7 @@ export type Activity = ADT<{
   signingUp: SigningUp;
   lookingUpBookings: LookingUpBookings;
   overviewingDay: OverviewingDay;
+  editingTimeslot: EditingTimeslot;
 }>;
 
 export function constructActivity<C extends Activity['_type']>(

@@ -146,7 +146,6 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                autoFocus
                 label={'Nachname'}
                 value={this.state.lastName}
                 error={this.state.lastNameError != null}
@@ -160,9 +159,8 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
                 fullWidth
                 label={'E-Mail'}
                 autoComplete="email"
-                autoFocus
                 value={this.state.email}
-                error={this.state.email != null}
+                error={this.state.emailError != null}
                 helperText={this.state.emailError}
                 onChange={this.onEmailChanged}
               />

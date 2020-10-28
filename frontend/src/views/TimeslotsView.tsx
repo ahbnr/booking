@@ -1,14 +1,10 @@
 import React from 'react';
 import '../App.css';
-import { Button, ButtonGroup, ListGroup } from 'react-bootstrap';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from '../utils/lodash-mixins';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
-import { InteractionState } from '../InteractionState';
 import {
   compare,
   noRefinementChecks,
@@ -17,9 +13,32 @@ import {
   WeekdayGetInterface,
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import {
+  createStyles,
+  List,
+  Theme,
+  withStyles,
+  WithStyles,
+} from '@material-ui/core';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
+import { fabStyle } from '../styles/fab';
+
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      width: '100%',
+      maxWidth: 360,
+      backgroundColor: theme.palette.background.paper,
+    },
+    extendedIcon: {
+      marginRight: theme.spacing(1),
+    },
+    fab: fabStyle(theme),
+  });
 
 @boundClass
-class TimeslotsView extends React.Component<Properties, State> {
+class UnstyledTimeslotsView extends React.Component<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
@@ -66,34 +85,40 @@ class TimeslotsView extends React.Component<Properties, State> {
     );
 
     return (
-      <div className="TimeslotsView">
-        <ListGroup className="Listing">
-          {sortedTimeslots.map((timeslot) => (
-            <ListGroup.Item key={timeslot.id}>
-              <TimeslotView
-                isAuthenticated={this.props.isAuthenticated}
-                client={this.props.client}
-                changeInteractionState={this.props.changeInteractionState}
-                timeslotId={timeslot.id}
-                onDelete={this.refreshTimeslots}
-              />
-            </ListGroup.Item>
+      <>
+        <List component="nav">
+          {sortedTimeslots.map((timeslot, index) => (
+            <TimeslotView
+              key={timeslot.id}
+              index={index}
+              isAuthenticated={this.props.isAuthenticated}
+              client={this.props.client}
+              changeInteractionState={this.props.changeInteractionState}
+              timeslotId={timeslot.id}
+              onDelete={this.refreshTimeslots}
+            />
           ))}
-        </ListGroup>
+        </List>
 
         {this.props.isAuthenticated && (
-          <ButtonGroup className="Listing">
-            <Button onClick={this.addTimeslot}>
-              <FontAwesomeIcon icon={faPlus} /> Timeslot hinzufügen
-            </Button>
-          </ButtonGroup>
+          <Fab
+            className={this.props.classes.fab}
+            variant="extended"
+            onClick={this.addTimeslot}
+          >
+            <AddIcon className={this.props.classes.extendedIcon} />
+            Timeslot
+          </Fab>
         )}
-      </div>
+      </>
     );
   }
 }
 
-interface Properties {
+const TimeslotsView = withStyles(styles)(UnstyledTimeslotsView);
+export default TimeslotsView;
+
+interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
   weekday: WeekdayGetInterface;
@@ -103,5 +128,3 @@ interface Properties {
 interface State {
   timeslots: TimeslotGetInterface[];
 }
-
-export default TimeslotsView;

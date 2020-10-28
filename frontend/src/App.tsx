@@ -31,6 +31,7 @@ import DayOverviewView from './views/DayOverviewView';
 import { getWeekdayDate } from 'common/dist/typechecking/api/Weekday';
 import { Interval } from 'luxon';
 import { ADTMember, matchI } from 'ts-adt';
+import TimeslotEditDialog from './views/TimeslotEditDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -193,6 +194,13 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           />
         );
       },
+      editingTimeslot: ({ timeslot }) => (
+        <TimeslotEditDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          timeslot={timeslot}
+        />
+      ),
     });
 
     return (

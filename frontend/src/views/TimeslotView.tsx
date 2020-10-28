@@ -4,22 +4,24 @@ import { boundClass } from 'autobind-decorator';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
 import LuxonUtils from '@date-io/luxon';
 import { DateTime } from 'luxon';
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { DateType } from '@date-io/type';
-import { Button, IconButton, TextField } from '@material-ui/core';
+import {
+  Button,
+  Chip,
+  Divider,
+  Grid,
+  IconButton,
+  ListItem,
+  ListItemSecondaryAction,
+  ListItemText,
+  Typography,
+} from '@material-ui/core';
 import { Client } from '../Client';
-import {
-  CreateBooking,
-  InteractionState,
-  ViewingBookings,
-} from '../InteractionState';
 import DeleteIcon from '@material-ui/icons/Delete';
-import {
-  noRefinementChecks,
-  TimeslotGetInterface,
-  TimeslotPostInterface,
-} from 'common/dist';
+import EditIcon from '@material-ui/icons/Edit';
+import { TimeslotGetInterface, TimeslotPostInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import noop from '../utils/noop';
 
 @boundClass
 class TimeslotView extends React.Component<Properties, State> {
@@ -69,20 +71,6 @@ class TimeslotView extends React.Component<Properties, State> {
     }
   }
 
-  onChangeStartTime(startTime: MaterialUiPickersDate) {
-    this.setState({
-      startTime: startTime || undefined,
-      changed: true,
-    });
-  }
-
-  onChangeEndTime(endTime: MaterialUiPickersDate) {
-    this.setState({
-      endTime: endTime || undefined,
-      changed: true,
-    });
-  }
-
   onChangeCapacity(
     capacityChangeEvent: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
@@ -98,21 +86,6 @@ class TimeslotView extends React.Component<Properties, State> {
       this.setState({
         capacityError: 'Muss Wert > 0 sein',
       });
-    }
-  }
-
-  async setChangedTime() {
-    if (this.state.startTime != null && this.state.endTime != null) {
-      await this.updateTimeslot(
-        // We don't check the refinement types here. The server will perform checks anyway
-        noRefinementChecks<TimeslotPostInterface>({
-          startHours: this.state.startTime.hour,
-          startMinutes: this.state.startTime.minute,
-          endHours: this.state.endTime.hour,
-          endMinutes: this.state.endTime.minute,
-          capacity: this.state.capacity,
-        })
-      );
     }
   }
 
@@ -132,6 +105,14 @@ class TimeslotView extends React.Component<Properties, State> {
     }
   }
 
+  onEdit() {
+    if (this.state.timeslot != null) {
+      this.props.changeInteractionState('editingTimeslot', {
+        timeslot: this.state.timeslot,
+      });
+    }
+  }
+
   viewBookings() {
     if (this.state.timeslot != null) {
       this.props.changeInteractionState('viewingBookings', {
@@ -148,77 +129,89 @@ class TimeslotView extends React.Component<Properties, State> {
     ) {
       return <>Timeslot not found in database</>;
     } else {
+      const bookingsAvailable =
+        this.state.timeslot.bookingIds.length < this.state.timeslot.capacity;
+
       return (
-        <>
-          <MuiPickersUtilsProvider utils={LuxonUtils}>
-            <Fragment>
-              <TimePicker
-                variant="inline"
-                label="Startzeit"
-                InputProps={{
-                  readOnly: !this.props.isAuthenticated,
-                }}
-                ampm={false}
-                value={this.state.startTime}
-                onChange={this.onChangeStartTime}
+        <ListItem
+          button
+          disabled={
+            !this.props.isAuthenticated &&
+            this.state.timeslot.bookingIds.length >=
+              this.state.timeslot.capacity
+          }
+          onClick={this.createBooking}
+        >
+          <ListItemText>
+            <MuiPickersUtilsProvider utils={LuxonUtils}>
+              <Grid alignItems="center" container spacing={3}>
+                <Grid item xs={1}>
+                  <Typography variant="h6">#{this.props.index + 1}</Typography>
+                </Grid>
+                <Divider orientation="vertical" flexItem />
+                <Grid item xs={5}>
+                  <TimePicker
+                    variant="inline"
+                    label="Startzeit"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    ampm={false}
+                    value={this.state.startTime}
+                    onChange={noop}
+                  />
+                </Grid>
+                <Grid item xs={5}>
+                  <TimePicker
+                    variant="inline"
+                    label="Endzeit"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    ampm={false}
+                    value={this.state.endTime}
+                    onChange={noop}
+                  />
+                </Grid>
+              </Grid>
+            </MuiPickersUtilsProvider>
+          </ListItemText>
+          <ListItemSecondaryAction>
+            {!this.props.isAuthenticated && (
+              <Chip
+                clickable
+                label={bookingsAvailable ? 'Frei' : 'Ausgebucht'}
+                color={bookingsAvailable ? 'primary' : 'secondary'}
+                onClick={bookingsAvailable ? this.createBooking : undefined}
               />
-              <TimePicker
-                variant="inline"
-                label="Endzeit"
-                InputProps={{
-                  readOnly: !this.props.isAuthenticated,
-                }}
-                ampm={false}
-                value={this.state.endTime}
-                onChange={this.onChangeEndTime}
-              />
-              <TextField
-                label="Kapazität"
-                value={this.state.capacity}
-                type="number"
-                InputProps={{
-                  readOnly: !this.props.isAuthenticated,
-                }}
-                error={this.state.capacityError != null}
-                helperText={this.state.capacityError}
-                onChange={this.onChangeCapacity}
-              />
-              {this.state.changed && this.props.isAuthenticated && (
-                <Button onClick={this.setChangedTime} color="primary">
-                  Festlegen
+            )}
+            {this.props.isAuthenticated && (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={this.viewBookings}
+                  color={bookingsAvailable ? 'primary' : 'secondary'}
+                >
+                  {this.state.timeslot.bookingIds.length}/
+                  {this.state.timeslot.capacity} Buchungen
                 </Button>
-              )}
-              {this.props.isAuthenticated && (
-                <Button onClick={this.viewBookings}>
-                  {this.state.timeslot.bookingIds.length} Buchungen
-                </Button>
-              )}
-              <Button
-                disabled={
-                  this.state.timeslot.bookingIds.length >=
-                  this.state.timeslot.capacity
-                }
-                onClick={this.createBooking}
-              >
-                {this.state.timeslot.bookingIds.length <
-                this.state.timeslot.capacity
-                  ? 'Buchen'
-                  : 'Ausgebucht'}
-              </Button>
-              {this.props.isAuthenticated && (
+                <IconButton onClick={this.onEdit}>
+                  <EditIcon />
+                </IconButton>
                 <IconButton onClick={this.onDelete}>
                   <DeleteIcon />
                 </IconButton>
-              )}
-            </Fragment>
-          </MuiPickersUtilsProvider>
-        </>
+              </>
+            )}
+          </ListItemSecondaryAction>
+        </ListItem>
       );
     }
   }
 }
 
 interface Properties {
+  index: number;
   isAuthenticated: boolean;
   client: Client;
   timeslotId: number;

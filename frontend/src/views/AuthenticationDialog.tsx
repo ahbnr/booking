@@ -87,7 +87,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
       this.state.password
     );
 
-    this.props.changeInteractionState('viewingResources', {});
+    window.history.back();
   }
 
   render() {
