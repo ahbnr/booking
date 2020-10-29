@@ -49,7 +49,7 @@ export class Timeslot extends BaseModel<Timeslot> {
   @LazyGetter<Timeslot>((o) => o.bookings, { convertNullToEmptyArray: true })
   public readonly lazyBookings!: Promise<Booking[]>;
 
-  @BelongsTo(() => Weekday)
+  @BelongsTo(() => Weekday, { onDelete: 'CASCADE' })
   public weekday?: Weekday;
 
   @LazyGetter<Timeslot>((o) => o.weekday, { shouldBePresent: true })

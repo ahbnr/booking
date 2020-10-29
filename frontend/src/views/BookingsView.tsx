@@ -5,7 +5,9 @@ import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import BookingView from './BookingView';
 import { BookingGetInterface } from 'common/dist';
-import { List } from '@material-ui/core';
+import ListEx from './ListEx';
+import Suspense from './Suspense';
+import LoadingScreen from './LoadingScreen';
 
 @boundClass
 export default class BookingsView extends React.Component<Properties, State> {
@@ -13,37 +15,48 @@ export default class BookingsView extends React.Component<Properties, State> {
     super(props);
 
     this.state = {
-      bookings: [],
+      bookings: undefined,
     };
   }
 
-  async componentDidMount() {
-    await this.refreshBookings();
+  componentDidMount() {
+    this.refreshBookings();
   }
 
-  async refreshBookings() {
-    const bookings = await this.props.client.getBookings(this.props.timeslotId);
+  refreshBookings() {
+    const bookingsPromise = this.props.client.getBookings(
+      this.props.timeslotId
+    );
 
     this.setState({
       ...this.state,
-      bookings: bookings,
+      bookings: bookingsPromise,
     });
   }
 
   render() {
     return (
-      <>
-        <List component="nav">
-          {this.state.bookings.map((booking) => (
-            <BookingView
-              key={booking.id}
-              client={this.props.client}
-              bookingId={booking.id}
-              onDelete={this.refreshBookings}
-            />
-          ))}
-        </List>
-      </>
+      <Suspense
+        asyncAction={this.state.bookings}
+        fallback={<LoadingScreen />}
+        content={(bookings) => (
+          <>
+            <ListEx
+              emptyTitle="Keine Buchungen"
+              emptyMessage="Dieser Zeitslot wurde noch nicht gebucht."
+            >
+              {bookings.map((booking) => (
+                <BookingView
+                  key={booking.id}
+                  client={this.props.client}
+                  bookingId={booking.id}
+                  onDelete={this.refreshBookings}
+                />
+              ))}
+            </ListEx>
+          </>
+        )}
+      />
     );
   }
 }
@@ -54,5 +67,5 @@ interface Properties {
 }
 
 interface State {
-  bookings: BookingGetInterface[];
+  bookings?: Promise<BookingGetInterface[]>;
 }

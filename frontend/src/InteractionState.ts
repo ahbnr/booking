@@ -60,16 +60,6 @@ export type Activity = ADT<{
   editingTimeslot: EditingTimeslot;
 }>;
 
-export function constructActivity<C extends Activity['_type']>(
-  constructor: C,
-  value: ADTMember<Activity, C>
-): Activity {
-  return {
-    _type: constructor,
-    ...value,
-  } as Activity;
-}
-
 export class InteractionState {
   public readonly activity: Activity;
   private readonly previousInteractionState?: InteractionState;

@@ -31,8 +31,8 @@ import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
 import LoadingScreen from './LoadingScreen';
-import SuspenseCache from '../utils/SuspenseCache';
 import Suspense from './Suspense';
+import ListEx from './ListEx';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -146,47 +146,33 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
         asyncAction={this.state.resources}
         fallback={<LoadingScreen />}
         content={(resources) => {
-          if (resources.length > 0) {
-            return (
-              <List component="nav">
-                {resources.map((resource) => (
-                  <ListItem
-                    button
-                    onClick={() => this.viewWeekdays(resource)}
-                    key={resource.name}
-                  >
-                    <ListItemText>{resource.name}</ListItemText>
-                    {this.props.isAuthenticated && (
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          onClick={() => this.deleteResource(resource.name)}
-                          edge="end"
-                          aria-label="delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    )}
-                  </ListItem>
-                ))}
-              </List>
-            );
-          } else {
-            return (
-              <div className={this.props.classes.paper}>
-                <Avatar className={this.props.classes.avatar}>
-                  <MoodBadIcon className={this.props.classes.avatarIcon} />
-                </Avatar>
-                <Typography variant="h5">
-                  Es wurden keine Resourcen erstellt.
-                </Typography>
-                <Typography variant="body1">
-                  Melden Sie sich als Administrator an und verwenden Sie den
-                  Button unten rechts, um eine Resource zu erstellen.
-                </Typography>
-              </div>
-            );
-          }
+          return (
+            <ListEx
+              emptyTitle="Es wurden keine Resourcen erstellt."
+              emptyMessage="Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen."
+            >
+              {resources.map((resource) => (
+                <ListItem
+                  button
+                  onClick={() => this.viewWeekdays(resource)}
+                  key={resource.name}
+                >
+                  <ListItemText>{resource.name}</ListItemText>
+                  {this.props.isAuthenticated && (
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        onClick={() => this.deleteResource(resource.name)}
+                        edge="end"
+                        aria-label="delete"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  )}
+                </ListItem>
+              ))}
+            </ListEx>
+          );
         }}
       />
     );

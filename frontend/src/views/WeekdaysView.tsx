@@ -33,6 +33,9 @@ import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
 import SplitButton from './SplitButton';
+import Suspense from './Suspense';
+import LoadingScreen from './LoadingScreen';
+import ListEx from './ListEx';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,22 +56,22 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
     super(props);
 
     this.state = {
-      weekdays: [],
+      weekdays: undefined,
       showAddWeekdayModal: false,
     };
   }
 
-  async componentDidMount() {
-    await this.refreshWeekdays();
+  componentDidMount() {
+    this.refreshWeekdays();
   }
 
-  async refreshWeekdays() {
-    const weekdays = await this.props.client.getWeekdays(
+  refreshWeekdays() {
+    const weekdaysPromise = this.props.client.getWeekdays(
       this.props.resource.name
     );
 
     this.setState({
-      weekdays: weekdays,
+      weekdays: weekdaysPromise,
     });
   }
 
@@ -86,24 +89,24 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
     });
   }
 
-  getCreatedWeekdayNames(): Set<string> {
+  getCreatedWeekdayNames(weekdays: WeekdayGetInterface[]): Set<string> {
     return new Set<string>(
-      this.state.weekdays
+      weekdays
         .map((weekday) => weekday.name)
         .filter((weekdayName) => weekdayNames.has(weekdayName))
     );
   }
 
-  getMissingWeekdayNames(): Array<string> {
-    const createdWeekdayNames = this.getCreatedWeekdayNames();
+  getMissingWeekdayNames(weekdays: WeekdayGetInterface[]): Array<string> {
+    const createdWeekdayNames = this.getCreatedWeekdayNames(weekdays);
 
     return Array.from(weekdayNames)
       .filter((name) => !createdWeekdayNames.has(name))
       .sort(nameSorter);
   }
 
-  haveAllWeekdaysBeenCreated() {
-    return _.isEqual(weekdayNames, this.getCreatedWeekdayNames());
+  haveAllWeekdaysBeenCreated(weekdays: WeekdayGetInterface[]) {
+    return _.isEqual(weekdayNames, this.getCreatedWeekdayNames(weekdays));
   }
 
   async addWeekday(weekdayName: string) {
@@ -111,13 +114,13 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
       name: weekdayName as WeekdayName, // We trust here that the UI delivers the correct type. If not, the server performs checks and will reject it
     });
 
-    await this.refreshWeekdays();
+    this.refreshWeekdays();
   }
 
   async deleteWeekday(weekdayId: number) {
     await this.props.client.deleteWeekday(weekdayId);
 
-    await this.refreshWeekdays();
+    this.refreshWeekdays();
   }
 
   viewTimeslots(weekday: WeekdayGetInterface) {
@@ -131,61 +134,71 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
 
   render() {
     return (
-      <>
-        <List component="nav">
-          {this.state.weekdays
-            .sort((left, right) => nameSorter(left.name, right.name))
-            .map((weekday) => (
-              <ListItem
-                button
-                key={weekday.name}
-                onClick={() => this.viewTimeslots(weekday)}
-              >
-                <ListItemText> {weekday.name} </ListItemText>
-                {this.props.isAuthenticated && (
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="end"
-                      onClick={() => this.deleteWeekday(weekday.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                )}
-              </ListItem>
-            ))}
-        </List>
-        {this.props.isAuthenticated && !this.haveAllWeekdaysBeenCreated() && (
-          <Fab
-            className={this.props.classes.fab}
-            variant="extended"
-            onClick={this.launchAddWeekdayModal}
-          >
-            <AddIcon className={this.props.classes.extendedIcon} />
-            Wochentag
-          </Fab>
-        )}
+      <Suspense
+        asyncAction={this.state.weekdays}
+        fallback={<LoadingScreen />}
+        content={(weekdays) => (
+          <>
+            <ListEx
+              emptyTitle="Keine Wochentage angelegt"
+              emptyMessage="Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage."
+            >
+              {weekdays
+                .sort((left, right) => nameSorter(left.name, right.name))
+                .map((weekday) => (
+                  <ListItem
+                    button
+                    key={weekday.name}
+                    onClick={() => this.viewTimeslots(weekday)}
+                  >
+                    <ListItemText> {weekday.name} </ListItemText>
+                    {this.props.isAuthenticated && (
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="end"
+                          onClick={() => this.deleteWeekday(weekday.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    )}
+                  </ListItem>
+                ))}
+            </ListEx>
+            {this.props.isAuthenticated &&
+              !this.haveAllWeekdaysBeenCreated(weekdays) && (
+                <Fab
+                  className={this.props.classes.fab}
+                  variant="extended"
+                  onClick={this.launchAddWeekdayModal}
+                >
+                  <AddIcon className={this.props.classes.extendedIcon} />
+                  Wochentag
+                </Fab>
+              )}
 
-        <Dialog
-          open={this.state.showAddWeekdayModal}
-          onClose={this.closeAddWeekdayModal}
-        >
-          <DialogTitle> Welcher Tag soll angelegt werden? </DialogTitle>
-          <DialogContent>
-            <DialogContentText>TODO Beschreibung</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <SplitButton
-              onClick={async (name, _) => await this.openWeekday(name)}
-              options={this.getMissingWeekdayNames()}
-            />
-            <Button onClick={this.closeAddWeekdayModal} color="secondary">
-              Abbrechen
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+            <Dialog
+              open={this.state.showAddWeekdayModal}
+              onClose={this.closeAddWeekdayModal}
+            >
+              <DialogTitle> Welcher Tag soll angelegt werden? </DialogTitle>
+              <DialogContent>
+                <DialogContentText>TODO Beschreibung</DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <SplitButton
+                  onClick={async (name, _) => await this.openWeekday(name)}
+                  options={this.getMissingWeekdayNames(weekdays)}
+                />
+                <Button onClick={this.closeAddWeekdayModal} color="secondary">
+                  Abbrechen
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        )}
+      />
     );
   }
 }
@@ -201,6 +214,6 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  weekdays: WeekdayGetInterface[];
+  weekdays?: Promise<WeekdayGetInterface[]>;
   showAddWeekdayModal: boolean;
 }

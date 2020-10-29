@@ -1,11 +1,7 @@
 import React from 'react';
 import './App.css';
 import WeekdaysView from './views/WeekdaysView';
-import {
-  Activity,
-  constructActivity,
-  InteractionState,
-} from './InteractionState';
+import { Activity, InteractionState } from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
 import CreateBookingDialog from './views/CreateBookingDialog';
@@ -32,6 +28,7 @@ import TimeslotEditDialog from './views/TimeslotEditDialog';
 import ErrorBoundary from './views/ErrorBoundary';
 import ErrorView from './views/ErrorView';
 import ResourcesView from './views/ResourcesView';
+import { construct } from './utils/constructAdt';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -71,9 +68,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
     this.state = {
       isAuthenticated: false,
-      interactionState: new InteractionState(
-        constructActivity('viewingResources', {})
-      ),
+      interactionState: new InteractionState(construct('viewingResources', {})),
     };
   }
 
@@ -110,13 +105,15 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     });
   }
 
-  changeInteractionState<C extends Activity['_type']>(
-    constructor: C,
-    value: ADTMember<Activity, C>
-  ) {
+  changeInteractionState<
+    C extends string,
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    T extends ADTMember<Activity, C>,
+    U extends { _type: C } & T
+  >(constructor: C, value: T) {
     this.setState({
       interactionState: this.state.interactionState.changeActivity(
-        constructActivity(constructor, value)
+        construct<C, T, U>(constructor, value) as Activity
       ),
     });
 

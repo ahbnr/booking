@@ -1,6 +1,7 @@
 import React, { ChangeEvent, createRef } from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
+  CircularProgress,
   Container,
   createStyles,
   CssBaseline,
@@ -38,6 +39,7 @@ import { changeInteractionStateT } from '../App';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
+import Suspense from './Suspense';
 
 const localizer = momentLocalizer(moment);
 
@@ -107,11 +109,17 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
     };
   }
 
-  async componentDidMount() {
-    await this.refresh();
+  componentDidMount() {
+    this.refreshData();
   }
 
-  async refresh() {
+  refreshData() {
+    this.setState({
+      downloadedData: this.fetchData(),
+    });
+  }
+
+  async fetchData(): Promise<DownloadedData> {
     const bookings = await this.props.client.getBookingsInInterval(
       noRefinementChecks<BookingIntervalIndexRequestData>({
         start: this.props.dateInterval.start.toISO(),
@@ -119,62 +127,63 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
       })
     );
 
-    this.setState({
-      downloadedData: {
-        bookings: bookings,
-      },
-    });
+    return {
+      bookings: bookings,
+    };
   }
 
   render() {
-    let content;
-    if (this.state.downloadedData == null) {
-      content = <>loading...</>;
-    } else {
-      const downloadedData = this.state.downloadedData;
+    const content = (
+      <Suspense
+        asyncAction={this.state.downloadedData}
+        fallback={<CircularProgress size="6vw" />}
+        content={(downloadedData) => {
+          const groupedBookings = _.groupBy(
+            downloadedData.bookings,
+            (booking) => [booking.startDate, booking.endDate]
+          );
+          const events = _.map(groupedBookings, (group) =>
+            this.bookingsGroupToEvent(group)
+          );
 
-      const groupedBookings = _.groupBy(downloadedData.bookings, (booking) => [
-        booking.startDate,
-        booking.endDate,
-      ]);
-      const events = _.map(groupedBookings, (group) =>
-        this.bookingsGroupToEvent(group)
-      );
+          const resources = _.map(
+            _.uniq(
+              _.map(downloadedData.bookings, (booking) => booking.resource)
+            ),
+            this.resourceToCalendarResource
+          );
 
-      const resources = _.map(
-        _.uniq(_.map(downloadedData.bookings, (booking) => booking.resource)),
-        this.resourceToCalendarResource
-      );
-
-      content = (
-        <>
-          <div ref={this.calendarRef}>
-            <Calendar
-              events={events}
-              components={{
-                toolbar: CalendarToolbar,
-              }}
-              localizer={localizer}
-              defaultView={'day'}
-              views={['day']}
-              step={60}
-              defaultDate={this.props.dateInterval.start.toJSDate()}
-              resources={resources}
-              resourceIdAccessor="resourceId"
-              resourceTitleAccessor="resourceTitle"
-            />
-          </div>
-          <ReactToPrint
-            trigger={() => (
-              <Fab className={this.props.classes.fab}>
-                <PrintIcon />
-              </Fab>
-            )}
-            content={() => this.calendarRef.current}
-          />
-        </>
-      );
-    }
+          return (
+            <>
+              <div ref={this.calendarRef}>
+                <Calendar
+                  events={events}
+                  components={{
+                    toolbar: CalendarToolbar,
+                  }}
+                  localizer={localizer}
+                  defaultView={'day'}
+                  views={['day']}
+                  step={60}
+                  defaultDate={this.props.dateInterval.start.toJSDate()}
+                  resources={resources}
+                  resourceIdAccessor="resourceId"
+                  resourceTitleAccessor="resourceTitle"
+                />
+              </div>
+              <ReactToPrint
+                trigger={() => (
+                  <Fab className={this.props.classes.fab}>
+                    <PrintIcon />
+                  </Fab>
+                )}
+                content={() => this.calendarRef.current}
+              />
+            </>
+          );
+        }}
+      />
+    );
 
     return (
       <>
@@ -203,7 +212,7 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  downloadedData?: DownloadedData;
+  downloadedData?: Promise<DownloadedData>;
 }
 
 interface DownloadedData {

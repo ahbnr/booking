@@ -23,6 +23,9 @@ import {
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
+import Suspense from './Suspense';
+import LoadingScreen from './LoadingScreen';
+import ListEx from './ListEx';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -43,12 +46,12 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
     super(props);
 
     this.state = {
-      timeslots: [],
+      timeslots: undefined,
     };
   }
 
-  async componentDidMount() {
-    await this.refreshTimeslots();
+  componentDidMount() {
+    this.refreshTimeslots();
   }
 
   async addTimeslot() {
@@ -64,53 +67,64 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
 
     await this.props.client.createTimeslot(this.props.weekday.id, data);
 
-    await this.refreshTimeslots();
+    this.refreshTimeslots();
   }
 
-  async refreshTimeslots() {
-    const timeslots = await this.props.client.getTimeslots(
+  refreshTimeslots() {
+    const timeslotsPromise = this.props.client.getTimeslots(
       this.props.weekday.id
     );
 
     this.setState({
       ...this.state,
-      timeslots: timeslots,
+      timeslots: timeslotsPromise,
     });
   }
 
   render() {
-    const sortedTimeslots: TimeslotGetInterface[] = _.sortWith(
-      this.state.timeslots,
-      compare
-    );
-
     return (
-      <>
-        <List component="nav">
-          {sortedTimeslots.map((timeslot, index) => (
-            <TimeslotView
-              key={timeslot.id}
-              index={index}
-              isAuthenticated={this.props.isAuthenticated}
-              client={this.props.client}
-              changeInteractionState={this.props.changeInteractionState}
-              timeslotId={timeslot.id}
-              onDelete={this.refreshTimeslots}
-            />
-          ))}
-        </List>
+      <Suspense
+        fallback={<LoadingScreen />}
+        asyncAction={this.state.timeslots}
+        content={(timeslots) => {
+          const sortedTimeslots: TimeslotGetInterface[] = _.sortWith(
+            timeslots,
+            compare
+          );
 
-        {this.props.isAuthenticated && (
-          <Fab
-            className={this.props.classes.fab}
-            variant="extended"
-            onClick={this.addTimeslot}
-          >
-            <AddIcon className={this.props.classes.extendedIcon} />
-            Timeslot
-          </Fab>
-        )}
-      </>
+          return (
+            <>
+              <ListEx
+                emptyTitle="Keine Timeslots angelegt"
+                emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
+              >
+                {sortedTimeslots.map((timeslot, index) => (
+                  <TimeslotView
+                    key={timeslot.id}
+                    index={index}
+                    isAuthenticated={this.props.isAuthenticated}
+                    client={this.props.client}
+                    changeInteractionState={this.props.changeInteractionState}
+                    timeslotId={timeslot.id}
+                    onDelete={this.refreshTimeslots}
+                  />
+                ))}
+              </ListEx>
+
+              {this.props.isAuthenticated && (
+                <Fab
+                  className={this.props.classes.fab}
+                  variant="extended"
+                  onClick={this.addTimeslot}
+                >
+                  <AddIcon className={this.props.classes.extendedIcon} />
+                  Timeslot
+                </Fab>
+              )}
+            </>
+          );
+        }}
+      />
     );
   }
 }
@@ -126,5 +140,5 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  timeslots: TimeslotGetInterface[];
+  timeslots?: Promise<TimeslotGetInterface[]>;
 }
