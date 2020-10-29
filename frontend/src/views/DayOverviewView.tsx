@@ -9,6 +9,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
+import PrintIcon from '@material-ui/icons/Print';
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
 import {
@@ -34,6 +35,9 @@ import { DateTime, Interval } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import _ from 'lodash';
 import { changeInteractionStateT } from '../App';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
+import { fabStyle } from '../styles/fab';
 
 const localizer = momentLocalizer(moment);
 
@@ -60,6 +64,7 @@ const styles = (theme: Theme) =>
       flexDirection: 'column',
       alignItems: 'center',
     },
+    fab: fabStyle(theme),
   });
 
 @boundClass
@@ -143,14 +148,6 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
 
       content = (
         <>
-          <ReactToPrint
-            trigger={() => {
-              // NOTE: could just as easily return <SomeComponent />. Do NOT pass an `onClick` prop
-              // to the root node of the returned component as it will be overwritten.
-              return <a href="#">Print this out!</a>;
-            }}
-            content={() => this.calendarRef.current}
-          />
           <div ref={this.calendarRef}>
             <Calendar
               events={events}
@@ -167,16 +164,24 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
               resourceTitleAccessor="resourceTitle"
             />
           </div>
+          <ReactToPrint
+            trigger={() => (
+              <Fab className={this.props.classes.fab}>
+                <PrintIcon />
+              </Fab>
+            )}
+            content={() => this.calendarRef.current}
+          />
         </>
       );
     }
 
     return (
       <>
-        <Container component="main" maxWidth="xs">
+        <Container component="main">
           <CssBaseline />
           <div className={this.props.classes.paper}>
-            <Typography component="h1" variant="h5">
+            <Typography component="h3" variant="h3">
               Tagesübersicht - {this.props.dateInterval.start.weekdayLong}
             </Typography>
             {content}

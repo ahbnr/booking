@@ -28,7 +28,7 @@ export class Weekday extends BaseModel<Weekday> {
   @Column({ allowNull: false })
   public resourceName!: string;
 
-  @BelongsTo(() => Resource)
+  @BelongsTo(() => Resource, { onDelete: 'CASCADE' })
   public resource?: Resource;
 
   @HasMany(() => Timeslot, { onDelete: 'CASCADE' })

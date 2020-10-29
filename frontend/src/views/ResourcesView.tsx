@@ -4,6 +4,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import {
+  Avatar,
   Button,
   createStyles,
   Dialog,
@@ -11,6 +12,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Grid,
   IconButton,
   List,
   ListItem,
@@ -18,15 +20,18 @@ import {
   ListItemText,
   TextField,
   Theme,
+  Typography,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import MoodBadIcon from '@material-ui/icons/MoodBad';
 import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
+import LoadingScreen from './LoadingScreen';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,6 +39,23 @@ const styles = (theme: Theme) =>
       width: '100%',
       maxWidth: 360,
       backgroundColor: theme.palette.background.paper,
+    },
+    paper: {
+      marginTop: theme.spacing(8),
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    avatar: {
+      margin: theme.spacing(1),
+      backgroundColor: theme.palette.secondary.main,
+      width: theme.spacing(9),
+      height: theme.spacing(9),
+      marginBottom: theme.spacing(3),
+    },
+    avatarIcon: {
+      width: theme.spacing(7),
+      height: theme.spacing(7),
     },
     extendedIcon: {
       marginRight: theme.spacing(1),
@@ -52,6 +74,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
       resources: [],
       showAddResourceModal: false,
       newResourceName: '',
+      isLoading: true,
     };
   }
 
@@ -60,9 +83,15 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   async refreshResources() {
+    this.setState({
+      isLoading: true,
+      resources: [],
+    });
+
     const resources = await this.props.client.getResources();
 
     this.setState({
+      isLoading: false,
       resources: resources,
     });
   }
@@ -119,8 +148,9 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   render() {
-    return (
-      <>
+    let content;
+    if (this.state.resources.length > 0) {
+      content = (
         <List component="nav">
           {this.state.resources.map((resource) => (
             <ListItem
@@ -143,6 +173,27 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             </ListItem>
           ))}
         </List>
+      );
+    } else {
+      content = (
+        <div className={this.props.classes.paper}>
+          <Avatar className={this.props.classes.avatar}>
+            <MoodBadIcon className={this.props.classes.avatarIcon} />
+          </Avatar>
+          <Typography variant="h5">
+            Es wurden keine Resourcen erstellt.
+          </Typography>
+          <Typography variant="body1">
+            Melden Sie sich als Administrator an und verwenden Sie den Button
+            unten rechts, um eine Resource zu erstellen.
+          </Typography>
+        </div>
+      );
+    }
+
+    return (
+      <LoadingScreen isLoading={this.state.isLoading}>
+        {content}
         {this.props.isAuthenticated && (
           <Fab
             className={this.props.classes.fab}
@@ -183,7 +234,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             </Button>
           </DialogActions>
         </Dialog>
-      </>
+      </LoadingScreen>
     );
   }
 }
@@ -201,4 +252,5 @@ interface State {
   resources: ResourceGetInterface[];
   showAddResourceModal: boolean;
   newResourceName: string;
+  isLoading: boolean;
 }
