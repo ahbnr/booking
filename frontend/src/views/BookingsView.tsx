@@ -1,11 +1,11 @@
 import React from 'react';
 import '../App.css';
-import { ListGroup } from 'react-bootstrap';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import BookingView from './BookingView';
 import { BookingGetInterface } from 'common/dist';
+import { List } from '@material-ui/core';
 
 @boundClass
 export default class BookingsView extends React.Component<Properties, State> {
@@ -32,19 +32,18 @@ export default class BookingsView extends React.Component<Properties, State> {
 
   render() {
     return (
-      <div className="TimeslotsView">
-        <ListGroup className="Listing">
+      <>
+        <List component="nav">
           {this.state.bookings.map((booking) => (
-            <ListGroup.Item key={booking.id}>
-              <BookingView
-                client={this.props.client}
-                bookingId={booking.id}
-                onDelete={this.refreshBookings}
-              />
-            </ListGroup.Item>
+            <BookingView
+              key={booking.id}
+              client={this.props.client}
+              bookingId={booking.id}
+              onDelete={this.refreshBookings}
+            />
           ))}
-        </ListGroup>
-      </div>
+        </List>
+      </>
     );
   }
 }

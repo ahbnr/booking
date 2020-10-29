@@ -1,12 +1,10 @@
 import React from 'react';
 import './App.css';
 import WeekdaysView from './views/WeekdaysView';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import {
   Activity,
   constructActivity,
   InteractionState,
-  LookingUpBookings,
 } from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';

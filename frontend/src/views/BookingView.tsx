@@ -1,7 +1,14 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import '../App.css';
 import { boundClass } from 'autobind-decorator';
-import { IconButton, TextField } from '@material-ui/core';
+import {
+  Grid,
+  IconButton,
+  ListItem,
+  ListItemSecondaryAction,
+  ListItemText,
+  TextField,
+} from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Client } from '../Client';
 import { BookingGetInterface } from 'common/dist';
@@ -42,25 +49,35 @@ export default class BookingView extends React.Component<Properties, State> {
     } else {
       return (
         <>
-          <Fragment>
-            <TextField
-              label="Name"
-              value={this.state.booking.name}
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-            <TextField
-              label="E-Mail"
-              value={this.state.booking.email}
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-            <IconButton onClick={this.onDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Fragment>
+          <ListItem>
+            <ListItemText>
+              <Grid alignItems="center" container spacing={3}>
+                <Grid item xs={6}>
+                  <TextField
+                    label="Name"
+                    value={this.state.booking.name}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    label="E-Mail"
+                    value={this.state.booking.email}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </ListItemText>
+            <ListItemSecondaryAction>
+              <IconButton onClick={this.onDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
         </>
       );
     }
