@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Grid,
   IconButton,
   List,
   ListItem,
@@ -32,6 +31,8 @@ import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
 import LoadingScreen from './LoadingScreen';
+import SuspenseCache from '../utils/SuspenseCache';
+import Suspense from './Suspense';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -71,28 +72,20 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
     super(props);
 
     this.state = {
-      resources: [],
+      resources: undefined,
       showAddResourceModal: false,
       newResourceName: '',
-      isLoading: true,
     };
   }
 
-  async componentDidMount() {
-    await this.refreshResources();
+  componentDidMount() {
+    this.refreshResources();
   }
 
-  async refreshResources() {
+  refreshResources() {
+    const promise = this.props.client.getResources();
     this.setState({
-      isLoading: true,
-      resources: [],
-    });
-
-    const resources = await this.props.client.getResources();
-
-    this.setState({
-      isLoading: false,
-      resources: resources,
+      resources: promise,
     });
   }
 
@@ -120,7 +113,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
       newResourceName: '',
     });
 
-    await this.refreshResources();
+    this.refreshResources();
   }
 
   onNewResourceNameChange(
@@ -134,13 +127,13 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   async addResource(resourceName: string) {
     await this.props.client.createResource(resourceName);
 
-    await this.refreshResources();
+    this.refreshResources();
   }
 
   async deleteResource(resourceName: string) {
     await this.props.client.deleteResource(resourceName);
 
-    await this.refreshResources();
+    this.refreshResources();
   }
 
   viewWeekdays(resource: ResourceGetInterface) {
@@ -148,51 +141,58 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   render() {
-    let content;
-    if (this.state.resources.length > 0) {
-      content = (
-        <List component="nav">
-          {this.state.resources.map((resource) => (
-            <ListItem
-              button
-              onClick={() => this.viewWeekdays(resource)}
-              key={resource.name}
-            >
-              <ListItemText>{resource.name}</ListItemText>
-              {this.props.isAuthenticated && (
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => this.deleteResource(resource.name)}
-                    edge="end"
-                    aria-label="delete"
+    const content = (
+      <Suspense
+        asyncAction={this.state.resources}
+        fallback={<LoadingScreen />}
+        content={(resources) => {
+          if (resources.length > 0) {
+            return (
+              <List component="nav">
+                {resources.map((resource) => (
+                  <ListItem
+                    button
+                    onClick={() => this.viewWeekdays(resource)}
+                    key={resource.name}
                   >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              )}
-            </ListItem>
-          ))}
-        </List>
-      );
-    } else {
-      content = (
-        <div className={this.props.classes.paper}>
-          <Avatar className={this.props.classes.avatar}>
-            <MoodBadIcon className={this.props.classes.avatarIcon} />
-          </Avatar>
-          <Typography variant="h5">
-            Es wurden keine Resourcen erstellt.
-          </Typography>
-          <Typography variant="body1">
-            Melden Sie sich als Administrator an und verwenden Sie den Button
-            unten rechts, um eine Resource zu erstellen.
-          </Typography>
-        </div>
-      );
-    }
+                    <ListItemText>{resource.name}</ListItemText>
+                    {this.props.isAuthenticated && (
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          onClick={() => this.deleteResource(resource.name)}
+                          edge="end"
+                          aria-label="delete"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    )}
+                  </ListItem>
+                ))}
+              </List>
+            );
+          } else {
+            return (
+              <div className={this.props.classes.paper}>
+                <Avatar className={this.props.classes.avatar}>
+                  <MoodBadIcon className={this.props.classes.avatarIcon} />
+                </Avatar>
+                <Typography variant="h5">
+                  Es wurden keine Resourcen erstellt.
+                </Typography>
+                <Typography variant="body1">
+                  Melden Sie sich als Administrator an und verwenden Sie den
+                  Button unten rechts, um eine Resource zu erstellen.
+                </Typography>
+              </div>
+            );
+          }
+        }}
+      />
+    );
 
     return (
-      <LoadingScreen isLoading={this.state.isLoading}>
+      <>
         {content}
         {this.props.isAuthenticated && (
           <Fab
@@ -234,7 +234,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             </Button>
           </DialogActions>
         </Dialog>
-      </LoadingScreen>
+      </>
     );
   }
 }
@@ -249,8 +249,7 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  resources: ResourceGetInterface[];
+  resources: Promise<ResourceGetInterface[]> | undefined;
   showAddResourceModal: boolean;
   newResourceName: string;
-  isLoading: boolean;
 }

@@ -21,7 +21,6 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import ResourcesView from './views/ResourcesView';
 import InviteAdminDialog from './views/InviteAdminDialog';
 import SignupDialog from './views/SignupDialog';
 import BookingsLookupView from './views/BookingsLookupView';
@@ -30,6 +29,9 @@ import { getWeekdayDate } from 'common/dist/typechecking/api/Weekday';
 import { Interval } from 'luxon';
 import { ADTMember, matchI } from 'ts-adt';
 import TimeslotEditDialog from './views/TimeslotEditDialog';
+import ErrorBoundary from './views/ErrorBoundary';
+import ErrorView from './views/ErrorView';
+import ResourcesView from './views/ResourcesView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -212,7 +214,9 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           <main className={this.props.classes.content}>
             <div className={this.props.classes.appBarSpacer} />
             <Container maxWidth="lg" className={this.props.classes.container}>
-              {view}
+              <ErrorBoundary fallback={(e) => <ErrorView error={e} />}>
+                {view}
+              </ErrorBoundary>
             </Container>
           </main>
         </div>

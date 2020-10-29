@@ -19,6 +19,7 @@ import {
   BookingWithContextGetInterface,
 } from 'common/dist';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
+import DisplayableError from './errors/DisplayableError';
 
 const address = 'localhost';
 const port = 3000;
@@ -79,19 +80,26 @@ export class Client {
     }
 
     let response: Response;
-    if (body != null) {
-      headers['Content-Type'] = 'application/json';
+    try {
+      if (body != null) {
+        headers['Content-Type'] = 'application/json';
 
-      response = await fetch(`${baseUrl}/${subUrl}`, {
-        method: method,
-        headers: headers,
-        body: JSON.stringify(body),
-      });
-    } else {
-      response = await fetch(`${baseUrl}/${subUrl}`, {
-        headers: headers,
-        method: method,
-      });
+        response = await fetch(`${baseUrl}/${subUrl}`, {
+          method: method,
+          headers: headers,
+          body: JSON.stringify(body),
+        });
+      } else {
+        response = await fetch(`${baseUrl}/${subUrl}`, {
+          headers: headers,
+          method: method,
+        });
+      }
+    } catch (e) {
+      throw new DisplayableError(
+        'Es gibt ein Problem mit der Netzwerkverbindung. Versuchen Sie es später erneut',
+        e
+      );
     }
 
     // If authentication failed

@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
 
 class UnstyledLoadingScreen extends React.Component<Properties, State> {
   render() {
-    if (this.props.isLoading) {
+    if (this.props.isLoading == null || this.props.isLoading) {
       return (
         <div className={this.props.classes.progressContainer}>
           <CircularProgress size={'6vw'} />
@@ -37,7 +37,7 @@ const LoadingScreen = withStyles(styles)(UnstyledLoadingScreen);
 export default LoadingScreen;
 
 interface Properties extends WithStyles<typeof styles> {
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 interface State {}
