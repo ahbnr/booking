@@ -1,4 +1,10 @@
-import { DataType, IsDate, IsEmail, NotEmpty } from 'sequelize-typescript';
+import {
+  CreatedAt,
+  DataType,
+  IsDate,
+  IsEmail,
+  NotEmpty,
+} from 'sequelize-typescript';
 import { Timeslot } from './timeslot.model';
 import {
   BelongsTo,
@@ -10,6 +16,8 @@ import {
 import { DateTime, Duration, Interval } from 'luxon';
 import { LazyGetter } from '../utils/LazyGetter';
 import { BaseModel } from './BaseModel';
+
+export const VerificationTimeout = Duration.fromObject({ minutes: 10 });
 
 @Table
 export class Booking extends BaseModel<Booking> {
@@ -42,11 +50,17 @@ export class Booking extends BaseModel<Booking> {
   @Column({ allowNull: false })
   public endDate!: Date;
 
+  @Column({ allowNull: false, defaultValue: false })
+  public isVerified!: boolean;
+
   @BelongsTo(() => Timeslot, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   public timeslot?: Timeslot;
 
   @LazyGetter<Booking>((o) => o.timeslot, { shouldBePresent: true })
   public readonly lazyTimeslot!: Promise<Timeslot>;
+
+  @CreatedAt
+  public readonly createdAt!: Date;
 
   public timeTillDue(): Duration {
     const now = DateTime.local();
@@ -58,6 +72,11 @@ export class Booking extends BaseModel<Booking> {
   public hasPassed(): boolean {
     const now = DateTime.local();
 
-    return now >= DateTime.fromJSDate(this.endDate);
+    const verificationExpired =
+      !this.isVerified &&
+      now >= DateTime.fromJSDate(this.createdAt).plus(VerificationTimeout);
+    const endDateReached = now >= DateTime.fromJSDate(this.endDate);
+
+    return verificationExpired || endDateReached;
   }
 }

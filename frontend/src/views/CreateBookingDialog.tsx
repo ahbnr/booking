@@ -114,7 +114,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       this.props.timeslot.weekdayId
     );
 
-    window.history.back();
+    this.props.changeInteractionState('confirmingBookingDialog', {});
   }
 
   render() {

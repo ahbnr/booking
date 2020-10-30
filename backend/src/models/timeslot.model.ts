@@ -12,6 +12,7 @@ import { Booking } from './booking.model';
 import { LazyGetter } from '../utils/LazyGetter';
 import { BaseModel } from './BaseModel';
 import { noRefinementChecks, TimeslotGetInterface } from 'common/dist';
+import { BookingsController } from '../controllers/bookings.controller';
 
 @Table
 export class Timeslot extends BaseModel<Timeslot> {
@@ -59,7 +60,9 @@ export class Timeslot extends BaseModel<Timeslot> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { bookings, weekday, ...strippedTimeslot } = this.toTypedJSON();
 
-    const lazyBookings = await this.lazyBookings;
+    const lazyBookings = await BookingsController.clearPastBookings(
+      await this.lazyBookings
+    );
     const lazyWeekday = await this.lazyWeekday;
 
     // no refinement checks, we assume the database records are correct at least regarding refinements

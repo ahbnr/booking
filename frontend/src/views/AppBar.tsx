@@ -115,7 +115,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
   }
 
   onHomeButton() {
-    this.props.changeInteractionState('viewingResources', {});
+    this.props.changeInteractionState('viewingMainPage', {});
     this.handleDrawerClose();
   }
 
@@ -146,7 +146,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
   handleLogout() {
     this.handleLogoutDialogClose();
     this.props.client.logout();
-    this.props.changeInteractionState('viewingResources', {});
+    this.props.changeInteractionState('viewingMainPage', {});
   }
 
   render() {
@@ -186,7 +186,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                 color="inherit"
                 underline="none"
                 onClick={() =>
-                  this.props.changeInteractionState('viewingResources', {})
+                  this.props.changeInteractionState('viewingMainPage', {})
                 }
               >
                 Timeslot Booking

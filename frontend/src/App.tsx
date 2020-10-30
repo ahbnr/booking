@@ -31,6 +31,7 @@ import ResourcesView from './views/ResourcesView';
 import { construct } from './utils/constructAdt';
 import AddWeekdayDialog from './views/AddWeekdayDialog';
 import MainView from './views/MainView';
+import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -211,6 +212,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       viewingMainPage: () => (
         <MainView changeInteractionState={this.changeInteractionState} />
       ),
+      confirmingBookingDialog: () => <ConfirmBookingDialog />,
     });
 
     return (

@@ -125,14 +125,16 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
             displayData.timeslot.bookingIds.length <
             displayData.timeslot.capacity;
 
+          const clickAction = this.props.isAuthenticated
+            ? () => this.viewBookings(displayData.timeslot)
+            : bookingsAvailable
+            ? () => this.createBooking(displayData.timeslot)
+            : undefined;
+
           return (
             <ListItem
               button
-              onClick={
-                bookingsAvailable
-                  ? () => this.createBooking(displayData.timeslot)
-                  : undefined
-              }
+              onClick={clickAction}
               className={
                 bookingsAvailable
                   ? this.props.isAuthenticated
@@ -186,11 +188,7 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
                       : 'Voll'
                   }
                   color={bookingsAvailable ? 'primary' : 'secondary'}
-                  onClick={
-                    bookingsAvailable
-                      ? () => this.createBooking(displayData.timeslot)
-                      : undefined
-                  }
+                  onClick={clickAction}
                 />
                 {this.props.isAuthenticated && (
                   <IconButton onClick={() => this.onEdit(displayData.timeslot)}>

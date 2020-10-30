@@ -250,9 +250,19 @@ export class BookingsController {
 
     const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
-    return Booking.findAll({
-      where: { email: tokenData.email },
-    });
+    const bookings = await this.clearPastBookings(
+      await Booking.findAll({
+        where: { email: tokenData.email },
+      })
+    );
+
+    for (const booking of bookings) {
+      booking.update({
+        isVerified: true,
+      });
+    }
+
+    return bookings;
   }
 
   private static async getBookingByToken(
