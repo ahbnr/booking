@@ -54,6 +54,10 @@ export class Client {
     return this.jsonWebToken != null;
   }
 
+  public logout() {
+    this.jsonWebToken = undefined;
+  }
+
   private async typedRequest<A, O, I>(
     type: Type<A, O, I>,
     method: 'POST' | 'GET' | 'PUT' | 'DELETE',
@@ -104,7 +108,7 @@ export class Client {
 
     // If authentication failed
     if (response.status === 401) {
-      this.jsonWebToken = undefined;
+      this.logout();
     }
 
     if (!response.ok) {

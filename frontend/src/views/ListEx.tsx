@@ -67,7 +67,16 @@ export default class ListEx extends React.Component<Properties, State> {
         <InfoMessage emptyTitle={emptyTitle} emptyMessage={emptyMessage} />
       );
     } else {
-      return <List {...listProps}>{children}</List>;
+      return (
+        <>
+          {this.props.notEmptyTitle != null && (
+            <Typography variant="h6" align="center">
+              {this.props.notEmptyTitle}
+            </Typography>
+          )}
+          <List {...listProps}>{children}</List>
+        </>
+      );
     }
   }
 }
@@ -80,6 +89,7 @@ interface InfoMessageProperties extends WithStyles<typeof styles> {
 }
 
 interface Properties extends ListProps {
+  notEmptyTitle?: string;
   emptyTitle?: string;
   emptyMessage?: string;
 }

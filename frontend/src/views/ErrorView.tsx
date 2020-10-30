@@ -21,7 +21,6 @@ const styles = (theme: Theme) =>
       justifyContent: 'center',
     },
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

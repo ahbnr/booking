@@ -51,6 +51,8 @@ export interface AddingWeekday {
   resource: ResourceGetInterface;
 }
 
+export interface ViewingMainPage {}
+
 export type Activity = ADT<{
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
@@ -64,6 +66,7 @@ export type Activity = ADT<{
   overviewingDay: OverviewingDay;
   editingTimeslot: EditingTimeslot;
   addingWeekday: AddingWeekday;
+  viewingMainPage: ViewingMainPage;
 }>;
 
 export class InteractionState {

@@ -1,6 +1,11 @@
 import {
   AppBar as MaterialAppBar,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Drawer,
   Link,
@@ -25,6 +30,7 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { changeInteractionStateT } from '../App';
+import { Client } from '../Client';
 
 const drawerWidth = 240;
 
@@ -92,6 +98,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
 
     this.state = {
       drawerOpen: false,
+      logoutDialogOpen: false,
     };
   }
 
@@ -122,6 +129,24 @@ class UnstyledAppBar extends React.Component<Properties, State> {
       weekdayName: 'saturday',
     });
     this.handleDrawerClose();
+  }
+
+  openLogoutDialog() {
+    this.setState({
+      logoutDialogOpen: true,
+    });
+  }
+
+  handleLogoutDialogClose() {
+    this.setState({
+      logoutDialogOpen: false,
+    });
+  }
+
+  handleLogout() {
+    this.handleLogoutDialogClose();
+    this.props.client.logout();
+    this.props.changeInteractionState('viewingResources', {});
   }
 
   render() {
@@ -172,7 +197,9 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                 Login
               </Button>
             )}
-            {this.props.isAuthenticated && <AccountCircle />}
+            {this.props.isAuthenticated && (
+              <AccountCircle onClick={this.openLogoutDialog} />
+            )}
           </Toolbar>
         </MaterialAppBar>
         {this.props.isAuthenticated && (
@@ -214,6 +241,32 @@ class UnstyledAppBar extends React.Component<Properties, State> {
             </List>
           </Drawer>
         )}
+        <Dialog
+          open={this.state.logoutDialogOpen}
+          onClose={this.handleLogoutDialogClose}
+        >
+          <DialogTitle>{'Ausloggen'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Wollen Sie sich ausloggen?</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
+              onClick={this.handleLogoutDialogClose}
+              color="primary"
+              autoFocus
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="contained"
+              onClick={this.handleLogout}
+              color="secondary"
+            >
+              Ausloggen
+            </Button>
+          </DialogActions>
+        </Dialog>
       </>
     );
   }
@@ -224,10 +277,12 @@ const AppBar = withStyles(styles)(UnstyledAppBar);
 export default AppBar;
 
 interface Properties extends WithStyles<typeof styles> {
+  client: Client;
   isAuthenticated: boolean;
   changeInteractionState: changeInteractionStateT;
 }
 
 interface State {
   drawerOpen: boolean;
+  logoutDialogOpen: boolean;
 }

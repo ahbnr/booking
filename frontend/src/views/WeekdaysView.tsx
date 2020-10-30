@@ -114,6 +114,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
         content={(weekdays) => (
           <>
             <ListEx
+              notEmptyTitle="An welchem Wochentag möchten Sie buchen?"
               emptyTitle="Keine Wochentage angelegt"
               emptyMessage="Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage."
             >

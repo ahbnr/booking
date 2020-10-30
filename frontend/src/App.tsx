@@ -30,6 +30,7 @@ import ErrorView from './views/ErrorView';
 import ResourcesView from './views/ResourcesView';
 import { construct } from './utils/constructAdt';
 import AddWeekdayDialog from './views/AddWeekdayDialog';
+import MainView from './views/MainView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -69,7 +70,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
     this.state = {
       isAuthenticated: false,
-      interactionState: new InteractionState(construct('viewingResources', {})),
+      interactionState: new InteractionState(construct('viewingMainPage', {})),
     };
   }
 
@@ -207,6 +208,9 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           resource={resource}
         />
       ),
+      viewingMainPage: () => (
+        <MainView changeInteractionState={this.changeInteractionState} />
+      ),
     });
 
     return (
@@ -214,6 +218,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         <div className={this.props.classes.root}>
           <CssBaseline />
           <AppBar
+            client={this.client}
             isAuthenticated={this.state.isAuthenticated}
             changeInteractionState={this.changeInteractionState}
           />

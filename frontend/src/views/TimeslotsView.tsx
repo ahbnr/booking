@@ -103,6 +103,7 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
           return (
             <>
               <ListEx
+                notEmptyTitle="Wählen Sie einen Zeitslot:"
                 emptyTitle="Keine Timeslots angelegt"
                 emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
               >

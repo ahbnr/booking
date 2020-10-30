@@ -166,6 +166,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
         content={(resources) => {
           return (
             <ListEx
+              notEmptyTitle="Für welche Ressource möchten Sie buchen?"
               emptyTitle="Es wurden keine Resourcen erstellt."
               emptyMessage="Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen."
             >
