@@ -15,11 +15,11 @@ import {
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { Client } from '../Client';
 import { changeInteractionStateT } from '../App';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -47,6 +47,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
       userNameError: undefined,
       password: '',
       passwordError: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -81,13 +82,23 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
     );
   }
 
-  async onSubmit() {
-    await this.props.client.authenticate(
-      this.state.userName,
-      this.state.password
-    );
+  async onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-    window.history.back();
+    if (this.canBeSubmitted()) {
+      this.setState({
+        backdropOpen: true,
+      });
+      await this.props.client.authenticate(
+        this.state.userName,
+        this.state.password
+      );
+      this.setState({
+        backdropOpen: false,
+      });
+
+      window.history.back();
+    }
   }
 
   render() {
@@ -102,7 +113,11 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
             <Typography component="h1" variant="h5">
               Login
             </Typography>
-            <form className={this.props.classes.form} noValidate>
+            <form
+              className={this.props.classes.form}
+              noValidate
+              onSubmit={this.onSubmit}
+            >
               <TextField
                 required
                 variant="outlined"
@@ -110,6 +125,9 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 fullWidth
                 label={'Nutzer'}
                 autoFocus
+                autoCapitalize="off"
+                autoComplete="off"
+                autoCorrect="off"
                 value={this.state.userName}
                 error={this.state.userNameError != null}
                 helperText={this.state.userNameError}
@@ -130,17 +148,18 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
               />
               <Button
                 fullWidth
+                type="submit"
                 variant="contained"
                 color="primary"
                 className={this.props.classes.submit}
                 disabled={!this.canBeSubmitted()}
-                onClick={this.onSubmit}
               >
                 Einloggen
               </Button>
             </form>
           </div>
         </Container>
+        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
@@ -159,4 +178,5 @@ interface State {
   userNameError?: string;
   password: string;
   passwordError?: string;
+  backdropOpen: boolean;
 }

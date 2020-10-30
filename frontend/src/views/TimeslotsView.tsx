@@ -26,6 +26,7 @@ import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,6 +48,7 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
 
     this.state = {
       timeslots: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -65,7 +67,13 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
       capacity: 1,
     });
 
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.createTimeslot(this.props.weekday.id, data);
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.refreshTimeslots();
   }
@@ -106,7 +114,6 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
                     client={this.props.client}
                     changeInteractionState={this.props.changeInteractionState}
                     timeslotId={timeslot.id}
-                    onDelete={this.refreshTimeslots}
                   />
                 ))}
               </ListEx>
@@ -121,6 +128,7 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
                   Timeslot
                 </Fab>
               )}
+              <LoadingBackdrop open={this.state.backdropOpen} />
             </>
           );
         }}
@@ -141,4 +149,5 @@ interface Properties extends WithStyles<typeof styles> {
 
 interface State {
   timeslots?: Promise<TimeslotGetInterface[]>;
+  backdropOpen: boolean;
 }

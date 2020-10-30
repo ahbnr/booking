@@ -13,11 +13,11 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { Client } from '../Client';
-import { InteractionState, ViewingResources } from '../InteractionState';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import getBaseUrl from '../utils/getBaseUrl';
 import { EMailString } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -48,6 +48,7 @@ class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
     this.state = {
       email: '',
       emailError: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -67,12 +68,15 @@ class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
   }
 
   async onSubmit() {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.inviteForSignup(
       this.state.email as EMailString,
       `${getBaseUrl()}/`
     );
 
-    this.props.changeInteractionState('viewingResources', {});
+    window.history.back();
   }
 
   render() {
@@ -114,6 +118,7 @@ class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
             </form>
           </div>
         </Container>
+        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
@@ -130,4 +135,5 @@ interface Properties extends WithStyles<typeof styles> {
 interface State {
   email: string;
   emailError?: string;
+  backdropOpen: boolean;
 }

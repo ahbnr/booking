@@ -12,17 +12,16 @@ import {
   WithStyles,
 } from '@material-ui/core';
 import { Client } from '../Client';
-import { InteractionState, ViewingTimeslots } from '../InteractionState';
 import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
 import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
 import getBaseUrl from '../utils/getBaseUrl';
 import { changeInteractionStateT } from '../App';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -52,6 +51,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       lastNameError: undefined,
       email: '',
       emailError: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -101,6 +101,9 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
   }
 
   async onSubmit() {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.createBooking(this.props.timeslot.id, {
       name: `${this.state.firstName} ${this.state.lastName}` as NonEmptyString,
       email: this.state.email as EMailString,
@@ -111,9 +114,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       this.props.timeslot.weekdayId
     );
 
-    this.props.changeInteractionState('viewingTimeslots', {
-      weekday: weekday,
-    });
+    window.history.back();
   }
 
   render() {
@@ -177,6 +178,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
             </form>
           </div>
         </Container>
+        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
@@ -198,4 +200,5 @@ interface State {
   lastNameError?: string;
   email: string;
   emailError?: string;
+  backdropOpen: boolean;
 }

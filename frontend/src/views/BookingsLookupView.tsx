@@ -11,6 +11,7 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Theme,
+  Typography,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
@@ -24,6 +25,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { nameSorter } from '../models/WeekdayUtils';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -46,6 +48,7 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
 
     this.state = {
       remoteData: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -83,148 +86,157 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
   }
 
   async deleteBooking(bookingId: number) {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.deleteBookingByToken(
       bookingId,
       this.props.lookupToken
     );
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.refreshData();
   }
 
   render() {
     return (
-      <Suspense
-        asyncAction={this.state.remoteData}
-        fallback={<LoadingScreen />}
-        content={(remoteData) => {
-          const renderData = new Map<
-            number,
-            Map<number, BookingGetInterface[]>
-          >();
+      <>
+        <Suspense
+          asyncAction={this.state.remoteData}
+          fallback={<LoadingScreen />}
+          content={(remoteData) => {
+            const renderData = new Map<
+              number,
+              Map<number, BookingGetInterface[]>
+            >();
 
-          for (const booking of remoteData.bookings) {
-            const timeslot = remoteData.timeslots.get(booking.timeslotId);
+            for (const booking of remoteData.bookings) {
+              const timeslot = remoteData.timeslots.get(booking.timeslotId);
 
-            if (timeslot != null) {
-              const timeslotMap = renderData.getOrDefault(
-                timeslot.weekdayId,
-                new Map<number, BookingGetInterface[]>()
-              );
+              if (timeslot != null) {
+                const timeslotMap = renderData.getOrDefault(
+                  timeslot.weekdayId,
+                  new Map<number, BookingGetInterface[]>()
+                );
 
-              const bookingArray = timeslotMap.getOrDefault(timeslot.id, []);
+                const bookingArray = timeslotMap.getOrDefault(timeslot.id, []);
 
-              bookingArray.push(booking);
+                bookingArray.push(booking);
 
-              timeslotMap.set(timeslot.id, bookingArray);
-              renderData.set(timeslot.weekdayId, timeslotMap);
-            } else {
-              throw new Error(
-                `Timeslot data (id: ${booking.timeslotId}) not downloaded even though it should be. This is a programming error.`
-              );
-            }
-          }
-
-          const renderList: [
-            WeekdayGetInterface,
-            [TimeslotGetInterface, BookingGetInterface[]][]
-          ][] = Array.from(renderData.entries()).map(
-            (
-              weekdayAndTimeslotMap: [
-                number,
-                Map<number, BookingGetInterface[]>
-              ]
-            ) => {
-              const [weekdayId, timeslotMap] = weekdayAndTimeslotMap;
-
-              const weekday = remoteData.weekdays.get(weekdayId);
-              if (weekday == null) {
+                timeslotMap.set(timeslot.id, bookingArray);
+                renderData.set(timeslot.weekdayId, timeslotMap);
+              } else {
                 throw new Error(
-                  `Weekday data (id: ${weekdayId}) not downloaded, even though it should be. This should never happen and is a programming error.`
+                  `Timeslot data (id: ${booking.timeslotId}) not downloaded even though it should be. This is a programming error.`
                 );
               }
-
-              const timeslotBookingsArray: [
-                TimeslotGetInterface,
-                BookingGetInterface[]
-              ][] = Array.from(timeslotMap.entries()).map(
-                (
-                  timeslotIdAndBookingIds: [number, BookingGetInterface[]]
-                ): [TimeslotGetInterface, BookingGetInterface[]] => {
-                  const [timeslotId, bookings] = timeslotIdAndBookingIds;
-
-                  const timeslot = remoteData.timeslots.get(timeslotId);
-
-                  if (timeslot == null) {
-                    throw new Error(
-                      `Timeslot data (id: ${timeslotId}) not downloaded, even though it should be. This should never happen and is a programming error.`
-                    );
-                  }
-
-                  return [timeslot, bookings];
-                }
-              );
-
-              timeslotBookingsArray.sort(
-                (
-                  left: [TimeslotGetInterface, BookingGetInterface[]],
-                  right: [TimeslotGetInterface, BookingGetInterface[]]
-                ) => {
-                  const [leftTimeslot, _1] = left;
-                  const [rightTimeslot, _2] = right;
-
-                  return compare(leftTimeslot, rightTimeslot);
-                }
-              );
-
-              return [weekday, timeslotBookingsArray];
             }
-          );
 
-          renderList.sort((left, right) => {
-            const [leftWeekday, _1] = left;
-            const [rightWeekday, _2] = right;
+            const renderList: [
+              WeekdayGetInterface,
+              [TimeslotGetInterface, BookingGetInterface[]][]
+            ][] = Array.from(renderData.entries()).map(
+              (
+                weekdayAndTimeslotMap: [
+                  number,
+                  Map<number, BookingGetInterface[]>
+                ]
+              ) => {
+                const [weekdayId, timeslotMap] = weekdayAndTimeslotMap;
 
-            return nameSorter(leftWeekday.name, rightWeekday.name);
-          });
+                const weekday = remoteData.weekdays.get(weekdayId);
+                if (weekday == null) {
+                  throw new Error(
+                    `Weekday data (id: ${weekdayId}) not downloaded, even though it should be. This should never happen and is a programming error.`
+                  );
+                }
 
-          return (
-            <>
-              {renderList.map((weekdayEntry) => {
-                const [weekday, timeslotsAndBookings] = weekdayEntry;
+                const timeslotBookingsArray: [
+                  TimeslotGetInterface,
+                  BookingGetInterface[]
+                ][] = Array.from(timeslotMap.entries()).map(
+                  (
+                    timeslotIdAndBookingIds: [number, BookingGetInterface[]]
+                  ): [TimeslotGetInterface, BookingGetInterface[]] => {
+                    const [timeslotId, bookings] = timeslotIdAndBookingIds;
 
-                return (
-                  <>
-                    {weekday.name}
-                    <List component="nav">
-                      {timeslotsAndBookings.map((timeslotEntry) => {
-                        const [timeslot, bookings] = timeslotEntry;
+                    const timeslot = remoteData.timeslots.get(timeslotId);
 
-                        return bookings.map((booking) => (
-                          <ListItem key={booking.id}>
-                            <ListItemText>
-                              {timeslot.startHours}:{timeslot.startMinutes} -{' '}
-                              {timeslot.endHours}:{timeslot.endMinutes}
-                            </ListItemText>
-                            <ListItemSecondaryAction>
-                              <IconButton
-                                onClick={() => this.deleteBooking(booking.id)}
-                                edge="end"
-                                aria-label="delete"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        ));
-                      })}
-                    </List>
-                  </>
+                    if (timeslot == null) {
+                      throw new Error(
+                        `Timeslot data (id: ${timeslotId}) not downloaded, even though it should be. This should never happen and is a programming error.`
+                      );
+                    }
+
+                    return [timeslot, bookings];
+                  }
                 );
-              })}
-            </>
-          );
-        }}
-      />
+
+                timeslotBookingsArray.sort(
+                  (
+                    left: [TimeslotGetInterface, BookingGetInterface[]],
+                    right: [TimeslotGetInterface, BookingGetInterface[]]
+                  ) => {
+                    const [leftTimeslot, _1] = left;
+                    const [rightTimeslot, _2] = right;
+
+                    return compare(leftTimeslot, rightTimeslot);
+                  }
+                );
+
+                return [weekday, timeslotBookingsArray];
+              }
+            );
+
+            renderList.sort((left, right) => {
+              const [leftWeekday, _1] = left;
+              const [rightWeekday, _2] = right;
+
+              return nameSorter(leftWeekday.name, rightWeekday.name);
+            });
+
+            return (
+              <>
+                {renderList.map((weekdayEntry) => {
+                  const [weekday, timeslotsAndBookings] = weekdayEntry;
+
+                  return (
+                    <>
+                      <Typography variant="h5">{weekday.name}</Typography>
+                      <List>
+                        {timeslotsAndBookings.map((timeslotEntry) => {
+                          const [timeslot, bookings] = timeslotEntry;
+
+                          return bookings.map((booking) => (
+                            <ListItem key={booking.id}>
+                              <ListItemText>
+                                {timeslot.startHours}:{timeslot.startMinutes} -{' '}
+                                {timeslot.endHours}:{timeslot.endMinutes}
+                              </ListItemText>
+                              <ListItemSecondaryAction>
+                                <IconButton
+                                  onClick={() => this.deleteBooking(booking.id)}
+                                  edge="end"
+                                  aria-label="delete"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                          ));
+                        })}
+                      </List>
+                    </>
+                  );
+                })}
+              </>
+            );
+          }}
+        />
+        <LoadingBackdrop open={this.state.backdropOpen} />
+      </>
     );
   }
 }
@@ -239,6 +251,7 @@ interface Properties extends WithStyles<typeof styles> {
 
 interface State {
   remoteData?: Promise<RemoteData>;
+  backdropOpen: boolean;
 }
 
 type RemoteData = {

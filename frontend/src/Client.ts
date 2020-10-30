@@ -21,7 +21,7 @@ import {
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import DisplayableError from './errors/DisplayableError';
 
-const address = 'localhost';
+const address = window.location.hostname;
 const port = 3000;
 const baseUrl = `http://${address}:${port}`;
 

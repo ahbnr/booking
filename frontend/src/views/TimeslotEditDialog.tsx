@@ -6,7 +6,6 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  ListItemText,
   TextField,
   Theme,
   Typography,
@@ -26,11 +25,12 @@ import LuxonUtils from '@date-io/luxon';
 import { DateType } from '@date-io/type';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { DateTime } from 'luxon';
+import LoadingBackdrop from './LoadingBackdrop';
+import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -65,6 +65,8 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
       }),
 
       capacity: props.timeslot.capacity,
+
+      backdropOpen: false,
     };
   }
 
@@ -82,10 +84,22 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
         capacity: this.state.capacity,
       });
 
+      this.setState({
+        backdropOpen: true,
+      });
       await this.props.client.updateTimeslot(this.props.timeslot.id, postData);
 
       window.history.back();
     }
+  }
+
+  async onDelete() {
+    this.setState({
+      backdropOpen: true,
+    });
+    await this.props.client.deleteTimeslot(this.props.timeslot.id);
+
+    window.history.back();
   }
 
   onChangeStartTime(startTime: MaterialUiPickersDate) {
@@ -124,7 +138,7 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
             <Avatar className={this.props.classes.avatar}>
               <TimelapseIcon />
             </Avatar>
-            <Typography component="h1" variant="h5">
+            <Typography component="h1" variant="h5" align="center">
               Anpassung eines Buchungsslots
             </Typography>
             <MuiPickersUtilsProvider utils={LuxonUtils}>
@@ -164,18 +178,29 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
                 />
                 <Button
                   fullWidth
-                  variant="contained"
+                  variant="outlined"
                   color="primary"
                   className={this.props.classes.submit}
                   disabled={!this.canBeSubmitted()}
                   onClick={this.onSubmit}
                 >
-                  Festlegen
+                  Ändern
                 </Button>
+                <DeleteConfirmer name={'der Timeslot'}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="secondary"
+                    onClick={this.onDelete}
+                  >
+                    Löschen
+                  </Button>
+                </DeleteConfirmer>
               </form>
             </MuiPickersUtilsProvider>
           </div>
         </Container>
+        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
@@ -195,4 +220,5 @@ interface State {
   endTime: DateType;
   capacity: number;
   capacityError?: string;
+  backdropOpen: boolean;
 }

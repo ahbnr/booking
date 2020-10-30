@@ -46,6 +46,11 @@ export interface EditingTimeslot {
   timeslot: TimeslotGetInterface;
 }
 
+export interface AddingWeekday {
+  existingWeekdays: WeekdayGetInterface[];
+  resource: ResourceGetInterface;
+}
+
 export type Activity = ADT<{
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
@@ -58,6 +63,7 @@ export type Activity = ADT<{
   lookingUpBookings: LookingUpBookings;
   overviewingDay: OverviewingDay;
   editingTimeslot: EditingTimeslot;
+  addingWeekday: AddingWeekday;
 }>;
 
 export class InteractionState {

@@ -14,14 +14,14 @@ import {
 } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { Client } from '../Client';
-import { InteractionState, ViewingResources } from '../InteractionState';
 import { NonEmptyString, noRefinementChecks } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import LoadingScreen from './LoadingScreen';
+import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -50,6 +50,7 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
       userNameError: undefined,
       password: '',
       passwordError: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -96,13 +97,16 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
 
   async onSubmit() {
     if (this.props.signupToken != null) {
+      this.setState({
+        backdropOpen: true,
+      });
       await this.props.client.signup(
         noRefinementChecks<NonEmptyString>(this.props.signupToken),
         noRefinementChecks<NonEmptyString>(this.state.userName),
         noRefinementChecks<NonEmptyString>(this.state.password)
       );
 
-      this.props.changeInteractionState('viewingResources', {});
+      window.history.back();
     }
   }
 
@@ -116,8 +120,8 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
               <Avatar className={this.props.classes.avatar}>
                 <PersonAddIcon />
               </Avatar>
-              <Typography component="h1" variant="h5">
-                Ein Konto anlegen
+              <Typography component="h1" variant="h5" align="center">
+                Ein Konto Anlegen
               </Typography>
               <form className={this.props.classes.form} noValidate>
                 <TextField
@@ -158,17 +162,18 @@ class UnstyledSignupDialog extends React.Component<Properties, State> {
               </form>
             </div>
           </Container>
+          <LoadingBackdrop open={this.state.backdropOpen} />
         </>
       );
     } else if (this.state.isSignupTokenOk === false) {
       return (
-        <>
+        <Typography variant="body1">
           Der Einladungslink ist leider abgelaufen. Bitte beantragen sie einen
           neuen.
-        </>
+        </Typography>
       );
     } else {
-      return <>Bitte warten...</>;
+      return <LoadingScreen />;
     }
   }
 }
@@ -188,4 +193,5 @@ interface State {
   userNameError?: string;
   password: string;
   passwordError?: string;
+  backdropOpen: boolean;
 }

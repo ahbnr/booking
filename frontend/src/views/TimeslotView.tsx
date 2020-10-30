@@ -34,6 +34,24 @@ const styles = (theme: Theme) =>
     skeletonStyle: {
       marginBottom: theme.spacing(1),
     },
+    authSecondaryActionPadding: {
+      paddingRight: 120,
+    },
+    unauthSecondaryActionPadding: {
+      paddingRight: 76,
+    },
+    disabledAuthSecondaryActionPadding: {
+      paddingRight: 120,
+      '& .MuiTouchRipple-child': {
+        backgroundColor: 'red',
+      },
+    },
+    disabledUnauthSecondaryActionPadding: {
+      paddingRight: 76,
+      '& .MuiTouchRipple-child': {
+        backgroundColor: 'red',
+      },
+    },
   });
 
 @boundClass
@@ -78,12 +96,6 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
     });
   }
 
-  async onDelete(timeslot: TimeslotGetInterface) {
-    await this.props.client.deleteTimeslot(timeslot.id);
-
-    this.props.onDelete();
-  }
-
   onEdit(timeslot: TimeslotGetInterface) {
     this.props.changeInteractionState('editingTimeslot', {
       timeslot: timeslot,
@@ -116,26 +128,29 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
           return (
             <ListItem
               button
-              disabled={
-                !this.props.isAuthenticated &&
-                displayData.timeslot.bookingIds.length >=
-                  displayData.timeslot.capacity
+              onClick={
+                bookingsAvailable
+                  ? () => this.createBooking(displayData.timeslot)
+                  : undefined
               }
-              onClick={() => this.createBooking(displayData.timeslot)}
+              className={
+                bookingsAvailable
+                  ? this.props.isAuthenticated
+                    ? this.props.classes.authSecondaryActionPadding
+                    : this.props.classes.unauthSecondaryActionPadding
+                  : this.props.isAuthenticated
+                  ? this.props.classes.disabledAuthSecondaryActionPadding
+                  : this.props.classes.disabledUnauthSecondaryActionPadding
+              }
             >
               <ListItemText>
                 <MuiPickersUtilsProvider utils={LuxonUtils}>
-                  <Grid alignItems="center" container spacing={3}>
-                    <Grid item xs={1}>
-                      <Typography variant="h6">
-                        #{this.props.index + 1}
-                      </Typography>
-                    </Grid>
-                    <Divider orientation="vertical" flexItem />
-                    <Grid item xs={5}>
+                  <Grid alignItems="center" container spacing={1}>
+                    <Grid item xs={6}>
                       <TimePicker
                         variant="inline"
                         label="Startzeit"
+                        disabled={!bookingsAvailable}
                         InputProps={{
                           readOnly: true,
                         }}
@@ -144,10 +159,11 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
                         onChange={noop}
                       />
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                       <TimePicker
                         variant="inline"
                         label="Endzeit"
+                        disabled={!bookingsAvailable}
                         InputProps={{
                           readOnly: true,
                         }}
@@ -160,39 +176,26 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
                 </MuiPickersUtilsProvider>
               </ListItemText>
               <ListItemSecondaryAction>
-                {!this.props.isAuthenticated && (
-                  <Chip
-                    clickable
-                    label={bookingsAvailable ? 'Frei' : 'Ausgebucht'}
-                    color={bookingsAvailable ? 'primary' : 'secondary'}
-                    onClick={
-                      bookingsAvailable
-                        ? () => this.createBooking(displayData.timeslot)
-                        : undefined
-                    }
-                  />
-                )}
+                <Chip
+                  clickable
+                  label={
+                    this.props.isAuthenticated
+                      ? `${displayData.timeslot.bookingIds.length}/${displayData.timeslot.capacity}`
+                      : bookingsAvailable
+                      ? 'Frei'
+                      : 'Voll'
+                  }
+                  color={bookingsAvailable ? 'primary' : 'secondary'}
+                  onClick={
+                    bookingsAvailable
+                      ? () => this.createBooking(displayData.timeslot)
+                      : undefined
+                  }
+                />
                 {this.props.isAuthenticated && (
-                  <>
-                    <Button
-                      variant="outlined"
-                      onClick={() => this.viewBookings(displayData.timeslot)}
-                      color={bookingsAvailable ? 'primary' : 'secondary'}
-                    >
-                      {displayData.timeslot.bookingIds.length}/
-                      {displayData.timeslot.capacity} Buchungen
-                    </Button>
-                    <IconButton
-                      onClick={() => this.onEdit(displayData.timeslot)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => this.onDelete(displayData.timeslot)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </>
+                  <IconButton onClick={() => this.onEdit(displayData.timeslot)}>
+                    <EditIcon />
+                  </IconButton>
                 )}
               </ListItemSecondaryAction>
             </ListItem>
@@ -212,7 +215,6 @@ interface Properties extends WithStyles<typeof styles> {
   client: Client;
   timeslotId: number;
   changeInteractionState: changeInteractionStateT;
-  onDelete: () => unknown;
 }
 
 interface State {

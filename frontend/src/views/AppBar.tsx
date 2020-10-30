@@ -3,6 +3,7 @@ import {
   Button,
   Divider,
   Drawer,
+  Link,
   List,
   ListItem,
   ListItemIcon,
@@ -16,15 +17,11 @@ import { boundClass } from 'autobind-decorator';
 import React from 'react';
 import Toolbar from '@material-ui/core/Toolbar';
 import MenuIcon from '@material-ui/icons/Menu';
+import HomeIcon from '@material-ui/icons/Home';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import IconButton from '@material-ui/core/IconButton';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import {
-  Authenticating,
-  InteractionState,
-  InvitingAdmin,
-  OverviewingDay,
-} from '../InteractionState';
+import AccountCircle from '@material-ui/icons/AccountCircle';
 import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { changeInteractionStateT } from '../App';
@@ -110,14 +107,21 @@ class UnstyledAppBar extends React.Component<Properties, State> {
     this.props.changeInteractionState('authenticating', {});
   }
 
+  onHomeButton() {
+    this.props.changeInteractionState('viewingResources', {});
+    this.handleDrawerClose();
+  }
+
   onAddAdminButton() {
     this.props.changeInteractionState('invitingAdmin', {});
+    this.handleDrawerClose();
   }
 
   onOverviewButton() {
     this.props.changeInteractionState('overviewingDay', {
       weekdayName: 'saturday',
     });
+    this.handleDrawerClose();
   }
 
   render() {
@@ -152,13 +156,23 @@ class UnstyledAppBar extends React.Component<Properties, State> {
               noWrap
               className={this.props.classes.title}
             >
-              Timeslot Booking
+              <Link
+                href="#"
+                color="inherit"
+                underline="none"
+                onClick={() =>
+                  this.props.changeInteractionState('viewingResources', {})
+                }
+              >
+                Timeslot Booking
+              </Link>
             </Typography>
             {!this.props.isAuthenticated && (
               <Button color="inherit" onClick={this.login}>
                 Login
               </Button>
             )}
+            {this.props.isAuthenticated && <AccountCircle />}
           </Toolbar>
         </MaterialAppBar>
         {this.props.isAuthenticated && (
@@ -179,6 +193,12 @@ class UnstyledAppBar extends React.Component<Properties, State> {
             </div>
             <Divider />
             <List>
+              <ListItem button onClick={this.onHomeButton}>
+                <ListItemIcon>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Hauptseite" />
+              </ListItem>
               <ListItem button onClick={this.onAddAdminButton}>
                 <ListItemIcon>
                   <PersonAddIcon />

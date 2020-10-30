@@ -18,6 +18,8 @@ import { Client } from '../Client';
 import { BookingGetInterface } from 'common/dist';
 import Suspense from './Suspense';
 import Skeleton from '@material-ui/lab/Skeleton';
+import LoadingBackdrop from './LoadingBackdrop';
+import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,6 +35,7 @@ class UnstyledBookingView extends React.Component<Properties, State> {
 
     this.state = {
       booking: undefined,
+      backdropOpen: false,
     };
   }
 
@@ -49,7 +52,13 @@ class UnstyledBookingView extends React.Component<Properties, State> {
   }
 
   async onDelete(booking: BookingGetInterface) {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.deleteBooking(booking.id);
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.props.onDelete();
   }
@@ -92,11 +101,14 @@ class UnstyledBookingView extends React.Component<Properties, State> {
                 </Grid>
               </ListItemText>
               <ListItemSecondaryAction>
-                <IconButton onClick={() => this.onDelete(booking)}>
-                  <DeleteIcon />
-                </IconButton>
+                <DeleteConfirmer name="die Buchung">
+                  <IconButton onClick={() => this.onDelete(booking)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </DeleteConfirmer>
               </ListItemSecondaryAction>
             </ListItem>
+            <LoadingBackdrop open={this.state.backdropOpen} />
           </>
         )}
       />
@@ -115,4 +127,5 @@ interface Properties extends WithStyles<typeof styles> {
 
 interface State {
   booking?: Promise<BookingGetInterface>;
+  backdropOpen: boolean;
 }

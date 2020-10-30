@@ -29,6 +29,7 @@ import ErrorBoundary from './views/ErrorBoundary';
 import ErrorView from './views/ErrorView';
 import ResourcesView from './views/ResourcesView';
 import { construct } from './utils/constructAdt';
+import AddWeekdayDialog from './views/AddWeekdayDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -196,6 +197,14 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           client={this.client}
           changeInteractionState={this.changeInteractionState}
           timeslot={timeslot}
+        />
+      ),
+      addingWeekday: ({ existingWeekdays, resource }) => (
+        <AddWeekdayDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          existingWeekdays={existingWeekdays}
+          resource={resource}
         />
       ),
     });

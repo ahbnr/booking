@@ -11,16 +11,9 @@ import {
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import {
-  Button,
   createStyles,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Fab,
   IconButton,
-  List,
   ListItem,
   ListItemSecondaryAction,
   ListItemText,
@@ -32,10 +25,12 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
-import SplitButton from './SplitButton';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
+import { UnstyledAddWeekdayDialog } from './AddWeekdayDialog';
+import LoadingBackdrop from './LoadingBackdrop';
+import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -48,6 +43,12 @@ const styles = (theme: Theme) =>
       marginRight: theme.spacing(1),
     },
     fab: fabStyle(theme),
+    dialogPaperFullWidth: {
+      overflowY: 'visible',
+    },
+    dialogActionsRoot: {
+      overflowY: 'visible',
+    },
   });
 
 @boundClass
@@ -57,7 +58,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
 
     this.state = {
       weekdays: undefined,
-      showAddWeekdayModal: false,
+      backdropOpen: false,
     };
   }
 
@@ -75,50 +76,21 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
     });
   }
 
-  launchAddWeekdayModal() {
-    this.setState({
-      ...this.state,
-      showAddWeekdayModal: true,
-    });
-  }
-
-  closeAddWeekdayModal() {
-    this.setState({
-      ...this.state,
-      showAddWeekdayModal: false,
-    });
-  }
-
-  getCreatedWeekdayNames(weekdays: WeekdayGetInterface[]): Set<string> {
-    return new Set<string>(
-      weekdays
-        .map((weekday) => weekday.name)
-        .filter((weekdayName) => weekdayNames.has(weekdayName))
+  haveAllWeekdaysBeenCreated(weekdays: WeekdayGetInterface[]) {
+    return _.isEqual(
+      weekdayNames,
+      UnstyledAddWeekdayDialog.getCreatedWeekdayNames(weekdays)
     );
   }
 
-  getMissingWeekdayNames(weekdays: WeekdayGetInterface[]): Array<string> {
-    const createdWeekdayNames = this.getCreatedWeekdayNames(weekdays);
-
-    return Array.from(weekdayNames)
-      .filter((name) => !createdWeekdayNames.has(name))
-      .sort(nameSorter);
-  }
-
-  haveAllWeekdaysBeenCreated(weekdays: WeekdayGetInterface[]) {
-    return _.isEqual(weekdayNames, this.getCreatedWeekdayNames(weekdays));
-  }
-
-  async addWeekday(weekdayName: string) {
-    await this.props.client.createWeekday(this.props.resource.name, {
-      name: weekdayName as WeekdayName, // We trust here that the UI delivers the correct type. If not, the server performs checks and will reject it
-    });
-
-    this.refreshWeekdays();
-  }
-
   async deleteWeekday(weekdayId: number) {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.deleteWeekday(weekdayId);
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.refreshWeekdays();
   }
@@ -127,9 +99,11 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
     this.props.changeInteractionState('viewingTimeslots', { weekday });
   }
 
-  async openWeekday(name: string) {
-    this.closeAddWeekdayModal();
-    await this.addWeekday(name);
+  openAddWeekdayDialog(weekdays: WeekdayGetInterface[]) {
+    this.props.changeInteractionState('addingWeekday', {
+      existingWeekdays: weekdays,
+      resource: this.props.resource,
+    });
   }
 
   render() {
@@ -154,13 +128,15 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                     <ListItemText> {weekday.name} </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="end"
-                          onClick={() => this.deleteWeekday(weekday.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        <DeleteConfirmer name={`der Wochentag ${weekday.name}`}>
+                          <IconButton
+                            edge="end"
+                            aria-label="end"
+                            onClick={() => this.deleteWeekday(weekday.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </DeleteConfirmer>
                       </ListItemSecondaryAction>
                     )}
                   </ListItem>
@@ -171,31 +147,13 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                 <Fab
                   className={this.props.classes.fab}
                   variant="extended"
-                  onClick={this.launchAddWeekdayModal}
+                  onClick={() => this.openAddWeekdayDialog(weekdays)}
                 >
                   <AddIcon className={this.props.classes.extendedIcon} />
                   Wochentag
                 </Fab>
               )}
-
-            <Dialog
-              open={this.state.showAddWeekdayModal}
-              onClose={this.closeAddWeekdayModal}
-            >
-              <DialogTitle> Welcher Tag soll angelegt werden? </DialogTitle>
-              <DialogContent>
-                <DialogContentText>TODO Beschreibung</DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <SplitButton
-                  onClick={async (name, _) => await this.openWeekday(name)}
-                  options={this.getMissingWeekdayNames(weekdays)}
-                />
-                <Button onClick={this.closeAddWeekdayModal} color="secondary">
-                  Abbrechen
-                </Button>
-              </DialogActions>
-            </Dialog>
+            <LoadingBackdrop open={this.state.backdropOpen} />
           </>
         )}
       />
@@ -215,5 +173,5 @@ interface Properties extends WithStyles<typeof styles> {
 
 interface State {
   weekdays?: Promise<WeekdayGetInterface[]>;
-  showAddWeekdayModal: boolean;
+  backdropOpen: boolean;
 }

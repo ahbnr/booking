@@ -4,7 +4,6 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import {
-  Avatar,
   Button,
   createStyles,
   Dialog,
@@ -33,6 +32,8 @@ import { fabStyle } from '../styles/fab';
 import LoadingScreen from './LoadingScreen';
 import Suspense from './Suspense';
 import ListEx from './ListEx';
+import LoadingBackdrop from './LoadingBackdrop';
+import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -75,6 +76,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
       resources: undefined,
       showAddResourceModal: false,
       newResourceName: '',
+      backdropOpen: false,
     };
   }
 
@@ -108,9 +110,13 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   async handleAcceptAddResourceModal() {
     this.closeAddResourceModal();
 
+    this.setState({
+      backdropOpen: true,
+    });
     await this.addResource(this.state.newResourceName);
     this.setState({
       newResourceName: '',
+      backdropOpen: false,
     });
 
     this.refreshResources();
@@ -125,13 +131,25 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   async addResource(resourceName: string) {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.createResource(resourceName);
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.refreshResources();
   }
 
   async deleteResource(resourceName: string) {
+    this.setState({
+      backdropOpen: true,
+    });
     await this.props.client.deleteResource(resourceName);
+    this.setState({
+      backdropOpen: false,
+    });
 
     this.refreshResources();
   }
@@ -160,13 +178,15 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
                   <ListItemText>{resource.name}</ListItemText>
                   {this.props.isAuthenticated && (
                     <ListItemSecondaryAction>
-                      <IconButton
-                        onClick={() => this.deleteResource(resource.name)}
-                        edge="end"
-                        aria-label="delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <DeleteConfirmer name={`die Ressource ${resource.name}`}>
+                        <IconButton
+                          onClick={() => this.deleteResource(resource.name)}
+                          edge="end"
+                          aria-label="delete"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </DeleteConfirmer>
                     </ListItemSecondaryAction>
                   )}
                 </ListItem>
@@ -196,16 +216,27 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
         >
           <DialogTitle id="form-dialog-title">Resource Hinzufügen</DialogTitle>
           <DialogContent>
-            <DialogContentText>TODO Beschreibung</DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name der Resource"
-              fullWidth
-              value={this.state.newResourceName}
-              onChange={this.onNewResourceNameChange}
-            />
+            <form
+              onSubmit={
+                this.state.newResourceName.length > 0
+                  ? (e) => {
+                      e.preventDefault();
+                      this.handleAcceptAddResourceModal();
+                    }
+                  : undefined
+              }
+            >
+              <TextField
+                autoFocus
+                required
+                margin="dense"
+                id="name"
+                label="Name der Resource"
+                fullWidth
+                value={this.state.newResourceName}
+                onChange={this.onNewResourceNameChange}
+              />
+            </form>
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleCloseAddResourceModal} color="primary">
@@ -220,6 +251,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             </Button>
           </DialogActions>
         </Dialog>
+        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
@@ -238,4 +270,5 @@ interface State {
   resources: Promise<ResourceGetInterface[]> | undefined;
   showAddResourceModal: boolean;
   newResourceName: string;
+  backdropOpen: boolean;
 }
