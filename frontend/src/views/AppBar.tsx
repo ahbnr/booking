@@ -125,9 +125,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
   }
 
   onOverviewButton() {
-    this.props.changeInteractionState('overviewingDay', {
-      weekdayName: 'saturday',
-    });
+    this.props.changeInteractionState('selectingWeekdayOverview', {});
     this.handleDrawerClose();
   }
 
@@ -236,7 +234,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                 <ListItemIcon>
                   <DateRangeIcon />
                 </ListItemIcon>
-                <ListItemText primary="Tagesübersicht" />
+                <ListItemText primary="Tagesübersichten" />
               </ListItem>
             </List>
           </Drawer>

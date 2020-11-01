@@ -58,6 +58,8 @@ export interface ViewingMainPage {}
 
 export interface ConfirmingBookingDialog {}
 
+export interface SelectingWeekdayOverview {}
+
 export type Activity = ADT<{
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
@@ -74,6 +76,7 @@ export type Activity = ADT<{
   addingWeekday: AddingWeekday;
   viewingMainPage: ViewingMainPage;
   confirmingBookingDialog: ConfirmingBookingDialog;
+  selectingWeekdayOverview: SelectingWeekdayOverview;
 }>;
 
 export class InteractionState {

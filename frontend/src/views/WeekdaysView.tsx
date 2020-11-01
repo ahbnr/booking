@@ -67,7 +67,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
   }
 
   refreshWeekdays() {
-    const weekdaysPromise = this.props.client.getWeekdays(
+    const weekdaysPromise = this.props.client.getWeekdaysForResource(
       this.props.resource.name
     );
 

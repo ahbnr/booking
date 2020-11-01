@@ -12,37 +12,45 @@ import {
 } from '@material-ui/core';
 import PrintIcon from '@material-ui/icons/Print';
 import { Client } from '../Client';
-import { InteractionState, ViewingResources } from '../InteractionState';
 import {
   bookingCompare,
-  BookingGetInterface,
   BookingWithContextGetInterface,
   noRefinementChecks,
   ResourceGetInterface,
-  TimeslotGetInterface,
-  WeekdayGetInterface,
-  WeekdayName,
 } from 'common/dist';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {
   Calendar,
-  momentLocalizer,
   Event as CalendarEvent,
   ToolbarProps,
+  dateFnsLocalizer,
 } from 'react-big-calendar';
-import moment from 'moment';
 import ReactToPrint from 'react-to-print';
 import { DateTime, Interval } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import _ from 'lodash';
 import { changeInteractionStateT } from '../App';
 import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
 
-const localizer = momentLocalizer(moment);
+import format from 'date-fns/format';
+import parse from 'date-fns/parse';
+import startOfWeek from 'date-fns/startOfWeek';
+import getDay from 'date-fns/getDay';
+import de from 'date-fns/locale/de';
+
+const locales = {
+  'de-DE': de,
+};
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
 
 interface CalendarResource {
   resourceId: string;

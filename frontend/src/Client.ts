@@ -232,13 +232,21 @@ export class Client {
     );
   }
 
-  public async getWeekdays(
+  public async getWeekdaysForResource(
     resourceName: string
   ): Promise<WeekdayGetInterface[]> {
     return await this.typedRequest(
       t.array(WeekdayGetInterface),
       'GET',
       `resources/${resourceName}/weekdays`
+    );
+  }
+
+  public async getWeekdays(): Promise<WeekdayGetInterface[]> {
+    return await this.typedRequest(
+      t.array(WeekdayGetInterface),
+      'GET',
+      'weekdays'
     );
   }
 

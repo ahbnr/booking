@@ -32,6 +32,7 @@ import { construct } from './utils/constructAdt';
 import AddWeekdayDialog from './views/AddWeekdayDialog';
 import MainView from './views/MainView';
 import ConfirmBookingDialog from './views/ConfirmBookingDialog';
+import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -220,6 +221,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         <MainView changeInteractionState={this.changeInteractionState} />
       ),
       confirmingBookingDialog: () => <ConfirmBookingDialog />,
+      selectingWeekdayOverview: () => (
+        <WeekdayOverviewSelector
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+        />
+      ),
     });
 
     return (
