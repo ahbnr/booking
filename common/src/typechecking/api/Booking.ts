@@ -19,6 +19,17 @@ export const BookingGetInterface = t.type({
   timeslotId: t.number,
 });
 
+export function compare(
+  left: BookingGetInterface,
+  right: BookingGetInterface
+): number {
+  return left.startDate < right.startDate
+    ? -1
+    : left.startDate === right.startDate
+    ? 0
+    : 1;
+}
+
 export type BookingGetInterface = t.TypeOf<typeof BookingGetInterface>;
 
 export const BookingWithContextGetInterface = t.type({

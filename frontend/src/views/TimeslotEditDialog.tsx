@@ -18,6 +18,7 @@ import {
   noRefinementChecks,
   TimeslotGetInterface,
   TimeslotPostInterface,
+  WeekdayGetInterface,
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
@@ -27,6 +28,8 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { DateTime } from 'luxon';
 import LoadingBackdrop from './LoadingBackdrop';
 import DeleteConfirmer from './DeleteConfirmer';
+import { ADT, matchI } from 'ts-adt';
+import { is } from '../utils/constructAdt';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,19 +56,37 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
+    const inputInit = matchI(this.props.mode)({
+      editMode: ({ timeslot }) => ({
+        startTime: DateTime.fromObject({
+          hour: timeslot.startHours,
+          minute: timeslot.startMinutes,
+        }),
+
+        endTime: DateTime.fromObject({
+          hour: timeslot.endHours,
+          minute: timeslot.endMinutes,
+        }),
+
+        capacity: timeslot.capacity,
+      }),
+      createMode: (_) => ({
+        startTime: DateTime.fromObject({
+          hour: 0,
+          minute: 0,
+        }),
+
+        endTime: DateTime.fromObject({
+          hour: 0,
+          minute: 0,
+        }),
+
+        capacity: 1,
+      }),
+    });
+
     this.state = {
-      startTime: DateTime.fromObject({
-        hour: props.timeslot.startHours,
-        minute: props.timeslot.startMinutes,
-      }),
-
-      endTime: DateTime.fromObject({
-        hour: props.timeslot.endHours,
-        minute: props.timeslot.endMinutes,
-      }),
-
-      capacity: props.timeslot.capacity,
-
+      ...inputInit,
       backdropOpen: false,
     };
   }
@@ -87,25 +108,35 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
       this.setState({
         backdropOpen: true,
       });
-      await this.props.client.updateTimeslot(this.props.timeslot.id, postData);
+
+      await matchI(this.props.mode)({
+        editMode: ({ timeslot }) =>
+          this.props.client.updateTimeslot(timeslot.id, postData),
+        createMode: ({ weekday }) =>
+          this.props.client.createTimeslot(weekday.id, postData),
+      });
 
       window.history.back();
     }
   }
 
   async onDelete() {
-    this.setState({
-      backdropOpen: true,
-    });
-    await this.props.client.deleteTimeslot(this.props.timeslot.id);
+    if (is(this.props.mode, 'editMode')) {
+      this.setState({
+        backdropOpen: true,
+      });
+      await this.props.client.deleteTimeslot(this.props.mode.timeslot.id);
 
-    window.history.back();
+      window.history.back();
+    }
   }
 
   onChangeStartTime(startTime: MaterialUiPickersDate) {
     if (startTime != null) {
       this.setState({
         startTime: startTime,
+        endTime:
+          startTime >= this.state.endTime ? startTime : this.state.endTime,
       });
     }
   }
@@ -113,6 +144,8 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
   onChangeEndTime(endTime: MaterialUiPickersDate) {
     if (endTime != null) {
       this.setState({
+        startTime:
+          endTime <= this.state.startTime ? endTime : this.state.startTime,
         endTime: endTime,
       });
     }
@@ -139,7 +172,10 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
               <TimelapseIcon />
             </Avatar>
             <Typography component="h1" variant="h5" align="center">
-              Anpassung eines Buchungsslots
+              {matchI(this.props.mode)({
+                editMode: () => 'Anpassung eines Buchungsslots',
+                createMode: () => 'Erstellung eines Buchungsslots',
+              })}
             </Typography>
             <MuiPickersUtilsProvider utils={LuxonUtils}>
               <form className={this.props.classes.form} noValidate>
@@ -184,18 +220,23 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
                   disabled={!this.canBeSubmitted()}
                   onClick={this.onSubmit}
                 >
-                  Ändern
+                  {matchI(this.props.mode)({
+                    editMode: () => 'Ändern',
+                    createMode: () => 'Erstellen',
+                  })}
                 </Button>
-                <DeleteConfirmer name={'der Timeslot'}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="secondary"
-                    onClick={this.onDelete}
-                  >
-                    Löschen
-                  </Button>
-                </DeleteConfirmer>
+                {is(this.props.mode, 'editMode') && (
+                  <DeleteConfirmer name={'der Timeslot'}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.onDelete}
+                    >
+                      Löschen
+                    </Button>
+                  </DeleteConfirmer>
+                )}
               </form>
             </MuiPickersUtilsProvider>
           </div>
@@ -212,7 +253,7 @@ export default TimeslotEditDialog;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   changeInteractionState: changeInteractionStateT;
-  timeslot: TimeslotGetInterface;
+  mode: Mode;
 }
 
 interface State {
@@ -222,3 +263,12 @@ interface State {
   capacityError?: string;
   backdropOpen: boolean;
 }
+
+export type Mode = ADT<{
+  editMode: {
+    timeslot: TimeslotGetInterface;
+  };
+  createMode: {
+    weekday: WeekdayGetInterface;
+  };
+}>;

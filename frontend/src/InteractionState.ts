@@ -6,7 +6,6 @@ import {
 } from 'common/dist';
 
 import { ADT, ADTMember } from 'ts-adt';
-import { Int } from 'io-ts';
 
 export interface ViewingResources {}
 
@@ -46,6 +45,10 @@ export interface EditingTimeslot {
   timeslot: TimeslotGetInterface;
 }
 
+export interface CreatingTimeslot {
+  weekday: WeekdayGetInterface;
+}
+
 export interface AddingWeekday {
   existingWeekdays: WeekdayGetInterface[];
   resource: ResourceGetInterface;
@@ -67,6 +70,7 @@ export type Activity = ADT<{
   lookingUpBookings: LookingUpBookings;
   overviewingDay: OverviewingDay;
   editingTimeslot: EditingTimeslot;
+  creatingTimeslot: CreatingTimeslot;
   addingWeekday: AddingWeekday;
   viewingMainPage: ViewingMainPage;
   confirmingBookingDialog: ConfirmingBookingDialog;

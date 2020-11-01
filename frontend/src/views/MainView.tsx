@@ -61,8 +61,10 @@ class UnstyledMainView extends React.Component<Properties, State> {
         justify="center"
         style={{ minHeight: '70vh' }}
       >
-        <Typography variant="h5">Willkommen</Typography>
-        <Typography variant="subtitle1">
+        <Typography variant="h5" align="center">
+          Willkommen
+        </Typography>
+        <Typography variant="subtitle1" align="center">
           Im Buchungssystem der {Config.organization}
         </Typography>
         <Button

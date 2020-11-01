@@ -198,7 +198,14 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         <TimeslotEditDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          timeslot={timeslot}
+          mode={construct('editMode', { timeslot })}
+        />
+      ),
+      creatingTimeslot: ({ weekday }) => (
+        <TimeslotEditDialog
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          mode={construct('createMode', { weekday })}
         />
       ),
       addingWeekday: ({ existingWeekdays, resource }) => (

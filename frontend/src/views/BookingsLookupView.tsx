@@ -17,7 +17,7 @@ import {
 } from '@material-ui/core';
 import {
   BookingGetInterface,
-  compare,
+  timeslotCompare,
   TimeslotGetInterface,
   WeekdayGetInterface,
 } from 'common/dist';
@@ -182,7 +182,7 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
                     const [leftTimeslot, _1] = left;
                     const [rightTimeslot, _2] = right;
 
-                    return compare(leftTimeslot, rightTimeslot);
+                    return timeslotCompare(leftTimeslot, rightTimeslot);
                   }
                 );
 

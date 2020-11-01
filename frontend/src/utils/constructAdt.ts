@@ -11,3 +11,10 @@ export function construct<
     ...value,
   } as unknown) as U;
 }
+
+export function is<K extends Record<string, any>, C extends keyof K>(
+  v: ADT<K>,
+  constructor: C
+): v is K[C] {
+  return v._type === constructor;
+}

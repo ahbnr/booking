@@ -6,20 +6,12 @@ import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
 import {
-  compare,
-  noRefinementChecks,
+  timeslotCompare,
   TimeslotGetInterface,
-  TimeslotPostInterface,
   WeekdayGetInterface,
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
-import {
-  createStyles,
-  List,
-  Theme,
-  withStyles,
-  WithStyles,
-} from '@material-ui/core';
+import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
@@ -56,26 +48,10 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
     this.refreshTimeslots();
   }
 
-  async addTimeslot() {
-    const data: TimeslotPostInterface = noRefinementChecks<
-      TimeslotPostInterface
-    >({
-      startHours: 0,
-      startMinutes: 0,
-      endHours: 0,
-      endMinutes: 0,
-      capacity: 1,
+  addTimeslot() {
+    this.props.changeInteractionState('creatingTimeslot', {
+      weekday: this.props.weekday,
     });
-
-    this.setState({
-      backdropOpen: true,
-    });
-    await this.props.client.createTimeslot(this.props.weekday.id, data);
-    this.setState({
-      backdropOpen: false,
-    });
-
-    this.refreshTimeslots();
   }
 
   refreshTimeslots() {
@@ -97,7 +73,7 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
         content={(timeslots) => {
           const sortedTimeslots: TimeslotGetInterface[] = _.sortWith(
             timeslots,
-            compare
+            timeslotCompare
           );
 
           return (

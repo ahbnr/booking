@@ -14,6 +14,7 @@ import PrintIcon from '@material-ui/icons/Print';
 import { Client } from '../Client';
 import { InteractionState, ViewingResources } from '../InteractionState';
 import {
+  bookingCompare,
   BookingGetInterface,
   BookingWithContextGetInterface,
   noRefinementChecks,
@@ -61,12 +62,22 @@ class CalendarToolbar extends React.Component<
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
     },
     fab: fabStyle(theme),
+    header: {
+      marginBottom: theme.spacing(2),
+    },
+    calendar: {
+      '& .rbc-allday-cell': {
+        display: 'none',
+      },
+      '& .rbc-time-view .rbc-header': {
+        borderBottom: 'none',
+      },
+    },
   });
 
 @boundClass
@@ -147,15 +158,22 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
           );
 
           const resources = _.map(
-            _.uniq(
-              _.map(downloadedData.bookings, (booking) => booking.resource)
+            _.uniqBy(
+              _.map(downloadedData.bookings, (booking) => booking.resource),
+              (resource) => resource.name
             ),
             this.resourceToCalendarResource
           );
 
+          const sortedBookings = downloadedData.bookings.sort(bookingCompare);
+          const firstTime =
+            sortedBookings.length > 0
+              ? DateTime.fromISO(sortedBookings[0].startDate).toJSDate()
+              : undefined;
+
           return (
             <>
-              <div ref={this.calendarRef}>
+              <div ref={this.calendarRef} style={{ width: '100%' }}>
                 <Calendar
                   events={events}
                   components={{
@@ -164,11 +182,14 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
                   localizer={localizer}
                   defaultView={'day'}
                   views={['day']}
-                  step={60}
                   defaultDate={this.props.dateInterval.start.toJSDate()}
                   resources={resources}
                   resourceIdAccessor="resourceId"
                   resourceTitleAccessor="resourceTitle"
+                  style={{ minWidth: '100%' }}
+                  className={this.props.classes.calendar}
+                  scrollToTime={firstTime}
+                  culture="de-DE"
                 />
               </div>
               <ReactToPrint
@@ -190,7 +211,12 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
         <Container component="main">
           <CssBaseline />
           <div className={this.props.classes.paper}>
-            <Typography component="h3" variant="h3">
+            <Typography
+              component="h5"
+              variant="h5"
+              align="center"
+              className={this.props.classes.header}
+            >
               Tagesübersicht - {this.props.dateInterval.start.weekdayLong}
             </Typography>
             {content}

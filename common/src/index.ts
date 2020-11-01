@@ -7,6 +7,7 @@ export { checkType } from './typechecking/checkType';
 export {
   BookingData,
   BookingGetInterface,
+  compare as bookingCompare,
   BookingWithContextGetInterface,
   BookingPostInterface,
 } from './typechecking/api/Booking';
@@ -21,7 +22,7 @@ export {
   TimeslotData,
   TimeslotGetInterface,
   TimeslotPostInterface,
-  compare,
+  compare as timeslotCompare,
   getCurrentTimeslotEndDate,
   getCurrentTimeslotStartDate,
 } from './typechecking/api/Timeslot';

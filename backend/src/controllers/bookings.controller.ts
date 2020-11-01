@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { DestroyOptions, UpdateOptions, Op } from 'sequelize';
-import { Booking } from '../models/booking.model';
+import { Booking, VerificationTimeout } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Timeslot } from '../models/timeslot.model';
@@ -235,12 +235,28 @@ export class BookingsController {
       booking
     );
 
+    const timeslot = await booking.lazyTimeslot;
+    const weekday = await timeslot.lazyWeekday;
+    const resourceName = weekday.resourceName;
+
     await sendMail(
       booking.email,
       'Ihre Buchung',
       '', // TODO text representation
-      `<a href="${lookupUrl}?lookupToken=${lookupToken}">Einsehen</a>`
-    );
+      `
+        <p>
+          Sie haben die Ressource "${resourceName}" am ${weekday.name} von ${booking.startDate} bis ${booking.endDate} gebucht.<br />
+          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
+        </p>
+        <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
+        <p>
+          IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH ${VerificationTimeout} WENN SIE NICHT BESTÄTIGT WIRD.
+        </p>
+        <p>
+          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen.
+        </p>
+      `
+    ); // FIXME: Formatting
   }
 
   private static async listBookingsByLookupToken(
