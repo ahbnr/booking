@@ -36,7 +36,10 @@ export class Routes {
 
     app
       .route('/users/inviteForSignup')
-      .post(Routes.asyncHandler(this.usersController.inviteForSignup));
+      .post(
+        authHandler,
+        Routes.asyncHandler(this.usersController.inviteForSignup)
+      );
 
     app
       .route('/users/isSignupTokenOk')

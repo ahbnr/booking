@@ -34,16 +34,12 @@ export class WeekdaysController {
     const weekday = await this.getWeekday(req);
 
     const timeslotData = checkType(req.body, TimeslotPostInterface);
-    try {
-      const timeslot = await Timeslot.create<Timeslot>({
-        weekdayId: weekday.id,
-        ...timeslotData,
-      });
+    const timeslot = await Timeslot.create<Timeslot>({
+      weekdayId: weekday.id,
+      ...timeslotData,
+    });
 
-      res.status(201).json(await timeslot.asGetInterface());
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(201).json(await timeslot.asGetInterface());
   }
 
   public async getTimeslots(
@@ -85,33 +81,25 @@ export class WeekdaysController {
       limit: 1,
     };
 
-    try {
-      await Weekday.update(weekdayData, update);
+    await Weekday.update(weekdayData, update);
 
-      res.status(202).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(202).json({ data: 'success' });
   }
 
   public async delete(req: Request, res: Response) {
-    const weekdayName: string | null | undefined = req.params.name;
+    const weekdayId: string | null | undefined = req.params.id;
 
-    if (weekdayName != null) {
-      const options: DestroyOptions = {
-        where: { name: weekdayName },
-        limit: 1,
-      };
-
-      try {
-        await Weekday.destroy(options);
-
-        res.status(204).json({ data: 'success' });
-      } catch (error) {
-        res.status(500).json(error);
-      }
-    } else {
-      res.status(500).json({ data: 'Weekday not specified.' });
+    if (weekdayId == null) {
+      throw new ControllerError('No weekday with that name', 404);
     }
+
+    const options: DestroyOptions = {
+      where: { id: weekdayId },
+      limit: 1,
+    };
+
+    await Weekday.destroy(options);
+
+    res.status(204).json({ data: 'success' });
   }
 }

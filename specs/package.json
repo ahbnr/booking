@@ -1,0 +1,13 @@
+{
+  "name": "specs",
+  "version": "1.0.0",
+  "description": "OpenAPI tools",
+  "license": "AGPL-3.0-or-later",
+  "scripts":  {
+    "lint": "spectral lint ./booking.v1.yaml",
+    "test": "pipenv run schemathesis run ./booking.v1.yaml --base-url http://localhost:3000"
+  },
+  "devDependencies": {
+    "@stoplight/spectral": "^5.7.1"
+  }
+}

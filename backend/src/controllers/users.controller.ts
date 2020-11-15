@@ -7,6 +7,7 @@ import { sendMail } from '../utils/email';
 import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
 import {
   checkType,
+  DataValidationError,
   EMailString,
   InviteForSignupData,
   noRefinementChecks,
@@ -14,6 +15,7 @@ import {
 import { SignupTokenData } from '../types/token-types/SignupTokenData';
 import { AuthTokenData } from '../types/token-types/AuthTokenData';
 import { AuthRequestData, SignupRequestData } from 'common';
+import { TokenDecodeError } from '../types/errors/TokenDecodeError';
 
 @boundClass
 export class UsersController {

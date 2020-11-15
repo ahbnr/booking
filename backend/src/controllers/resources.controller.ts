@@ -38,19 +38,17 @@ export class ResourcesController {
     const resourceName = ResourcesController.retrieveResourceName(req);
     const resourceData = checkType(req.body, ResourcePostInterface);
 
-    if (resourceData != null) {
-      try {
-        const resource = await Resource.create({
-          ...resourceData,
-          name: resourceName,
-        });
+    try {
+      const resource = await Resource.create({
+        ...resourceData,
+        name: resourceName,
+      });
 
-        res
-          .status(201)
-          .json(ResourcesController.resourceAsGetInterface(resource));
-      } catch (error) {
-        res.status(500).json(error);
-      }
+      res
+        .status(201)
+        .json(ResourcesController.resourceAsGetInterface(resource));
+    } catch (error) {
+      res.status(500).json(error);
     }
   }
 
@@ -64,18 +62,12 @@ export class ResourcesController {
     const resource = await this.getResource(req);
 
     const weekdayData = checkType(req.body, WeekdayPostInterface);
-    if (weekdayData != null) {
-      try {
-        const weekday = await Weekday.create<Weekday>({
-          resourceName: resource.name,
-          ...weekdayData,
-        });
+    const weekday = await Weekday.create<Weekday>({
+      resourceName: resource.name,
+      ...weekdayData,
+    });
 
-        res.status(201).json(weekday);
-      } catch (error) {
-        res.status(500).json(error);
-      }
-    }
+    res.status(201).json(weekday);
   }
 
   public async getWeekdays(req: Request, res: Response<WeekdayGetInterface[]>) {
@@ -105,24 +97,16 @@ export class ResourcesController {
 
   public async update(req: Request, res: Response) {
     const resourceName = ResourcesController.retrieveResourceName(req);
+    const resourceData = checkType(req.body, ResourcePostInterface);
 
-    if (resourceName != null) {
-      const resourceData = checkType(req.body, ResourcePostInterface);
-      if (resourceData != null) {
-        const update: UpdateOptions = {
-          where: { name: resourceName },
-          limit: 1,
-        };
+    const update: UpdateOptions = {
+      where: { name: resourceName },
+      limit: 1,
+    };
 
-        try {
-          await Resource.update(resourceData, update);
+    await Resource.update(resourceData, update);
 
-          res.status(202).json({ data: 'success' });
-        } catch (error) {
-          res.status(500).json(error);
-        }
-      }
-    }
+    res.status(202).json({ data: 'success' });
   }
 
   public async delete(req: Request, res: Response) {

@@ -147,23 +147,19 @@ export class BookingsController {
   }
 
   public async show(req: Request, res: Response<BookingGetInterface>) {
-    try {
-      let booking = await Booking.findByPk<Booking>(req.params.id, {
-        include: [Timeslot],
-      });
+    let booking = await Booking.findByPk<Booking>(req.params.id, {
+      include: [Timeslot],
+    });
 
-      if (booking != null && (await booking.hasPassed())) {
-        await booking.destroy();
-        booking = null;
-      }
+    if (booking != null && (await booking.hasPassed())) {
+      await booking.destroy();
+      booking = null;
+    }
 
-      if (booking != null) {
-        res.json(BookingsController.bookingAsGetInterface(booking));
-      } else {
-        res.status(404).json();
-      }
-    } catch (error) {
-      res.status(500).json(error);
+    if (booking != null) {
+      res.json(BookingsController.bookingAsGetInterface(booking));
+    } else {
+      res.status(404).json();
     }
   }
 
@@ -308,19 +304,15 @@ export class BookingsController {
       limit: 1,
     };
 
-    try {
-      // noinspection JSUnusedLocalSymbols
-      const [_, [booking]] = await Booking.update(bookingPostData, update); // eslint-disable-line @typescript-eslint/no-unused-vars
+    // noinspection JSUnusedLocalSymbols
+    const [_, [booking]] = await Booking.update(bookingPostData, update); // eslint-disable-line @typescript-eslint/no-unused-vars
 
-      await BookingsController.sendBookingLookupMail(
-        bookingPostData.lookupUrl,
-        booking
-      );
+    await BookingsController.sendBookingLookupMail(
+      bookingPostData.lookupUrl,
+      booking
+    );
 
-      res.status(202).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(202).json({ data: 'success' });
   }
 
   public async delete(req: Request, res: Response) {
@@ -341,6 +333,8 @@ export class BookingsController {
         res.status(404).json();
       }
     } else if (req.authenticated) {
+      // FIXME: Also implement 404 here
+
       const options: DestroyOptions = {
         where: { id: req.params.id },
         limit: 1,

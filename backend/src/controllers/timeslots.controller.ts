@@ -50,13 +50,9 @@ export class TimeslotsController {
       limit: 1,
     };
 
-    try {
-      await Timeslot.update(timeslotData, update);
+    await Timeslot.update(timeslotData, update);
 
-      res.status(202).json({ data: 'success' });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(202).json({ data: 'success' });
   }
 
   public async delete(req: Request, res: Response) {

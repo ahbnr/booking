@@ -5,6 +5,7 @@ import cors from 'cors';
 import db from './models';
 import { ControllerError } from './controllers/errors';
 import { DataValidationError } from 'common/dist';
+import { TokenDecodeError } from './types/errors/TokenDecodeError';
 
 db.init();
 
@@ -34,7 +35,10 @@ app.use(
       res.status(err.errorCode == null ? 500 : err.errorCode);
       res.render('error', { error: err.message });
     } else if (err instanceof DataValidationError) {
-      res.status(500);
+      res.status(400);
+      res.render(err.message);
+    } else if (err instanceof TokenDecodeError) {
+      res.status(401);
       res.render(err.message);
     } else {
       console.error('Unknown error! Forwarding to default error handler...');

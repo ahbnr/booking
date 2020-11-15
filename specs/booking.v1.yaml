@@ -1,0 +1,1027 @@
+openapi: 3.0.0
+info:
+  title: booking
+  version: '0.1'
+  description: Backend API of the "booking" service.
+  license:
+    name: AGPLv3
+    url: 'https://www.gnu.org/licenses/agpl-3.0.en.html'
+  contact:
+    name: No official contact
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /users/auth:
+    post:
+      summary: Authenticate
+      operationId: post-users-auth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: JSON web token to authenticate further requests
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  '':
+                    type: string
+                required:
+                  - message
+      description: |-
+        Admin authentication point
+
+        Returns JSON web token which can be used to verify further requests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequestData'
+            examples: {}
+      tags:
+        - users
+  /users/inviteForSignup:
+    post:
+      summary: Invite new admin user
+      operationId: post-users-inviteForSignup
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+      description: Allows to invite new admin user to service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteForSignupData'
+      security:
+        - admin authentication token: []
+      tags:
+        - users
+  /users/isSignupTokenOk:
+    post:
+      summary: Check signup token validity
+      operationId: post-users-isSignupTokenOk
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: whether the token was valid or not
+      description: Determines whether a given JSON web token is valid and authorizes the signup of a new admin user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: JWT signup token to validate
+      tags:
+        - users
+  /users/signup:
+    post:
+      summary: Sign up new admin user
+      operationId: post-users-signup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: JWT admin authentication token
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+        '401':
+          description: Unauthorized. May occur if signup token was not valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedActionError'
+      description: |-
+        Signs up a new admin user using a signup token. Signup tokens are sent via mail to new admin users which are invited by /users/inviteForSignup.
+        The token will be embedded in a link in the mail. 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequestData'
+      tags:
+        - users
+  /resources:
+    get:
+      summary: GET Resources
+      tags:
+        - resources
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceGetInterface'
+      operationId: get-resources
+      description: Returns a listing of all resources that can be booked
+  '/resources/{name}':
+    get:
+      summary: Access a single resource
+      tags:
+        - resources
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceGetInterface'
+        '404':
+          description: Not Found
+      operationId: 'get-resources-:name'
+      description: Get a resource by its name
+    parameters:
+      - schema:
+          type: string
+        name: name
+        in: path
+        required: true
+    post:
+      summary: ''
+      operationId: post-resources-name
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceGetInterface'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+      description: |-
+        Create a new resource with the given name
+
+        FIXME: Handle case that resource exists in response
+      security:
+        - admin authentication token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourcePostInterface'
+      tags:
+        - resources
+    put:
+      summary: ''
+      operationId: put-resources-name
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+      description: |-
+        Update a resource by name
+
+        FIXME: Handle case when resource does not exist in response
+      security:
+        - admin authentication token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourcePostInterface'
+      tags:
+        - resources
+    delete:
+      summary: ''
+      operationId: delete-resources-name
+      responses:
+        '204':
+          description: No Content
+      description: |-
+        Delete resource by name
+
+        FIXME: Add response when resource does not exist
+      security:
+        - admin authentication token: []
+      tags:
+        - resources
+  '/resources/{name}/weekdays':
+    parameters:
+      - schema:
+          type: string
+        name: name
+        in: path
+        required: true
+    get:
+      summary: Access weekday information for resource
+      tags:
+        - resources
+        - weekdays
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeekdayGetInterface'
+        '404':
+          description: Not Found (if no resource with that name exists)
+      operationId: get-resources-name-weekdays
+      description: Lists all weekdays created for this resource
+    post:
+      summary: Add weekday
+      operationId: post-resources-name-weekdays
+      responses:
+        '201':
+          description: |-
+            OK
+
+            Returns created weekday
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeekdayGetInterface'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+        '404':
+          description: |-
+            Not Found
+
+            (if resource does not exist)
+      security:
+        - admin authentication token: []
+      description: Allows to add a weekday to this resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeekdayPostInterface'
+      tags:
+        - resources
+        - weekdays
+  /weekdays:
+    get:
+      summary: Access weekdays across resources
+      tags:
+        - weekdays
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeekdayGetInterface'
+      operationId: get-weekdays
+      description: Lists all created weekdays across resources
+  '/weekdays/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Access single weekday
+      tags:
+        - weekdays
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeekdayGetInterface'
+        '404':
+          description: Not Found
+      operationId: get-weekdays-id
+      description: Get data of a specific weekday by its id
+    put:
+      summary: Update weekday
+      operationId: put-weekdays-id
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+      description: |-
+        Update a weekday
+
+        FIXME: Handle 404
+      security:
+        - admin authentication token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeekdayPostInterface'
+        description: ''
+      tags:
+        - weekdays
+    delete:
+      summary: Delete weekday
+      operationId: delete-weekdays-id
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+      description: Delete weekday and all associated data
+      security:
+        - admin authentication token: []
+      tags:
+        - weekdays
+  '/weekdays/{id}/timeslots':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Access timeslots of specific weekday
+      tags:
+        - weekdays
+        - timeslots
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeslotGetInterface'
+        '404':
+          description: |-
+            Not Found
+
+            (no such weekday)
+      operationId: get-weekdays-id-timeslots
+      description: List timeslots of this weekday
+    post:
+      summary: Create timeslot
+      operationId: post-weekdays-id-timeslots
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeslotGetInterface'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+        '401':
+          description: Unauthorized
+        '404':
+          description: |-
+            Not Found
+
+            (no such weekday)
+      description: Create a timeslot for this weekday
+      security:
+        - admin authentication token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeslotPostInterface'
+      tags:
+        - weekdays
+        - timeslots
+  /timeslots:
+    get:
+      summary: Access all timeslots
+      tags:
+        - timeslots
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeslotGetInterface'
+      operationId: get-timeslots
+      description: List all timeslots across all weekdays and resources
+  '/timeslots/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Access specific timeslot
+      tags:
+        - timeslots
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeslotGetInterface'
+        '404':
+          description: Not Found
+      operationId: get-timeslots-id
+      description: Get data of specific timeslot by its id
+    put:
+      summary: ''
+      operationId: put-timeslots-id
+      description: |-
+        Change existing timeslot
+
+        FIXME: Handle 404
+      security:
+        - admin authentication token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeslotPostInterface'
+      responses:
+        '202':
+          description: Accepted
+      tags:
+        - timeslots
+    delete:
+      summary: ''
+      operationId: delete-timeslots-id
+      responses:
+        '204':
+          description: No Content
+      description: |-
+        Delete a timeslot
+        Its cascading (all other data depending on this timeslot will be lost)
+
+        FIXME: Handle 404
+      security:
+        - admin authentication token: []
+      tags:
+        - timeslots
+  '/timeslots/{id}/bookings':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Inspect all bookings of a timeslot
+      tags:
+        - timeslots
+        - bookings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingGetInterface'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+        '404':
+          description: |-
+            Not Found
+
+            (no such timeslot)
+      operationId: get-timeslots-id-bookings
+      description: List all bookings of all timeslots across all resources
+      security:
+        - admin authentication token: []
+    post:
+      summary: ''
+      operationId: post-timeslots-id-bookings
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingGetInterface'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+        '404':
+          description: |-
+            Not Found
+
+            (no such timeslot)
+        '409':
+          description: |-
+            Conflict
+
+            Maximum capacity of the timeslot has been reached and no more bookings can be currently made
+      description: Create a new booking for a specific timeslot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingPostInterface'
+      tags:
+        - timeslots
+        - bookings
+  /bookings:
+    get:
+      summary: Access all bookings
+      tags:
+        - bookings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingGetInterface'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      operationId: get-bookings
+      description: |-
+        List all bookings across all resources
+
+        Either an admin authentication token or a booking lookup token must be provided.
+
+        If admin authentication is used, it returns a list of all bookings in the system.
+
+        If a booking lookup token is used, only the bookings made by the email to which the token has been sent are returned.
+        A booking lookup token is embedded into a link and sent per mail for every new booking made.
+      security:
+        - booking lookup token: []
+        - admin authentication token: []
+  '/bookings/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Access specific booking
+      tags:
+        - bookings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingGetInterface'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+        '404':
+          description: Not Found
+      operationId: get-bookings-id
+      description: Get data of specific booking
+      security:
+        - admin authentication token: []
+    put:
+      summary: ''
+      operationId: put-bookings-id
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+      description: |-
+        Changes an existing booking
+
+        FIXME: Implement 404
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingPostInterface'
+      security:
+        - admin authentication token: []
+      tags:
+        - bookings
+    delete:
+      summary: ''
+      operationId: delete-bookings-id
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '404':
+          description: |-
+            Not Found
+
+            (No such booking)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      description: |-
+        Delete a booking
+
+        Either an admin authentication token or a booking lookup token must be provided.
+        A booking lookup token is embedded into a link and sent per mail for every new booking made.
+      security:
+        - admin authentication token: []
+        - booking lookup token: []
+      tags:
+        - bookings
+  /bookings/inInterval:
+    post:
+      summary: Query bookings by timeframe
+      tags:
+        - bookings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingWithContextGetInterface'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAdminActionError'
+      operationId: get-bookings-inInterval
+      security:
+        - admin authentication token: []
+      description: Get all bookings in a certain time frame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingIntervalIndexRequestData'
+components:
+  schemas:
+    AuthRequestData:
+      title: AuthRequestData
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+      x-examples:
+        example-1:
+          username: root
+          password: GMnQUN11xglwHBYvk6pE
+    InviteForSignupData:
+      title: InviteForSignupData
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Mail address of the user who shall be invited to the service
+        targetUrl:
+          type: string
+          format: uri
+          description: |-
+            Url send with invitation mail that points to the web frontend.
+            In the mail, ?token=JWT signup token will be added to this URL.
+      required:
+        - email
+        - targetUrl
+    UnauthorizedAdminActionError:
+      title: UnauthorizedAdminActionError
+      type: object
+      description: Unauthorized admin action. Needs admin authentication.
+    SignupRequestData:
+      title: SignupRequestData
+      type: object
+      description: 'FIXME: Put signup token into request header so that it can be identified as security scheme in the API spec'
+      properties:
+        signupToken:
+          type: string
+          description: JWT token which authorizes signup
+        userData:
+          type: object
+          description: Profile data of the new user
+          required:
+            - name
+            - password
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+              format: password
+      required:
+        - signupToken
+        - userData
+    DataValidationError:
+      title: DataValidationError
+      type: string
+      description: Client sent data of incorrect / unexpected format
+    UnauthorizedActionError:
+      title: UnauthorizedActionError
+      type: string
+      description: ''
+    ResourceGetInterface:
+      title: ResourceGetInterface
+      type: object
+      properties:
+        name:
+          type: string
+        weekdayIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - name
+        - weekdayIds
+    ResourcePostInterface:
+      title: ResourcePostInterface
+      type: object
+      description: ''
+    WeekdayGetInterface:
+      title: WeekdayGetInterface
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          $ref: '#/components/schemas/WeekdayName'
+        resourceName:
+          type: string
+      required:
+        - id
+        - name
+        - resourceName
+    WeekdayName:
+      type: string
+      title: WeekdayName
+      enum:
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+        - sunday
+    WeekdayPostInterface:
+      title: WeekdayPostInterface
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/WeekdayName'
+      required:
+        - name
+    TimeslotGetInterface:
+      title: TimeslotGetInterface
+      type: object
+      properties:
+        id:
+          type: integer
+        startHours:
+          $ref: '#/components/schemas/Hours'
+        startMinutes:
+          $ref: '#/components/schemas/Minutes'
+        endHours:
+          $ref: '#/components/schemas/Hours'
+        endMinutes:
+          $ref: '#/components/schemas/Minutes'
+        capacity:
+          type: integer
+          minimum: 0
+      required:
+        - id
+        - startHours
+        - startMinutes
+        - endHours
+        - endMinutes
+        - capacity
+    Hours:
+      type: integer
+      title: Hours
+      description: ''
+      minimum: 0
+      maximum: 23
+    Minutes:
+      type: integer
+      title: Minutes
+      minimum: 0
+      maximum: 59
+    TimeslotPostInterface:
+      title: TimeslotPostInterface
+      type: object
+      properties:
+        startHours:
+          $ref: '#/components/schemas/Hours'
+        startMinutes:
+          $ref: '#/components/schemas/Minutes'
+        endHours:
+          $ref: '#/components/schemas/Hours'
+        endMinutes:
+          $ref: '#/components/schemas/Minutes'
+        capacity:
+          type: integer
+          minimum: 0
+      required:
+        - startHours
+        - startMinutes
+        - endHours
+        - endMinutes
+        - capacity
+    BookingGetInterface:
+      title: BookingGetInterface
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date-time
+          description: 'format: ISO8601'
+        endDate:
+          type: string
+          format: date-time
+          description: 'format: ISO8601'
+        timeslotId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        id:
+          type: integer
+      required:
+        - startDate
+        - endDate
+        - timeslotId
+        - name
+        - email
+        - id
+      x-examples:
+        example-1:
+          id: 37
+          timeslotId: 15
+          name: Max Mustermann
+          email: max@mail1a.de
+          startDate: '2020-11-21T09:00:00.000Z'
+          endDate": '2020-11-21T10:00:00.000Z'
+    BookingWithContextGetInterface:
+      title: BookingGetInterface
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date-time
+          description: 'format: ISO8601'
+        endDate:
+          type: string
+          format: date-time
+          description: 'format: ISO8601'
+        timeslotId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        id:
+          type: integer
+        resource:
+          $ref: '#/components/schemas/ResourceGetInterface'
+      required:
+        - startDate
+        - endDate
+        - timeslotId
+        - name
+        - email
+        - id
+        - resource
+    BookingPostInterface:
+      title: BookingPostInterface
+      type: object
+      properties:
+        lookupUrl:
+          type: string
+          format: uri
+          description: url prefix of the web frontend which allows to lookup the created booking
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+        - lookupUrl
+        - name
+        - email
+    BookingIntervalIndexRequestData:
+      title: BookingIntervalIndexRequestData
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+          description: must be ISO8601
+        end:
+          type: string
+          format: date-time
+          description: must be ISO8601
+      required:
+        - start
+        - end
+  securitySchemes:
+    admin authentication token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JSON web token. Can be retrieved by the /users/auth route
+    booking lookup token:
+      name: token
+      type: apiKey
+      in: query
+      description: bookings can be looked up using a token. The token is embedded in a link sent via mail to the person who booked a timeslot.
+tags:
+  - name: bookings
+  - name: resources
+  - name: weekdays
+  - name: timeslots
+  - name: users
