@@ -14,6 +14,7 @@ import {
 import ResourceRepository from '../repositories/ResourceRepository';
 import TypesafeRequest from './TypesafeRequest';
 import WeekdayRepository from '../repositories/WeekdayRepository';
+import ResourceDBInterface from '../repositories/model_interfaces/ResourceDBInterface';
 
 @boundClass
 export class ResourcesController {
@@ -32,10 +33,10 @@ export class ResourcesController {
     req: TypesafeRequest,
     res: Response<ResourceGetInterface[]>
   ) {
+    const resources = await this.resourceRepository.findAll();
+
     res.json(
-      (await this.resourceRepository.findAll()).map(
-        ResourceRepository.resourceAsGetInterface
-      )
+      await Promise.all(resources.map((resource) => resource.toGetInterface()))
     );
   }
 
@@ -51,13 +52,13 @@ export class ResourcesController {
       resourceData
     );
 
-    res.status(201).json(ResourceRepository.resourceAsGetInterface(resource));
+    res.status(201).json(await resource.toGetInterface());
   }
 
   public async show(req: TypesafeRequest, res: Response<ResourceGetInterface>) {
     const resource = await this.getResource(req);
 
-    res.json(ResourceRepository.resourceAsGetInterface(resource));
+    res.json(await resource.toGetInterface());
   }
 
   public async createWeekday(
@@ -69,7 +70,7 @@ export class ResourcesController {
     const weekdayData = checkType(req.body, WeekdayPostInterface);
     const weekday = await this.weekdayRepository.create(resource, weekdayData);
 
-    res.status(201).json(weekday);
+    res.status(201).json(await weekday.toGetInterface());
   }
 
   public async getWeekdays(
@@ -77,9 +78,13 @@ export class ResourcesController {
     res: Response<WeekdayGetInterface[]>
   ) {
     const resource = await this.getResource(req);
-    const weekdays = resource?.weekdays;
+    const weekdays = await resource?.getWeekdays();
 
-    res.json(weekdays || []);
+    const getInterfaces = await Promise.all(
+      weekdays.map((weekday) => weekday.toGetInterface())
+    );
+
+    res.json(getInterfaces);
   }
 
   public async update(req: TypesafeRequest, res: Response) {
@@ -107,8 +112,9 @@ export class ResourcesController {
     }
   }
 
-  // noinspection JSMethodCanBeStatic
-  private async getResource(req: TypesafeRequest): Promise<Resource> {
+  private async getResource(
+    req: TypesafeRequest
+  ): Promise<ResourceDBInterface> {
     const resourceName = ResourcesController.retrieveResourceName(req);
     const resource = await this.resourceRepository.findByName(resourceName);
 

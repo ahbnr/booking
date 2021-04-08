@@ -55,21 +55,4 @@ export class Timeslot extends BaseModel<Timeslot> {
 
   @LazyGetter<Timeslot>((o) => o.weekday, { shouldBePresent: true })
   public readonly lazyWeekday!: Promise<Weekday>;
-
-  public async asGetInterface(): Promise<TimeslotGetInterface> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { bookings, weekday, ...strippedTimeslot } = this.toTypedJSON();
-
-    const lazyBookings = await BookingsController.clearPastBookings(
-      await this.lazyBookings
-    );
-    const lazyWeekday = await this.lazyWeekday;
-
-    // no refinement checks, we assume the database records are correct at least regarding refinements
-    return noRefinementChecks<TimeslotGetInterface>({
-      ...strippedTimeslot,
-      bookingIds: lazyBookings.map((booking) => booking.id),
-      weekdayId: lazyWeekday.id,
-    });
-  }
 }

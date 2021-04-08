@@ -14,21 +14,38 @@ import {
   NoElementToDestroy,
   NoElementToUpdate,
 } from './errors';
+import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
+import { boundClass } from 'autobind-decorator';
+import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
+import WeekdayRepository from './WeekdayRepository';
 
+@boundClass
 export default class ResourceRepository {
-  public async findAll(): Promise<Resource[]> {
-    const resources = await Resource.findAll({ include: [{ all: true }] });
+  private weekdayRepository!: WeekdayRepository;
 
-    return resources;
+  public init(weekdayRepository: WeekdayRepository) {
+    this.weekdayRepository = weekdayRepository;
   }
 
-  public async findByName(resourceName: string): Promise<Resource | null> {
+  private toInterface(resource: Resource): ResourceDBInterface {
+    return new ResourceDBInterface(resource, this);
+  }
+
+  public async findAll(): Promise<ResourceDBInterface[]> {
+    const resources = await Resource.findAll({ include: [{ all: true }] });
+
+    return resources.map(this.toInterface);
+  }
+
+  public async findByName(
+    resourceName: string
+  ): Promise<ResourceDBInterface | null> {
     const resource = await Resource.findByPk<Resource>(resourceName, {
       include: [{ all: true }],
     });
 
     if (resource != null) {
-      return resource;
+      return this.toInterface(resource);
     } else {
       return null;
     }
@@ -37,14 +54,14 @@ export default class ResourceRepository {
   public async create(
     resourceName: string,
     resourceData: ResourcePostInterface
-  ): Promise<Resource> {
+  ): Promise<ResourceDBInterface> {
     try {
       const resource = await Resource.create({
         ...resourceData,
         name: resourceName,
       });
 
-      return resource;
+      return this.toInterface(resource);
     } catch (e) {
       if (e instanceof UniqueConstraintError) {
         throw new DataIdAlreadyExists();
@@ -84,15 +101,11 @@ export default class ResourceRepository {
     }
   }
 
-  public static resourceAsGetInterface(
+  public async getAssociatedWeekdays(
     resource: Resource
-  ): ResourceGetInterface {
-    const { weekdays, ...strippedResource } = resource.toTypedJSON();
+  ): Promise<WeekdayDBInterface[]> {
+    const weekdays = await resource.lazyWeekdays;
 
-    // no refinement checks, we assume the database records are correct at least regarding refinements
-    return noRefinementChecks<ResourceGetInterface>({
-      ...strippedResource,
-      weekdayIds: weekdays?.map((weekday) => weekday.id) || [],
-    });
+    return weekdays.map(this.weekdayRepository.toInterface);
   }
 }

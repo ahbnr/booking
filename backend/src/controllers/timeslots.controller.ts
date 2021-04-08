@@ -1,8 +1,9 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Timeslot } from '../models/timeslot.model';
 import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
 import {
+  BookingGetInterface,
   checkType,
   hasProperty,
   TimeslotGetInterface,
@@ -10,6 +11,7 @@ import {
 } from 'common/dist';
 import TimeslotRepository from '../repositories/TimeslotRepository';
 import TypesafeRequest from './TypesafeRequest';
+import TimeslotDBInterface from '../repositories/model_interfaces/TimeslotDBInterface';
 
 @boundClass
 export class TimeslotsController {
@@ -26,14 +28,14 @@ export class TimeslotsController {
     const timeslots = await this.timeslotRepository.findAll();
 
     res.json(
-      await Promise.all(timeslots.map((timeslot) => timeslot.asGetInterface()))
+      await Promise.all(timeslots.map((timeslot) => timeslot.toGetInterface()))
     );
   }
 
   public async show(req: TypesafeRequest, res: Response<TimeslotGetInterface>) {
     const timeslot = await this.getTimeslot(req);
 
-    res.json(await timeslot.asGetInterface());
+    res.json(await timeslot.toGetInterface());
   }
 
   // FIXME: Update booking dates when timeslot is updated?
@@ -61,8 +63,7 @@ export class TimeslotsController {
     }
   }
 
-  // noinspection JSMethodCanBeStatic
-  private async getTimeslot(req: TypesafeRequest): Promise<Timeslot> {
+  public async getTimeslot(req: TypesafeRequest): Promise<TimeslotDBInterface> {
     const timeslotId = this.getTimeslotId(req);
     const timeslot = await this.timeslotRepository.findById(timeslotId);
 
@@ -71,5 +72,17 @@ export class TimeslotsController {
     } else {
       throw new ElementNotFound('timeslot');
     }
+  }
+
+  public async getBookingsForTimeslot(
+    req: Request,
+    res: Response<BookingGetInterface[]>
+  ) {
+    const timeslot = await this.getTimeslot(req);
+    const bookings = await timeslot.getBookings();
+
+    res.json(
+      await Promise.all(bookings.map((booking) => booking.toGetInterface()))
+    );
   }
 }

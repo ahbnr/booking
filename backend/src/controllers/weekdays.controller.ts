@@ -1,30 +1,48 @@
 import { Request, Response } from 'express';
-import { Weekday } from '../models/weekday.model';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
-import { ControllerError } from './errors';
+import { ControllerError, UnprocessableEntity } from './errors';
 import { boundClass } from 'autobind-decorator';
-import { Timeslot } from '../models/timeslot.model';
-import { TimeslotsController } from './timeslots.controller';
 import {
   checkType,
+  NonEmptyString,
   TimeslotGetInterface,
   TimeslotPostInterface,
   WeekdayGetInterface,
   WeekdayPostInterface,
 } from 'common/dist';
+import TimeslotRepository from '../repositories/TimeslotRepository';
+import WeekdayRepository from '../repositories/WeekdayRepository';
+import WeekdayDBInterface from '../repositories/model_interfaces/WeekdayDBInterface';
 
+// FIXME: Implement in terms of weekday repository
 @boundClass
 export class WeekdaysController {
-  public async index(req: Request, res: Response<WeekdayGetInterface[]>) {
-    const weekdays = await Weekday.findAll({});
+  private readonly weekdayRepository: WeekdayRepository;
+  private readonly timeslotRepository: TimeslotRepository;
 
-    res.json(weekdays.map((booking) => booking.toTypedJSON()));
+  constructor(
+    weekdayRepository: WeekdayRepository,
+    timeslotRepository: TimeslotRepository
+  ) {
+    this.weekdayRepository = weekdayRepository;
+    this.timeslotRepository = timeslotRepository;
+  }
+
+  private async toGetInterface(
+    weekdays: WeekdayDBInterface[]
+  ): Promise<WeekdayGetInterface[]> {
+    return Promise.all(weekdays.map((weekday) => weekday.toGetInterface()));
+  }
+
+  public async index(req: Request, res: Response<WeekdayGetInterface[]>) {
+    const weekdays = await this.weekdayRepository.findAll();
+
+    res.json(await this.toGetInterface(weekdays));
   }
 
   public async show(req: Request, res: Response<WeekdayGetInterface>) {
     const weekday = await this.getWeekday(req);
 
-    res.json(weekday.toTypedJSON());
+    res.json(await weekday.toGetInterface());
   }
 
   public async createTimeslot(
@@ -34,12 +52,13 @@ export class WeekdaysController {
     const weekday = await this.getWeekday(req);
 
     const timeslotData = checkType(req.body, TimeslotPostInterface);
-    const timeslot = await Timeslot.create<Timeslot>({
-      weekdayId: weekday.id,
-      ...timeslotData,
-    });
 
-    res.status(201).json(await timeslot.asGetInterface());
+    const timeslot = await this.timeslotRepository.create(
+      weekday.id,
+      timeslotData
+    );
+
+    res.status(201).json(await timeslot.toGetInterface());
   }
 
   public async getTimeslots(
@@ -47,24 +66,17 @@ export class WeekdaysController {
     res: Response<TimeslotGetInterface[]>
   ) {
     const weekday = await this.getWeekday(req);
-    const timeslots = weekday?.timeslots;
+    const timeslots = await weekday?.getTimeslots();
 
-    if (timeslots != null) {
-      res.json(
-        await Promise.all(
-          timeslots.map((timeslot) => timeslot.asGetInterface())
-        )
-      );
-    } else {
-      res.json([]);
-    }
+    res.json(
+      await Promise.all(timeslots.map((timeslot) => timeslot.toGetInterface()))
+    );
   }
 
-  // noinspection JSMethodCanBeStatic
-  private async getWeekday(req: Request): Promise<Weekday> {
-    const weekday = await Weekday.findByPk<Weekday>(req.params.id, {
-      include: [Timeslot],
-    });
+  private async getWeekday(req: Request): Promise<WeekdayDBInterface> {
+    const weekday = await this.weekdayRepository.findById(
+      this.weekdayIdFromRequest(req)
+    );
 
     if (weekday != null) {
       return weekday;
@@ -76,30 +88,27 @@ export class WeekdaysController {
   public async update(req: Request, res: Response) {
     const weekdayData = checkType(req.body, WeekdayPostInterface);
 
-    const update: UpdateOptions = {
-      where: { id: req.params.id },
-      limit: 1,
-    };
-
-    await Weekday.update(weekdayData, update);
+    await this.weekdayRepository.update(
+      this.weekdayIdFromRequest(req),
+      weekdayData
+    );
 
     res.status(202).json({ data: 'success' });
   }
 
   public async delete(req: Request, res: Response) {
-    const weekdayId: string | null | undefined = req.params.id;
-
-    if (weekdayId == null) {
-      throw new ControllerError('No weekday with that name', 404);
-    }
-
-    const options: DestroyOptions = {
-      where: { id: weekdayId },
-      limit: 1,
-    };
-
-    await Weekday.destroy(options);
+    await this.weekdayRepository.delete(this.weekdayIdFromRequest(req));
 
     res.status(204).json({ data: 'success' });
+  }
+
+  private weekdayIdFromRequest(req: Request): number {
+    const maybeId = parseInt(req.params.id);
+
+    if (isNaN(maybeId)) {
+      throw new UnprocessableEntity('Missing numeric weekday id');
+    } else {
+      return maybeId;
+    }
   }
 }

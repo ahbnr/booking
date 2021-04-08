@@ -1,20 +1,59 @@
 import { Timeslot } from '../models/timeslot.model';
-import { ResourcePostInterface, TimeslotPostInterface } from 'common/dist';
+import { TimeslotData, TimeslotPostInterface } from 'common/dist';
 import { DestroyOptions, UpdateOptions } from 'sequelize';
-import { Resource } from '../models/resource.model';
 import { NoElementToDestroy, NoElementToUpdate } from './errors';
+import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
+import { boundClass } from 'autobind-decorator';
+import BookingDBInterface from './model_interfaces/BookingDBInterface';
+import BookingRepository from './BookingRepository';
+import WeekdayRepository from './WeekdayRepository';
+import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
 
+@boundClass
 export default class TimeslotRepository {
-  public async findAll(): Promise<Timeslot[]> {
-    const timeslot = await Timeslot.findAll({});
+  private bookingRepository!: BookingRepository;
+  private weekdayRepository!: WeekdayRepository;
 
-    return timeslot;
+  init(
+    bookingRepository: BookingRepository,
+    weekdayRepository: WeekdayRepository
+  ) {
+    this.bookingRepository = bookingRepository;
+    this.weekdayRepository = weekdayRepository;
   }
 
-  public async findById(timeslotId: number): Promise<Timeslot | null> {
+  public toInterface(timeslot: Timeslot): TimeslotDBInterface {
+    return new TimeslotDBInterface(timeslot, this);
+  }
+
+  public async findAll(): Promise<TimeslotDBInterface[]> {
+    const timeslots = await Timeslot.findAll({});
+
+    return timeslots.map(this.toInterface);
+  }
+
+  public async findById(
+    timeslotId: number
+  ): Promise<TimeslotDBInterface | null> {
     const timeslot = await Timeslot.findByPk<Timeslot>(timeslotId);
 
-    return timeslot;
+    if (timeslot != null) {
+      return this.toInterface(timeslot);
+    }
+
+    return null;
+  }
+
+  public async create(
+    weekdayId: number,
+    timeslotData: TimeslotData
+  ): Promise<TimeslotDBInterface> {
+    const timeslot = await Timeslot.create<Timeslot>({
+      weekdayId: weekdayId,
+      ...timeslotData,
+    });
+
+    return this.toInterface(timeslot);
   }
 
   public async update(timeslotId: number, timeslotData: TimeslotPostInterface) {
@@ -42,5 +81,21 @@ export default class TimeslotRepository {
     if (destroyedRows < 1) {
       throw new NoElementToDestroy('timeslot');
     }
+  }
+
+  public async getAssociatedBookings(
+    timeslot: Timeslot
+  ): Promise<BookingDBInterface[]> {
+    const bookings = await timeslot.lazyBookings;
+
+    return bookings.map(this.bookingRepository.toInterface);
+  }
+
+  public async getAssociatedWeekday(
+    timeslot: Timeslot
+  ): Promise<WeekdayDBInterface> {
+    const weekday = await timeslot.lazyWeekday;
+
+    return this.weekdayRepository.toInterface(weekday);
   }
 }

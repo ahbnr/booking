@@ -11,13 +11,33 @@ import { BookingsController } from '../controllers/bookings.controller';
 import { UsersController } from '../controllers/users.controller';
 import { authHandler, optionalAuthHandler } from './passport';
 import { ResourcesController } from '../controllers/resources.controller';
+import DatabaseController from '../models';
 
 export class Routes {
-  private usersController: UsersController = new UsersController();
-  private resourcesController: ResourcesController = new ResourcesController();
-  private weekdaysController: WeekdaysController = new WeekdaysController();
-  private timeslotsController: TimeslotsController = new TimeslotsController();
-  private bookingsController: BookingsController = new BookingsController();
+  private readonly usersController: UsersController;
+  private readonly weekdaysController: WeekdaysController;
+  private readonly resourcesController: ResourcesController;
+  private readonly timeslotsController: TimeslotsController;
+  private readonly bookingsController: BookingsController;
+
+  constructor(db: DatabaseController) {
+    this.usersController = new UsersController(db.repositories.userRepository);
+    this.weekdaysController = new WeekdaysController(
+      db.repositories.weekdayRepository,
+      db.repositories.timeslotRepository
+    );
+    this.resourcesController = new ResourcesController(
+      db.repositories.resourceRepository,
+      db.repositories.weekdayRepository
+    );
+    this.timeslotsController = new TimeslotsController(
+      db.repositories.timeslotRepository
+    );
+    this.bookingsController = new BookingsController(
+      db.repositories.bookingRepository,
+      this.timeslotsController
+    );
+  }
 
   private static asyncHandler<T>(
     handler: (req: Request, res: Response, next?: NextFunction) => Promise<T>
@@ -102,7 +122,7 @@ export class Routes {
       .route('/timeslots/:id/bookings')
       .get(
         authHandler,
-        Routes.asyncHandler(this.bookingsController.getBookingsForTimeslot)
+        Routes.asyncHandler(this.timeslotsController.getBookingsForTimeslot)
       )
       .post(Routes.asyncHandler(this.bookingsController.createBooking));
 

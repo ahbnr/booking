@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "ts-node-dev --respawn src/index.ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,6 +21,7 @@
     "fp-ts": "^2.8.3",
     "io-ts": "^2.2.11",
     "jsonwebtoken": "^8.5.1",
+    "lazy-get-decorator": "^2.2.0",
     "luxon": "^1.25.0",
     "mariadb": "^2.4.2",
     "moment": "^2.27.0",

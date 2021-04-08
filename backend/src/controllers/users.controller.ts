@@ -18,6 +18,7 @@ import { AuthTokenData } from '../types/token-types/AuthTokenData';
 import { AuthRequestData, SignupRequestData } from 'common';
 import TypesafeRequest from './TypesafeRequest';
 import UserRepository from '../repositories/UserRepository';
+import UserDBInterface from '../repositories/model_interfaces/UserDBInterface';
 
 @boundClass
 export class UsersController {
@@ -75,10 +76,10 @@ export class UsersController {
     res.json(authToken);
   }
 
-  private static async getAuthToken(user: User): Promise<string> {
+  private static async getAuthToken(user: UserDBInterface): Promise<string> {
     const data: AuthTokenData = noRefinementChecks<AuthTokenData>({
       type: 'AuthTokenData',
-      username: user.name,
+      username: user.data.name,
     });
 
     return await asyncJwtSign(data, jwtSecret, {});

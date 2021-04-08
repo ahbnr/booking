@@ -22,3 +22,15 @@ export class ElementNotFound extends ControllerError {
     super(`Could not locate ${elementType || 'element'} instance.`, 404);
   }
 }
+
+export class UnprocessableEntity extends ControllerError {
+  constructor(problemDescription: string) {
+    super(problemDescription, 422);
+  }
+}
+
+export class Conflict extends ControllerError {
+  constructor(problemDescription: string) {
+    super(problemDescription, 409);
+  }
+}

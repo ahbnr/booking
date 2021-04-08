@@ -21,61 +21,54 @@ import {
 } from 'common';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 import { Resource } from '../models/resource.model';
-import { Weekday } from '../models/weekday.model';
-import { ResourcesController } from './resources.controller';
 import { BookingIntervalIndexRequestData, TimeslotData } from 'common/dist';
+import BookingRepository from '../repositories/BookingRepository';
+import ResourceRepository from '../repositories/ResourceRepository';
+import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterface';
+import TypesafeRequest from './TypesafeRequest';
+import { UnprocessableEntity } from './errors';
 
 @boundClass
 export class BookingsController {
-  private static bookingAsGetInterface(booking: Booking): BookingGetInterface {
-    const { startDate, endDate, ...rest } = booking.toTypedJSON();
+  private readonly bookingRepository: BookingRepository;
+  private readonly timeslotController: TimeslotsController;
 
-    return noRefinementChecks<BookingGetInterface>({
-      ...rest,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    });
+  constructor(
+    bookingRepository: BookingRepository,
+    timeslotController: TimeslotsController
+  ) {
+    this.bookingRepository = bookingRepository;
+    this.timeslotController = timeslotController;
   }
 
   private static bookingsAsGetInterfaces(
-    bookings: Booking[]
+    bookings: BookingDBInterface[]
   ): BookingGetInterface[] {
-    return bookings.map(this.bookingAsGetInterface);
-  }
-
-  public static async clearPastBookings(
-    bookings: Booking[]
-  ): Promise<Booking[]> {
-    const [old_bookings, valid_bookings] = bookings.partition((booking) =>
-      booking.hasPassed()
-    );
-
-    for (const booking of old_bookings) {
-      await booking.destroy();
-    }
-
-    return valid_bookings;
+    return bookings.map((booking) => booking.toGetInterface());
   }
 
   public async index(req: Request, res: Response<BookingGetInterface[]>) {
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
+      const bookingsWithMail = await this.listBookingsByLookupToken(
+        lookupToken
+      );
+
+      // When listing bookings with a token, the bookings get automatically verified
+      for (const booking of bookingsWithMail) {
+        await booking.markAsVerified();
+      }
+
       const result: BookingGetInterface[] = BookingsController.bookingsAsGetInterfaces(
-        await BookingsController.listBookingsByLookupToken(lookupToken)
+        bookingsWithMail
       );
 
       res.json(result);
     } else if (req.authenticated) {
-      const bookings = await Booking.findAll<Booking>({
-        include: [Timeslot],
-      });
+      const bookings = await this.bookingRepository.findAll();
 
-      res.json(
-        BookingsController.bookingsAsGetInterfaces(
-          await BookingsController.clearPastBookings(bookings)
-        )
-      );
+      res.json(BookingsController.bookingsAsGetInterfaces(bookings));
     } else {
       res.status(401).json();
     }
@@ -87,77 +80,33 @@ export class BookingsController {
   ) {
     const reqData = checkType(req.body, BookingIntervalIndexRequestData);
 
-    const bookings = await Booking.findAll<Booking>({
-      where: {
-        [Op.or]: [
-          {
-            startDate: {
-              [Op.between]: [reqData.start, reqData.end],
-            },
-          },
-          {
-            endDate: {
-              [Op.between]: [reqData.start, reqData.end],
-            },
-          },
-        ],
-      },
-      include: [
-        {
-          model: Timeslot,
-          include: [
-            {
-              model: Weekday,
-              include: [Resource],
-            },
-          ],
-        },
-      ],
-    });
-
-    const clearedBookings = await BookingsController.clearPastBookings(
-      bookings
+    const bookings = await this.bookingRepository.findInInterval(
+      reqData.start,
+      reqData.end
     );
 
-    const bookingsWithContext = clearedBookings.map((booking) => ({
-      ...BookingsController.bookingAsGetInterface(booking),
-      resource: ResourcesController.resourceAsGetInterface(
-        booking.timeslot?.weekday?.resource ||
-          throwExpr<Resource>(
-            new Error(
-              'Can not access related db entities, even though they should have already been loaded. This should never happen and is a programming error.'
-            )
-          )
-      ),
-    }));
+    const bookingsWithContext: Promise<
+      BookingWithContextGetInterface
+    >[] = bookings.map(
+      async (booking): Promise<BookingWithContextGetInterface> => {
+        const resource = await booking.getResource();
 
-    res.json(bookingsWithContext);
-  }
-
-  public async getBookingsForTimeslot(
-    req: Request,
-    res: Response<BookingGetInterface[]>
-  ) {
-    const timeslot = await TimeslotsController.getTimeslot(req);
-    const bookings = await BookingsController.clearPastBookings(
-      await timeslot.lazyBookings
+        return {
+          ...booking.toGetInterface(),
+          resource: await resource.toGetInterface(),
+        };
+      }
     );
 
-    res.json(BookingsController.bookingsAsGetInterfaces(bookings));
+    res.json(await Promise.all(bookingsWithContext));
   }
 
   public async show(req: Request, res: Response<BookingGetInterface>) {
-    let booking = await Booking.findByPk<Booking>(req.params.id, {
-      include: [Timeslot],
-    });
-
-    if (booking != null && (await booking.hasPassed())) {
-      await booking.destroy();
-      booking = null;
-    }
+    const bookingId = this.bookingIdFromRequest(req);
+    const booking = await this.bookingRepository.findById(bookingId);
 
     if (booking != null) {
-      res.json(BookingsController.bookingAsGetInterface(booking));
+      res.json(booking.toGetInterface());
     } else {
       res.status(404).json();
     }
@@ -167,47 +116,26 @@ export class BookingsController {
     req: Request,
     res: Response<BookingGetInterface | string>
   ) {
-    const timeslot = await TimeslotsController.getTimeslot(req);
-    const bookings = await BookingsController.clearPastBookings(
-      await timeslot.lazyBookings
+    const timeslot = await this.timeslotController.getTimeslot(req);
+    const bookingPostData = checkType(req.body, BookingPostInterface);
+
+    const booking = await this.bookingRepository.create(
+      timeslot,
+      bookingPostData
     );
 
-    if (bookings.length < timeslot.capacity) {
-      const bookingPostData = checkType(req.body, BookingPostInterface);
-      const weekday = await timeslot.lazyWeekday;
+    await BookingsController.sendBookingLookupMail(
+      bookingPostData.lookupUrl,
+      booking
+    );
 
-      const booking = await Booking.create<Booking>({
-        ...bookingPostData,
-        startDate: getCurrentTimeslotStartDate(
-          noRefinementChecks<TimeslotData>(timeslot),
-          weekday.name
-        ).toJSDate(),
-        endDate: getCurrentTimeslotEndDate(
-          noRefinementChecks<TimeslotData>(timeslot),
-          weekday.name
-        ).toJSDate(),
-        timeslotId: timeslot.id,
-      });
-
-      await BookingsController.sendBookingLookupMail(
-        bookingPostData.lookupUrl,
-        booking
-      );
-
-      res.status(201).json(BookingsController.bookingAsGetInterface(booking));
-    } else {
-      res
-        .status(409)
-        .json(
-          'Maximum capacity of this timeslot has been reached. No more bookings can be created for it.'
-        );
-    }
+    res.status(201).json(booking.toGetInterface());
   }
 
   private static async createBookingLookupToken(
-    booking: Booking
+    booking: BookingDBInterface
   ): Promise<string> {
-    const email = checkType(booking.email, EMailString);
+    const email = checkType(booking.data.email, EMailString);
     const validDuration = await booking.timeTillDue();
     const secondsUntilExpiration = Math.floor(
       validDuration.shiftTo('seconds').seconds
@@ -225,23 +153,23 @@ export class BookingsController {
 
   private static async sendBookingLookupMail(
     lookupUrl: string,
-    booking: Booking
+    booking: BookingDBInterface
   ) {
     const lookupToken = await BookingsController.createBookingLookupToken(
       booking
     );
 
-    const timeslot = await booking.lazyTimeslot;
-    const weekday = await timeslot.lazyWeekday;
+    const timeslot = await booking.getTimeslot();
+    const weekday = await timeslot.getWeekday();
     const resourceName = weekday.resourceName;
 
     await sendMail(
-      booking.email,
+      booking.data.email,
       'Ihre Buchung',
       '', // TODO text representation
       `
         <p>
-          Sie haben die Ressource "${resourceName}" am ${weekday.name} von ${booking.startDate} bis ${booking.endDate} gebucht.<br />
+          Sie haben die Ressource "${resourceName}" am ${weekday.data.name} von ${booking.startDate} bis ${booking.endDate} gebucht.<br />
           Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
         </p>
         <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
@@ -255,39 +183,28 @@ export class BookingsController {
     ); // FIXME: Formatting
   }
 
-  private static async listBookingsByLookupToken(
+  private async listBookingsByLookupToken(
     lookupToken: string
-  ): Promise<Booking[]> {
+  ): Promise<BookingDBInterface[]> {
     const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
 
     const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
-    const bookings = await this.clearPastBookings(
-      await Booking.findAll({
-        where: { email: tokenData.email },
-      })
-    );
-
-    for (const booking of bookings) {
-      booking.update({
-        isVerified: true,
-      });
-    }
-
-    return bookings;
+    return this.bookingRepository.findByEmail(tokenData.email);
   }
 
-  private static async getBookingByToken(
+  private async getBookingByToken(
     bookingId: number,
     lookupToken: string
-  ): Promise<Booking | null> {
+  ): Promise<BookingDBInterface | null> {
     const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
 
     const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
-    const matchingBookings = await Booking.findAll({
-      where: { id: bookingId, email: tokenData.email },
-    });
+    const matchingBookings = await this.bookingRepository.findByEmail(
+      tokenData.email,
+      bookingId
+    );
 
     if (matchingBookings.length > 0) {
       return matchingBookings[0];
@@ -299,17 +216,14 @@ export class BookingsController {
   public async update(req: Request, res: Response) {
     const bookingPostData = checkType(req.body, BookingPostInterface);
 
-    const update: UpdateOptions = {
-      where: { id: req.params.id },
-      limit: 1,
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    const [_, [booking]] = await Booking.update(bookingPostData, update); // eslint-disable-line @typescript-eslint/no-unused-vars
+    const updatedBooking = await this.bookingRepository.update(
+      this.bookingIdFromRequest(req),
+      bookingPostData
+    );
 
     await BookingsController.sendBookingLookupMail(
       bookingPostData.lookupUrl,
-      booking
+      updatedBooking
     );
 
     res.status(202).json({ data: 'success' });
@@ -320,10 +234,7 @@ export class BookingsController {
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
-      const maybeBooking = await BookingsController.getBookingByToken(
-        bookingId,
-        lookupToken
-      );
+      const maybeBooking = await this.getBookingByToken(bookingId, lookupToken);
 
       if (maybeBooking != null) {
         await maybeBooking.destroy();
@@ -335,16 +246,21 @@ export class BookingsController {
     } else if (req.authenticated) {
       // FIXME: Also implement 404 here
 
-      const options: DestroyOptions = {
-        where: { id: req.params.id },
-        limit: 1,
-      };
-
-      await Booking.destroy(options);
+      await this.bookingRepository.destroy(bookingId);
 
       res.status(204).json({ data: 'success' });
     } else {
       res.status(401).json();
+    }
+  }
+
+  private bookingIdFromRequest(req: Request): number {
+    const maybeId = parseInt(req.params.id);
+
+    if (isNaN(maybeId)) {
+      throw new UnprocessableEntity('No numeric booking id given.');
+    } else {
+      return maybeId;
     }
   }
 }
