@@ -10,8 +10,15 @@ export const UserData = t.type({
 
 export type UserData = t.TypeOf<typeof UserData>;
 
-export const UserGetInterface = UserData;
+// FIXME: Make get interfaces strict, so we are not leaking any data
+export const UserGetInterface = t.type({
+  name: NonEmptyString,
+  email: t.union([EMailString, t.undefined, t.null]),
+});
 export type UserGetInterface = t.TypeOf<typeof UserGetInterface>;
 
-export const UserPostInterface = UserData;
+export const UserPostInterface = t.type({
+  name: NonEmptyString,
+  password: NonEmptyString,
+});
 export type UserPostInterface = t.TypeOf<typeof UserPostInterface>;

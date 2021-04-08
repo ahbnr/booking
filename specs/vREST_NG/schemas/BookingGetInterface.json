@@ -1,0 +1,38 @@
+{
+  "title": "BookingGetInterface",
+  "type": "object",
+  "properties": {
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "format: ISO8601"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "format: ISO8601"
+    },
+    "timeslotId": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "id": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "startDate",
+    "endDate",
+    "timeslotId",
+    "name",
+    "email",
+    "id"
+  ],
+  "version": "openapi3"
+}

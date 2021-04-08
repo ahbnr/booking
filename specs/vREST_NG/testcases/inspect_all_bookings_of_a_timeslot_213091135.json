@@ -1,0 +1,54 @@
+{
+  "details": {
+    "summary": "Inspect all bookings of a timeslot",
+    "description": "List all bookings of all timeslots across all resources",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "get-timeslots-id-bookings",
+    "tags": [],
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/BookingGetInterface"
+        }
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/timeslots/{{id}}/bookings",
+    "method": "GET",
+    "headers": {},
+    "queryParams": [],
+    "body": {
+      "content": null,
+      "type": "form-urlencoded",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

@@ -9,30 +9,22 @@ import {
   checkType,
   DataValidationError,
   EMailString,
+  hasProperty,
   InviteForSignupData,
   noRefinementChecks,
 } from 'common/dist';
 import { SignupTokenData } from '../types/token-types/SignupTokenData';
 import { AuthTokenData } from '../types/token-types/AuthTokenData';
 import { AuthRequestData, SignupRequestData } from 'common';
-import { TokenDecodeError } from '../types/errors/TokenDecodeError';
+import TypesafeRequest from './TypesafeRequest';
+import UserRepository from '../repositories/UserRepository';
 
 @boundClass
 export class UsersController {
-  public static async initRootUser() {
-    if ((await User.findByPk('root')) == null) {
-      //const generatedPassword = password.randomPassword();
-      const generatedPassword = 'root';
+  private readonly userRepository: UserRepository;
 
-      await User.create({
-        name: 'root',
-        password: generatedPassword,
-      });
-
-      console.log(
-        `\n\nCreated "root" user with password ${generatedPassword}. Remember this password and erase this log!\n\n`
-      );
-    }
+  constructor(userRepository: UserRepository) {
+    this.userRepository = userRepository;
   }
 
   private static async makeSignupToken(email: EMailString): Promise<string> {
@@ -55,7 +47,7 @@ export class UsersController {
     );
   }
 
-  public async inviteForSignup(req: Request, res: Response) {
+  public async inviteForSignup(req: TypesafeRequest, res: Response) {
     const invitationData = checkType(req.body, InviteForSignupData);
 
     await UsersController.sendSignupMail(
@@ -63,18 +55,20 @@ export class UsersController {
       invitationData.email
     );
 
-    res.status(200).json({});
+    res.status(200).json('Ok');
   }
 
-  public async signup(req: Request, res: Response<string>) {
+  public async signup(req: TypesafeRequest, res: Response<string>) {
     const data = checkType(req.body, SignupRequestData);
 
-    const email = await UsersController.decodeSignupToken(data.signupToken);
+    const signupTokenData = await UsersController.decodeSignupToken(
+      data.signupToken
+    );
 
-    const user = await User.create({
-      ...data.userData, // dont worry, the sequelize hooks will hash the password
-      email: email,
-    });
+    const user = await this.userRepository.create(
+      data.userData,
+      signupTokenData.email
+    );
 
     const authToken = await UsersController.getAuthToken(user);
 
@@ -90,14 +84,24 @@ export class UsersController {
     return await asyncJwtSign(data, jwtSecret, {});
   }
 
-  public async isSignupTokenOk(req: Request, res: Response<boolean>) {
-    try {
-      const signupToken = req.body.token;
-      await UsersController.decodeSignupToken(signupToken);
+  public async isSignupTokenOk(req: TypesafeRequest, res: Response<boolean>) {
+    if (
+      typeof req.body === 'object' &&
+      req.body != null &&
+      hasProperty(req.body, 'token')
+    ) {
+      try {
+        const signupToken = req.body.token;
+        await UsersController.decodeSignupToken(signupToken);
 
-      res.json(true);
-    } catch (e) {
-      res.json(false);
+        res.json(true);
+      } catch (e) {
+        res.json(false);
+      }
+    } else {
+      throw new DataValidationError(
+        'Request body does not carry signup token.'
+      );
     }
   }
 
@@ -114,10 +118,10 @@ export class UsersController {
     throw new Error('Could not decode token,');
   }
 
-  public async auth(req: Request, res: Response<string | { message: string }>) {
+  public async auth(req: TypesafeRequest, res: Response<string>) {
     const authData = checkType(req.body, AuthRequestData);
 
-    const user = await User.findByPk(authData.username);
+    const user = await this.userRepository.findUserByName(authData.username);
 
     if (user != null) {
       if (await user?.doesPasswordMatch(authData.password)) {
@@ -125,10 +129,10 @@ export class UsersController {
 
         res.status(200).json(token);
       } else {
-        res.status(401).json({ message: 'Wrong password.' });
+        res.status(401).json('Wrong password.');
       }
     } else {
-      res.status(401).json({ message: 'User not found.' });
+      res.status(404).json('User not found.');
     }
   }
 }

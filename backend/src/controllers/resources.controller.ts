@@ -1,128 +1,121 @@
-import { Request, Response } from 'express';
-import { Weekday } from '../models/weekday.model';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
-import { ControllerError } from './errors';
+import { Response } from 'express';
+import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
 import { Resource } from '../models/resource.model';
 import {
   checkType,
+  hasProperty,
   NonEmptyString,
-  noRefinementChecks,
   ResourceGetInterface,
   ResourcePostInterface,
   WeekdayGetInterface,
   WeekdayPostInterface,
 } from 'common/dist';
+import ResourceRepository from '../repositories/ResourceRepository';
+import TypesafeRequest from './TypesafeRequest';
+import WeekdayRepository from '../repositories/WeekdayRepository';
 
 @boundClass
 export class ResourcesController {
-  public static resourceAsGetInterface(
-    resource: Resource
-  ): ResourceGetInterface {
-    const { weekdays, ...strippedResource } = resource.toTypedJSON();
+  private readonly resourceRepository: ResourceRepository;
+  private readonly weekdayRepository: WeekdayRepository;
 
-    // no refinement checks, we assume the database records are correct at least regarding refinements
-    return noRefinementChecks<ResourceGetInterface>({
-      ...strippedResource,
-      weekdayIds: weekdays?.map((weekday) => weekday.id) || [],
-    });
+  constructor(
+    resourceRepository: ResourceRepository,
+    weekdayRepository: WeekdayRepository
+  ) {
+    this.resourceRepository = resourceRepository;
+    this.weekdayRepository = weekdayRepository;
   }
 
-  public async index(req: Request, res: Response<ResourceGetInterface[]>) {
-    const resources = await Resource.findAll({ include: [{ all: true }] });
-
-    res.json(resources.map(ResourcesController.resourceAsGetInterface));
+  public async index(
+    req: TypesafeRequest,
+    res: Response<ResourceGetInterface[]>
+  ) {
+    res.json(
+      (await this.resourceRepository.findAll()).map(
+        ResourceRepository.resourceAsGetInterface
+      )
+    );
   }
 
-  public async create(req: Request, res: Response<ResourceGetInterface>) {
+  public async create(
+    req: TypesafeRequest,
+    res: Response<ResourceGetInterface>
+  ) {
     const resourceName = ResourcesController.retrieveResourceName(req);
     const resourceData = checkType(req.body, ResourcePostInterface);
 
-    try {
-      const resource = await Resource.create({
-        ...resourceData,
-        name: resourceName,
-      });
+    const resource = await this.resourceRepository.create(
+      resourceName,
+      resourceData
+    );
 
-      res
-        .status(201)
-        .json(ResourcesController.resourceAsGetInterface(resource));
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    res.status(201).json(ResourceRepository.resourceAsGetInterface(resource));
   }
 
-  public async show(req: Request, res: Response<ResourceGetInterface>) {
+  public async show(req: TypesafeRequest, res: Response<ResourceGetInterface>) {
     const resource = await this.getResource(req);
 
-    res.json(ResourcesController.resourceAsGetInterface(resource));
+    res.json(ResourceRepository.resourceAsGetInterface(resource));
   }
 
-  public async createWeekday(req: Request, res: Response<WeekdayGetInterface>) {
+  public async createWeekday(
+    req: TypesafeRequest,
+    res: Response<WeekdayGetInterface>
+  ) {
     const resource = await this.getResource(req);
 
     const weekdayData = checkType(req.body, WeekdayPostInterface);
-    const weekday = await Weekday.create<Weekday>({
-      resourceName: resource.name,
-      ...weekdayData,
-    });
+    const weekday = await this.weekdayRepository.create(resource, weekdayData);
 
     res.status(201).json(weekday);
   }
 
-  public async getWeekdays(req: Request, res: Response<WeekdayGetInterface[]>) {
+  public async getWeekdays(
+    req: TypesafeRequest,
+    res: Response<WeekdayGetInterface[]>
+  ) {
     const resource = await this.getResource(req);
     const weekdays = resource?.weekdays;
 
-    if (weekdays != null) {
-      res.json(weekdays);
+    res.json(weekdays || []);
+  }
+
+  public async update(req: TypesafeRequest, res: Response) {
+    const resourceName = ResourcesController.retrieveResourceName(req);
+    const resourceData = checkType(req.body, ResourcePostInterface);
+
+    await this.resourceRepository.update(resourceName, resourceData);
+
+    res.status(202).json('accepted');
+  }
+
+  public async delete(req: TypesafeRequest, res: Response) {
+    const resourceName = ResourcesController.retrieveResourceName(req);
+
+    await this.resourceRepository.destroy(resourceName);
+
+    res.status(204).json('success');
+  }
+
+  private static retrieveResourceName(req: TypesafeRequest): NonEmptyString {
+    if (hasProperty(req.params, 'name')) {
+      return checkType(req.params.name, NonEmptyString);
     } else {
-      res.json([]);
+      throw new MissingPathParameter('name');
     }
   }
 
   // noinspection JSMethodCanBeStatic
-  private async getResource(req: Request): Promise<Resource> {
+  private async getResource(req: TypesafeRequest): Promise<Resource> {
     const resourceName = ResourcesController.retrieveResourceName(req);
-    const resource = await Resource.findByPk<Resource>(resourceName, {
-      include: [{ all: true }],
-    });
+    const resource = await this.resourceRepository.findByName(resourceName);
 
     if (resource != null) {
       return resource;
     } else {
-      throw new ControllerError('Resource not found', 404);
+      throw new ElementNotFound('resource');
     }
-  }
-
-  public async update(req: Request, res: Response) {
-    const resourceName = ResourcesController.retrieveResourceName(req);
-    const resourceData = checkType(req.body, ResourcePostInterface);
-
-    const update: UpdateOptions = {
-      where: { name: resourceName },
-      limit: 1,
-    };
-
-    await Resource.update(resourceData, update);
-
-    res.status(202).json({ data: 'success' });
-  }
-
-  public async delete(req: Request, res: Response) {
-    const resourceName = ResourcesController.retrieveResourceName(req);
-
-    const options: DestroyOptions = {
-      where: { name: resourceName },
-      limit: 1,
-    };
-
-    await Resource.destroy(options);
-
-    res.status(204).json({ data: 'success' });
-  }
-
-  private static retrieveResourceName(req: Request): NonEmptyString {
-    return checkType(req.params.name, NonEmptyString);
   }
 }

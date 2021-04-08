@@ -1,0 +1,21 @@
+{
+  "title": "BookingIntervalIndexRequestData",
+  "type": "object",
+  "properties": {
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "must be ISO8601"
+    },
+    "end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "must be ISO8601"
+    }
+  },
+  "required": [
+    "start",
+    "end"
+  ],
+  "version": "openapi3"
+}

@@ -1,0 +1,51 @@
+{
+  "details": {
+    "summary": "Access a single resource",
+    "description": "Get a resource by its name",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "get-resources-:name",
+    "tags": [],
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "$ref": "#/components/schemas/ResourceGetInterface"
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/resources/{{name}}",
+    "method": "GET",
+    "headers": {},
+    "queryParams": [],
+    "body": {
+      "content": null,
+      "type": "form-urlencoded",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

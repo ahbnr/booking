@@ -1,0 +1,6 @@
+{
+  "title": "DataValidationError",
+  "type": "string",
+  "description": "Client sent data of incorrect / unexpected format",
+  "version": "openapi3"
+}

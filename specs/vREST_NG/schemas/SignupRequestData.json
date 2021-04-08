@@ -1,0 +1,36 @@
+{
+  "title": "SignupRequestData",
+  "type": "object",
+  "description": "FIXME: Put signup token into request header so that it can be identified as security scheme in the API spec",
+  "properties": {
+    "signupToken": {
+      "type": "string",
+      "description": "JWT token which authorizes signup"
+    },
+    "userData": {
+      "type": "object",
+      "description": "Profile data of the new user",
+      "required": [
+        "name",
+        "password"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    }
+  },
+  "required": [
+    "signupToken",
+    "userData"
+  ],
+  "version": "openapi3"
+}

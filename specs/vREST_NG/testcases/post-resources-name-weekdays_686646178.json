@@ -1,0 +1,54 @@
+{
+  "details": {
+    "summary": "post-resources-name-weekdays",
+    "description": "Allows to add a weekday to this resource",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "post-resources-name-weekdays",
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "201"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "$ref": "#/components/schemas/WeekdayGetInterface"
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/resources/{{name}}/weekdays",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "queryParams": [],
+    "body": {
+      "content": {
+        "name": "monday"
+      },
+      "type": "json",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

@@ -1,0 +1,8 @@
+{
+  "type": "integer",
+  "title": "Hours",
+  "description": "",
+  "minimum": 0,
+  "maximum": 23,
+  "version": "openapi3"
+}

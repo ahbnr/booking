@@ -1,0 +1,17 @@
+{
+  "title": "AuthRequestData",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "username",
+    "password"
+  ],
+  "version": "openapi3"
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "name": "Sample Test Suite",
+    "description": "",
+    "testCaseIds": []
+  },
+  {
+    "name": "default",
+    "testCaseIds": [
+      "authenticate_232878100",
+      "invite_new_admin_user_522945505",
+      "check_signup_token_validity_770613730",
+      "sign_up_new_admin_user_115485802",
+      "get_resources_184098323",
+      "access_a_single_resource_310662421",
+      "post-resources-name_145082118",
+      "put-resources-name_312245787",
+      "delete-resources-name_246804124",
+      "access_weekday_information_for_resource_562844199",
+      "post-resources-name-weekdays_686646178",
+      "access_weekdays_across_resources_33992511",
+      "access_single_weekday_310683602",
+      "put-weekdays-id_390110733",
+      "delete-weekdays-id_793672238",
+      "access_timeslots_of_specific_weekday_936339712",
+      "post-weekdays-id-timeslots_736238324",
+      "access_all_timeslots_597783410",
+      "access_specific_timeslot_815496200",
+      "put-timeslots-id_226220366",
+      "delete-timeslots-id_433628680",
+      "inspect_all_bookings_of_a_timeslot_213091135",
+      "post-timeslots-id-bookings_55514248",
+      "access_all_bookings_39062010",
+      "access_specific_booking_851356044",
+      "put-bookings-id_785526036",
+      "delete-bookings-id_631975786",
+      "query_bookings_by_timeframe_614125597"
+    ]
+  }
+]

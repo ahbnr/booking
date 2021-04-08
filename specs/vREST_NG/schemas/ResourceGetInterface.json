@@ -1,0 +1,20 @@
+{
+  "title": "ResourceGetInterface",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "weekdayIds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "weekdayIds"
+  ],
+  "version": "openapi3"
+}

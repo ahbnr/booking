@@ -6,6 +6,7 @@ import db from './models';
 import { ControllerError } from './controllers/errors';
 import { DataValidationError } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
+import { DataIdAlreadyExists } from './repositories/errors';
 
 db.init();
 

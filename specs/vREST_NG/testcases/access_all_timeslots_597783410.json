@@ -1,0 +1,54 @@
+{
+  "details": {
+    "summary": "Access all timeslots",
+    "description": "List all timeslots across all weekdays and resources",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "get-timeslots",
+    "tags": [],
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TimeslotGetInterface"
+        }
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/timeslots",
+    "method": "GET",
+    "headers": {},
+    "queryParams": [],
+    "body": {
+      "content": null,
+      "type": "form-urlencoded",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

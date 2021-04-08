@@ -1,0 +1,24 @@
+{
+  "title": "BookingPostInterface",
+  "type": "object",
+  "properties": {
+    "lookupUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "url prefix of the web frontend which allows to lookup the created booking"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    }
+  },
+  "required": [
+    "lookupUrl",
+    "name",
+    "email"
+  ],
+  "version": "openapi3"
+}

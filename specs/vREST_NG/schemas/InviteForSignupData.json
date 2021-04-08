@@ -1,0 +1,21 @@
+{
+  "title": "InviteForSignupData",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Mail address of the user who shall be invited to the service"
+    },
+    "targetUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Url send with invitation mail that points to the web frontend.\nIn the mail, ?token=JWT signup token will be added to this URL."
+    }
+  },
+  "required": [
+    "email",
+    "targetUrl"
+  ],
+  "version": "openapi3"
+}

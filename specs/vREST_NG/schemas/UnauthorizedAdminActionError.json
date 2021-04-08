@@ -1,0 +1,6 @@
+{
+  "title": "UnauthorizedAdminActionError",
+  "type": "object",
+  "description": "Unauthorized admin action. Needs admin authentication.",
+  "version": "openapi3"
+}

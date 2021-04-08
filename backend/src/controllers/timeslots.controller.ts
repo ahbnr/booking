@@ -1,68 +1,75 @@
-import { Request, Response } from 'express';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
+import { Response } from 'express';
 import { Timeslot } from '../models/timeslot.model';
-import { ControllerError } from './errors';
+import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
-import { Booking } from '../models/booking.model';
-import { BookingsController } from './bookings.controller';
-import { Weekday } from '../models/weekday.model';
 import {
-  BookingGetInterface,
   checkType,
-  noRefinementChecks,
+  hasProperty,
   TimeslotGetInterface,
   TimeslotPostInterface,
 } from 'common/dist';
+import TimeslotRepository from '../repositories/TimeslotRepository';
+import TypesafeRequest from './TypesafeRequest';
 
 @boundClass
 export class TimeslotsController {
-  public async index(req: Request, res: Response<TimeslotGetInterface[]>) {
-    const timeslots = await Timeslot.findAll<Timeslot>({});
+  private readonly timeslotRepository: TimeslotRepository;
+
+  constructor(timeslotRepository: TimeslotRepository) {
+    this.timeslotRepository = timeslotRepository;
+  }
+
+  public async index(
+    req: TypesafeRequest,
+    res: Response<TimeslotGetInterface[]>
+  ) {
+    const timeslots = await this.timeslotRepository.findAll();
 
     res.json(
       await Promise.all(timeslots.map((timeslot) => timeslot.asGetInterface()))
     );
   }
 
-  public async show(req: Request, res: Response<TimeslotGetInterface>) {
-    const timeslot = await TimeslotsController.getTimeslot(req);
+  public async show(req: TypesafeRequest, res: Response<TimeslotGetInterface>) {
+    const timeslot = await this.getTimeslot(req);
 
     res.json(await timeslot.asGetInterface());
   }
 
+  // FIXME: Update booking dates when timeslot is updated?
+  public async update(req: TypesafeRequest, res: Response) {
+    const timeslotId = this.getTimeslotId(req);
+    const timeslotData = checkType(req.body, TimeslotPostInterface);
+
+    await this.timeslotRepository.update(timeslotId, timeslotData);
+
+    res.status(202).json('success');
+  }
+
+  public async delete(req: TypesafeRequest, res: Response) {
+    const timeslotId = this.getTimeslotId(req);
+    await this.timeslotRepository.destroy(timeslotId);
+
+    res.status(204).json('success');
+  }
+
+  private getTimeslotId(req: TypesafeRequest): number {
+    if (hasProperty(req.params, 'id') && typeof req.params.id === 'string') {
+      return parseInt(req.params.id);
+    } else {
+      throw new MissingPathParameter('id');
+    }
+  }
+
   // noinspection JSMethodCanBeStatic
-  public static async getTimeslot(req: Request): Promise<Timeslot> {
-    const timeslot = await Timeslot.findByPk<Timeslot>(req.params.id);
+  private async getTimeslot(req: TypesafeRequest): Promise<Timeslot> {
+    const timeslotId = this.getTimeslotId(req);
+    const timeslot = await this.timeslotRepository.findById(timeslotId);
 
     if (timeslot != null) {
       return timeslot;
     } else {
-      throw new ControllerError('Timeslot not found', 404);
+      throw new ElementNotFound('timeslot');
     }
-  }
-
-  // FIXME: Update booking dates when timeslot is updated?
-  public async update(req: Request, res: Response) {
-    const timeslotData = checkType(req.body, TimeslotPostInterface);
-
-    const update: UpdateOptions = {
-      where: { id: req.params.id },
-      limit: 1,
-    };
-
-    await Timeslot.update(timeslotData, update);
-
-    res.status(202).json({ data: 'success' });
-  }
-
-  public async delete(req: Request, res: Response) {
-    const options: DestroyOptions = {
-      where: { id: req.params.id },
-      limit: 1,
-    };
-
-    await Timeslot.destroy(options);
-
-    res.status(204).json({ data: 'success' });
   }
 }

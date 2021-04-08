@@ -1,0 +1,13 @@
+{
+  "title": "WeekdayPostInterface",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/components/schemas/WeekdayName"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "version": "openapi3"
+}

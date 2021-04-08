@@ -1,0 +1,51 @@
+{
+  "details": {
+    "summary": "Access specific timeslot",
+    "description": "",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "get-timeslots-id",
+    "tags": [],
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "$ref": "#/components/schemas/TimeslotGetInterface"
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/timeslots/{{id}}",
+    "method": "GET",
+    "headers": {},
+    "queryParams": [],
+    "body": {
+      "content": null,
+      "type": "form-urlencoded",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

@@ -1,0 +1,51 @@
+{
+  "details": {
+    "summary": "Access single weekday",
+    "description": "",
+    "externalId": "",
+    "condition": "",
+    "loopSource": "",
+    "waitForSeconds": null,
+    "runnable": true,
+    "editable": true,
+    "operationId": "get-weekdays-id",
+    "tags": [],
+    "authorizationId": null
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedBody": {
+      "content": {},
+      "type": "json"
+    },
+    "expectedSchema": {
+      "content": {
+        "$ref": "#/components/schemas/WeekdayGetInterface"
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/weekdays/{{id}}",
+    "method": "GET",
+    "headers": {},
+    "queryParams": [],
+    "body": {
+      "content": null,
+      "type": "form-urlencoded",
+      "formParams": []
+    }
+  },
+  "variables": [],
+  "extensions": {}
+}

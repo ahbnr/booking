@@ -1,0 +1,14 @@
+{
+  "type": "string",
+  "title": "WeekdayName",
+  "enum": [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday"
+  ],
+  "version": "openapi3"
+}

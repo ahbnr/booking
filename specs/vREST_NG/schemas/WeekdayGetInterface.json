@@ -1,0 +1,21 @@
+{
+  "title": "WeekdayGetInterface",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "$ref": "#/components/schemas/WeekdayName"
+    },
+    "resourceName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "resourceName"
+  ],
+  "version": "openapi3"
+}
