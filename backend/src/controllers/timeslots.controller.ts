@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
-import { Timeslot } from '../models/timeslot.model';
-import { ElementNotFound, MissingPathParameter } from './errors';
+import { ElementNotFound } from './errors';
 import { boundClass } from 'autobind-decorator';
 import {
   BookingGetInterface,
   checkType,
-  hasProperty,
   TimeslotGetInterface,
   TimeslotPostInterface,
 } from 'common/dist';
 import TimeslotRepository from '../repositories/TimeslotRepository';
 import TypesafeRequest from './TypesafeRequest';
 import TimeslotDBInterface from '../repositories/model_interfaces/TimeslotDBInterface';
+import { extractNumericIdFromRequest } from './utils';
 
 @boundClass
 export class TimeslotsController {
@@ -40,7 +39,7 @@ export class TimeslotsController {
 
   // FIXME: Update booking dates when timeslot is updated?
   public async update(req: TypesafeRequest, res: Response) {
-    const timeslotId = this.getTimeslotId(req);
+    const timeslotId = extractNumericIdFromRequest(req);
     const timeslotData = checkType(req.body, TimeslotPostInterface);
 
     await this.timeslotRepository.update(timeslotId, timeslotData);
@@ -49,22 +48,14 @@ export class TimeslotsController {
   }
 
   public async delete(req: TypesafeRequest, res: Response) {
-    const timeslotId = this.getTimeslotId(req);
+    const timeslotId = extractNumericIdFromRequest(req);
     await this.timeslotRepository.destroy(timeslotId);
 
     res.status(204).json('success');
   }
 
-  private getTimeslotId(req: TypesafeRequest): number {
-    if (hasProperty(req.params, 'id') && typeof req.params.id === 'string') {
-      return parseInt(req.params.id);
-    } else {
-      throw new MissingPathParameter('id');
-    }
-  }
-
   public async getTimeslot(req: TypesafeRequest): Promise<TimeslotDBInterface> {
-    const timeslotId = this.getTimeslotId(req);
+    const timeslotId = extractNumericIdFromRequest(req);
     const timeslot = await this.timeslotRepository.findById(timeslotId);
 
     if (timeslot != null) {

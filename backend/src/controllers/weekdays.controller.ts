@@ -12,6 +12,8 @@ import {
 import TimeslotRepository from '../repositories/TimeslotRepository';
 import WeekdayRepository from '../repositories/WeekdayRepository';
 import WeekdayDBInterface from '../repositories/model_interfaces/WeekdayDBInterface';
+import TypesafeRequest from './TypesafeRequest';
+import { extractNumericIdFromRequest } from './utils';
 
 // FIXME: Implement in terms of weekday repository
 @boundClass
@@ -33,20 +35,23 @@ export class WeekdaysController {
     return Promise.all(weekdays.map((weekday) => weekday.toGetInterface()));
   }
 
-  public async index(req: Request, res: Response<WeekdayGetInterface[]>) {
+  public async index(
+    req: TypesafeRequest,
+    res: Response<WeekdayGetInterface[]>
+  ) {
     const weekdays = await this.weekdayRepository.findAll();
 
     res.json(await this.toGetInterface(weekdays));
   }
 
-  public async show(req: Request, res: Response<WeekdayGetInterface>) {
+  public async show(req: TypesafeRequest, res: Response<WeekdayGetInterface>) {
     const weekday = await this.getWeekday(req);
 
     res.json(await weekday.toGetInterface());
   }
 
   public async createTimeslot(
-    req: Request,
+    req: TypesafeRequest,
     res: Response<TimeslotGetInterface>
   ) {
     const weekday = await this.getWeekday(req);
@@ -62,7 +67,7 @@ export class WeekdaysController {
   }
 
   public async getTimeslots(
-    req: Request,
+    req: TypesafeRequest,
     res: Response<TimeslotGetInterface[]>
   ) {
     const weekday = await this.getWeekday(req);
@@ -73,9 +78,9 @@ export class WeekdaysController {
     );
   }
 
-  private async getWeekday(req: Request): Promise<WeekdayDBInterface> {
+  private async getWeekday(req: TypesafeRequest): Promise<WeekdayDBInterface> {
     const weekday = await this.weekdayRepository.findById(
-      this.weekdayIdFromRequest(req)
+      extractNumericIdFromRequest(req)
     );
 
     if (weekday != null) {
@@ -85,30 +90,20 @@ export class WeekdaysController {
     }
   }
 
-  public async update(req: Request, res: Response) {
+  public async update(req: TypesafeRequest, res: Response) {
     const weekdayData = checkType(req.body, WeekdayPostInterface);
 
     await this.weekdayRepository.update(
-      this.weekdayIdFromRequest(req),
+      extractNumericIdFromRequest(req),
       weekdayData
     );
 
     res.status(202).json({ data: 'success' });
   }
 
-  public async delete(req: Request, res: Response) {
-    await this.weekdayRepository.delete(this.weekdayIdFromRequest(req));
+  public async delete(req: TypesafeRequest, res: Response) {
+    await this.weekdayRepository.delete(extractNumericIdFromRequest(req));
 
     res.status(204).json({ data: 'success' });
-  }
-
-  private weekdayIdFromRequest(req: Request): number {
-    const maybeId = parseInt(req.params.id);
-
-    if (isNaN(maybeId)) {
-      throw new UnprocessableEntity('Missing numeric weekday id');
-    } else {
-      return maybeId;
-    }
   }
 }

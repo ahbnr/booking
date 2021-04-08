@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
-import { Resource } from '../models/resource.model';
 import {
   checkType,
   hasProperty,

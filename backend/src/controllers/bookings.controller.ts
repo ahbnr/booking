@@ -1,9 +1,7 @@
-import { Request, Response } from 'express';
-import { DestroyOptions, UpdateOptions, Op } from 'sequelize';
-import { Booking, VerificationTimeout } from '../models/booking.model';
+import { Response } from 'express';
+import { VerificationTimeout } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
-import { Timeslot } from '../models/timeslot.model';
 import { sendMail } from '../utils/email';
 import { jwtSecret } from '../config/passport';
 import { TimeslotsController } from './timeslots.controller';
@@ -14,19 +12,13 @@ import {
   checkType,
   EMailString,
   BookingWithContextGetInterface,
-  noRefinementChecks,
-  throwExpr,
-  getCurrentTimeslotEndDate,
-  getCurrentTimeslotStartDate,
 } from 'common';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
-import { Resource } from '../models/resource.model';
-import { BookingIntervalIndexRequestData, TimeslotData } from 'common/dist';
+import { BookingIntervalIndexRequestData } from 'common/dist';
 import BookingRepository from '../repositories/BookingRepository';
-import ResourceRepository from '../repositories/ResourceRepository';
 import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterface';
 import TypesafeRequest from './TypesafeRequest';
-import { UnprocessableEntity } from './errors';
+import { extractNumericIdFromRequest } from './utils';
 
 @boundClass
 export class BookingsController {
@@ -47,7 +39,10 @@ export class BookingsController {
     return bookings.map((booking) => booking.toGetInterface());
   }
 
-  public async index(req: Request, res: Response<BookingGetInterface[]>) {
+  public async index(
+    req: TypesafeRequest,
+    res: Response<BookingGetInterface[]>
+  ) {
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
@@ -75,7 +70,7 @@ export class BookingsController {
   }
 
   public async getBookingsForDateInterval(
-    req: Request,
+    req: TypesafeRequest,
     res: Response<BookingWithContextGetInterface[]>
   ) {
     const reqData = checkType(req.body, BookingIntervalIndexRequestData);
@@ -101,8 +96,8 @@ export class BookingsController {
     res.json(await Promise.all(bookingsWithContext));
   }
 
-  public async show(req: Request, res: Response<BookingGetInterface>) {
-    const bookingId = this.bookingIdFromRequest(req);
+  public async show(req: TypesafeRequest, res: Response<BookingGetInterface>) {
+    const bookingId = extractNumericIdFromRequest(req);
     const booking = await this.bookingRepository.findById(bookingId);
 
     if (booking != null) {
@@ -113,7 +108,7 @@ export class BookingsController {
   }
 
   public async createBooking(
-    req: Request,
+    req: TypesafeRequest,
     res: Response<BookingGetInterface | string>
   ) {
     const timeslot = await this.timeslotController.getTimeslot(req);
@@ -213,11 +208,11 @@ export class BookingsController {
     }
   }
 
-  public async update(req: Request, res: Response) {
+  public async update(req: TypesafeRequest, res: Response) {
     const bookingPostData = checkType(req.body, BookingPostInterface);
 
     const updatedBooking = await this.bookingRepository.update(
-      this.bookingIdFromRequest(req),
+      extractNumericIdFromRequest(req),
       bookingPostData
     );
 
@@ -229,8 +224,8 @@ export class BookingsController {
     res.status(202).json({ data: 'success' });
   }
 
-  public async delete(req: Request, res: Response) {
-    const bookingId = parseInt(req.params.id);
+  public async delete(req: TypesafeRequest, res: Response) {
+    const bookingId = extractNumericIdFromRequest(req);
     const lookupToken = req.query.token;
 
     if (lookupToken != null && typeof lookupToken === 'string') {
@@ -251,16 +246,6 @@ export class BookingsController {
       res.status(204).json({ data: 'success' });
     } else {
       res.status(401).json();
-    }
-  }
-
-  private bookingIdFromRequest(req: Request): number {
-    const maybeId = parseInt(req.params.id);
-
-    if (isNaN(maybeId)) {
-      throw new UnprocessableEntity('No numeric booking id given.');
-    } else {
-      return maybeId;
     }
   }
 }
