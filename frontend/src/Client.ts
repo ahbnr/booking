@@ -17,8 +17,9 @@ import {
   WeekdayGetInterface,
   WeekdayPostInterface,
   BookingWithContextGetInterface,
+  AuthResponseData,
+  BookingIntervalIndexRequestData,
 } from 'common/dist';
-import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import DisplayableError from './errors/DisplayableError';
 
 const address = window.location.hostname;
@@ -146,16 +147,17 @@ export class Client {
       userData: {
         name: username,
         password: password,
-        email: undefined,
       },
     };
 
-    this.jsonWebToken = await this.typedRequest(
+    const response = await this.typedRequest(
       AuthResponseData,
       'POST',
       'users/signup',
       data
     );
+
+    this.jsonWebToken = response.authToken;
   }
 
   public async authenticate(username: string, password: string) {
@@ -166,12 +168,14 @@ export class Client {
       password: password,
     };
 
-    this.jsonWebToken = await this.typedRequest(
+    const response = await this.typedRequest(
       AuthResponseData,
       'POST',
       'users/auth',
       data
     );
+
+    this.jsonWebToken = response.authToken;
   }
 
   public async inviteForSignup(email: EMailString, signupPath: string) {

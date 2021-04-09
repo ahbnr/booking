@@ -21,7 +21,6 @@ import InviteAdminDialog from './views/InviteAdminDialog';
 import SignupDialog from './views/SignupDialog';
 import BookingsLookupView from './views/BookingsLookupView';
 import DayOverviewView from './views/DayOverviewView';
-import { getWeekdayDate } from 'common/dist/typechecking/api/Weekday';
 import { Interval } from 'luxon';
 import { ADTMember, matchI } from 'ts-adt';
 import TimeslotEditDialog from './views/TimeslotEditDialog';
@@ -33,6 +32,7 @@ import AddWeekdayDialog from './views/AddWeekdayDialog';
 import MainView from './views/MainView';
 import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
+import { getWeekdayDate } from 'common/dist';
 
 const styles = (theme: Theme) =>
   createStyles({

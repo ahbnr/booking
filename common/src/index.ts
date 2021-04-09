@@ -17,6 +17,7 @@ export {
   WeekdayData,
   WeekdayGetInterface,
   WeekdayPostInterface,
+  getWeekdayDate,
 } from './typechecking/api/Weekday';
 export {
   TimeslotData,
@@ -40,6 +41,7 @@ export {
 
 export { InviteForSignupData } from './typechecking/api/InviteForSignupData';
 export { AuthRequestData } from './typechecking/api/AuthRequestData';
+export { AuthResponseData } from './typechecking/api/responses/AuthResponseData';
 export { IsSignupTokenOkRequestData } from './typechecking/api/IsSignupTokenOkRequestData';
 export { SignupRequestData } from './typechecking/api/SignupRequestData';
 export { BookingIntervalIndexRequestData } from './typechecking/api/BookingIntervalIndexRequestData';

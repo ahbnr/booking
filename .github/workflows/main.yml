@@ -1,0 +1,123 @@
+name: Booking CI
+
+on:
+  pull_request: {}
+  push: { branches: [main] }
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build and Test Booking
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version:
+          - 14
+        backendPath:
+          - backend
+    steps:
+      - name: Install Yarn
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install -g yarn
+
+      - name: Add yarn to PATH
+        run: |
+            YARN_PATH=$(npm root -g)/yarn/bin
+            echo "Path to yarn: $YARN_PATH"
+            echo "$YARN_PATH" >> $GITHUB_PATH
+
+      - name: Confirm yarn version
+        run: yarn --version
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          ref: 'main'
+          lfs: true
+
+      # Cache dependencies etc. downloaded by yarn
+      # (based on https://dev.to/mpocock1/how-to-cache-nodemodules-in-github-actions-with-yarn-24eh)
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      # Cache yarn cache dir
+      - name: Cache yarn cache dir
+        uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Cache node_modules folders
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      # Common
+      - name: Install Common Dependencies
+        working-directory: common
+        run: |
+          yarn install
+
+      - name: Lint Common
+        working-directory: common
+        run: |
+          yarn lint
+
+      - name: Build Common
+        working-directory: common
+        run: |
+          yarn build
+
+      - name: Test Common
+        working-directory: common
+        run: |
+          yarn test
+
+      # Backend
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: |
+          yarn install
+
+      - name: Lint Backend
+        working-directory: backend
+        run: |
+          yarn lint
+
+      - name: Build Backend
+        working-directory: backend
+        run: |
+          yarn build
+
+      - name: Test Backend
+        working-directory: backend
+        run: |
+          yarn test
+
+      # Frontend
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: |
+          yarn install
+
+      - name: Lint Frontend
+        working-directory: frontend
+        run: |
+          yarn lint
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          yarn build
+
+      - name: Test Frontend
+        working-directory: frontend
+        run: |
+          yarn test
