@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import { Routes } from './config/routes';
 import cors from 'cors';
 import { ControllerError } from './controllers/errors';
-import { DataValidationError } from 'common/dist';
+import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
 
@@ -22,6 +22,9 @@ async function init() {
   // parse json requests
   app.use(bodyParser.json());
 
+  const routes = new Routes(db);
+  routes.routes(app);
+
   // custom error handler
   // https://expressjs.com/en/guide/error-handling.html
   app.use(
@@ -31,28 +34,28 @@ async function init() {
       res: express.Response,
       next: express.NextFunction
     ) => {
-      console.error(err);
+      if (typeof err === 'object' && err != null && hasProperty(err, 'stack')) {
+        console.error(err.stack);
+      }
+      console.error(`Encountered error: ${JSON.stringify(err)}`);
 
       if (res.headersSent) {
         return next(err);
       } else if (err instanceof ControllerError) {
         res.status(err.errorCode == null ? 500 : err.errorCode);
-        res.render('error', { error: err.message });
+        res.json(err.message);
       } else if (err instanceof DataValidationError) {
         res.status(400);
-        res.render(err.message);
+        res.json(err.message);
       } else if (err instanceof TokenDecodeError) {
         res.status(401);
-        res.render(err.message);
+        res.json(err.message);
       } else {
         console.error('Unknown error! Forwarding to default error handler...');
         return next(err);
       }
     }
   );
-
-  const routes = new Routes(db);
-  routes.routes(app);
 
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);

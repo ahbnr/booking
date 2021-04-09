@@ -119,7 +119,12 @@ export class Client {
   }
 
   public async isSignupTokenOk(signupToken: string): Promise<boolean> {
-    const postData: IsSignupTokenOkRequestData = signupToken;
+    const postData: IsSignupTokenOkRequestData = checkType(
+      {
+        signupToken: signupToken,
+      },
+      IsSignupTokenOkRequestData
+    );
 
     return await this.typedRequest(
       t.boolean,
@@ -146,7 +151,7 @@ export class Client {
     };
 
     this.jsonWebToken = await this.typedRequest(
-      NonEmptyString,
+      AuthResponseData,
       'POST',
       'users/signup',
       data
@@ -162,7 +167,7 @@ export class Client {
     };
 
     this.jsonWebToken = await this.typedRequest(
-      NonEmptyString,
+      AuthResponseData,
       'POST',
       'users/auth',
       data

@@ -2,14 +2,7 @@
   "details": {
     "summary": "Check signup token validity",
     "description": "Determines whether a given JSON web token is valid and authorizes the signup of a new admin user.",
-    "externalId": "",
-    "condition": "",
-    "loopSource": "",
-    "waitForSeconds": null,
-    "runnable": true,
-    "editable": true,
-    "operationId": "post-users-isSignupTokenOk",
-    "authorizationId": null
+    "operationId": "post-users-isSignupTokenOk"
   },
   "validation": {
     "assertions": [
@@ -20,13 +13,11 @@
       },
       {
         "source": "textBody",
-        "operator": "Default Schema Validator"
+        "operator": "equals",
+        "expectedValue": "true",
+        "property": ""
       }
     ],
-    "expectedBody": {
-      "content": {},
-      "type": "json"
-    },
     "expectedSchema": {
       "content": {
         "type": "boolean",
@@ -41,13 +32,11 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "queryParams": [],
     "body": {
-      "content": "string",
-      "type": "json",
-      "formParams": []
+      "content": {
+        "signupToken": "{{signupToken}}"
+      },
+      "type": "json"
     }
-  },
-  "variables": [],
-  "extensions": {}
+  }
 }

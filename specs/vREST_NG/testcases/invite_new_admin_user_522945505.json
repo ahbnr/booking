@@ -2,14 +2,8 @@
   "details": {
     "summary": "Invite new admin user",
     "description": "Allows to invite new admin user to service",
-    "externalId": "",
-    "condition": "",
-    "loopSource": "",
-    "waitForSeconds": null,
-    "runnable": true,
-    "editable": true,
     "operationId": "post-users-inviteForSignup",
-    "authorizationId": null
+    "authorizationId": "admin_authentication_456557284"
   },
   "validation": {
     "assertions": [
@@ -20,15 +14,23 @@
       },
       {
         "source": "textBody",
-        "operator": "Default Schema Validator"
+        "property": null,
+        "operator": "Default Schema Validator",
+        "expectedValue": ""
       }
     ],
-    "expectedBody": {
-      "content": {},
-      "type": "json"
-    },
     "expectedSchema": {
-      "content": {},
+      "content": {
+        "type": "object",
+        "properties": {
+          "signupToken": {
+            "type": "string",
+            "required": [
+              "signupToken"
+            ]
+          }
+        }
+      },
       "type": "json"
     }
   },
@@ -38,16 +40,18 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "queryParams": [],
     "body": {
       "content": {
         "email": "user@example.com",
         "targetUrl": "http://example.com"
       },
-      "type": "json",
-      "formParams": []
+      "type": "json"
     }
   },
-  "variables": [],
-  "extensions": {}
+  "variables": [
+    {
+      "name": "signupToken",
+      "path": "signupToken"
+    }
+  ]
 }

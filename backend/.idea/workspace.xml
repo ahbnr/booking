@@ -27,24 +27,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a3f9406f-50b9-4ca8-85e5-82fcf2cf14b7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/bookings.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/bookings.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/errors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/errors.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/resources.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/resources.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/timeslots.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/timeslots.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/users.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/users.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/weekdays.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/resource.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/resource.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/timeslot.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/timeslot.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/weekday.model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/weekday.model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/ResourceRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/ResourceRepository.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/TimeslotRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/TimeslotRepository.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/UserRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/UserRepository.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/WeekdayRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/WeekdayRepository.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,8 +53,8 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="14.12.0" />
-    <property name="javascript.nodejs.core.library.typings.version" value="14.11.2" />
+    <property name="javascript.nodejs.core.library.configured.version" value="15.12.0" />
+    <property name="javascript.nodejs.core.library.typings.version" value="14.14.37" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -105,8 +87,27 @@
       <recent name="$PROJECT_DIR$/src/utils" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start">
+  <component name="RunManager" selected="npm.clear memory start">
     <configuration name="index.ts" type="NodeJSConfigurationType" nameIsGenerated="true" node-parameters="--require ts-node/register" path-to-js-file="src/index.ts" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration name="clear memory start" type="js.build_tools.npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="clear-memory-start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <package-manager value="yarn" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="install" type="js.build_tools.npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="install" />
+      <node-interpreter value="project" />
+      <package-manager value="yarn" />
+      <envs />
       <method v="2" />
     </configuration>
     <configuration name="start" type="js.build_tools.npm">
@@ -119,6 +120,8 @@
     </configuration>
     <list>
       <item itemvalue="Node.js.index.ts" />
+      <item itemvalue="npm.clear memory start" />
+      <item itemvalue="npm.install" />
       <item itemvalue="npm.start" />
     </list>
   </component>
@@ -162,7 +165,7 @@
       <workItem from="1605454927642" duration="8807000" />
       <workItem from="1605643565686" duration="4650000" />
       <workItem from="1617713835166" duration="153000" />
-      <workItem from="1617875416790" duration="24152000" />
+      <workItem from="1617875416790" duration="37845000" />
     </task>
     <servers />
   </component>
@@ -182,6 +185,10 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="414" y="224" width="1071" height="726" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617984188060">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="414" y="224" width="1071" height="726" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1617984188060" />
     <state x="713" y="423" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1617910878723">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -190,38 +197,127 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="747" y="308" key="FileChooserDialogImpl/0.0.1920.1080@0.0.1920.1080" timestamp="1617713984885" />
-    <state width="1897" height="273" key="GridCell.Tab.0.bottom" timestamp="1617914923508">
+    <state width="1897" height="273" key="GridCell.Tab.0.bottom" timestamp="1617985583848">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1617914923508" />
-    <state width="1897" height="273" key="GridCell.Tab.0.center" timestamp="1617914923507">
+    <state width="1897" height="273" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1617985583848" />
+    <state width="1897" height="273" key="GridCell.Tab.0.center" timestamp="1617985583847">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1617914923507" />
-    <state width="1897" height="273" key="GridCell.Tab.0.left" timestamp="1617914923507">
+    <state width="1897" height="273" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1617985583847" />
+    <state width="1897" height="273" key="GridCell.Tab.0.left" timestamp="1617985583846">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1617914923507" />
-    <state width="1897" height="273" key="GridCell.Tab.0.right" timestamp="1617914923508">
+    <state width="1897" height="273" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1617985583846" />
+    <state width="1897" height="273" key="GridCell.Tab.0.right" timestamp="1617985583847">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1617914923508" />
-    <state x="622" y="252" width="672" height="678" key="search.everywhere.popup" timestamp="1617914734370">
+    <state width="1897" height="273" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1617985583847" />
+    <state width="1897" height="357" key="GridCell.Tab.1.bottom" timestamp="1617984878589">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="622" y="252" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1617914734370" />
+    <state width="1897" height="357" key="GridCell.Tab.1.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878589" />
+    <state width="1897" height="357" key="GridCell.Tab.1.center" timestamp="1617984878588">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.1.center/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878588" />
+    <state width="1897" height="357" key="GridCell.Tab.1.left" timestamp="1617984878587">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.1.left/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878587" />
+    <state width="1897" height="357" key="GridCell.Tab.1.right" timestamp="1617984878588">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.1.right/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878588" />
+    <state width="1897" height="357" key="GridCell.Tab.2.bottom" timestamp="1617984878592">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.2.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878592" />
+    <state width="1897" height="357" key="GridCell.Tab.2.center" timestamp="1617984878591">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.2.center/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878591" />
+    <state width="1897" height="357" key="GridCell.Tab.2.left" timestamp="1617984878590">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.2.left/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878590" />
+    <state width="1897" height="357" key="GridCell.Tab.2.right" timestamp="1617984878591">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.2.right/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878591" />
+    <state width="1897" height="357" key="GridCell.Tab.3.bottom" timestamp="1617984878596">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.3.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878596" />
+    <state width="1897" height="357" key="GridCell.Tab.3.center" timestamp="1617984878593">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.3.center/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878593" />
+    <state width="1897" height="357" key="GridCell.Tab.3.left" timestamp="1617984878593">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.3.left/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878593" />
+    <state width="1897" height="357" key="GridCell.Tab.3.right" timestamp="1617984878594">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="357" key="GridCell.Tab.3.right/0.0.1920.1080@0.0.1920.1080" timestamp="1617984878594" />
+    <state x="622" y="252" width="672" height="678" key="search.everywhere.popup" timestamp="1617983371284">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="622" y="252" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080@0.0.1920.1080" timestamp="1617983371284" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <default-breakpoints>
-        <breakpoint enabled="true" type="javascript-exception" />
-      </default-breakpoints>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/controllers/users.controller.ts</url>
+          <line>79</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/controllers/users.controller.ts</url>
+          <line>81</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/controllers/users.controller.ts</url>
+          <line>85</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/controllers/users.controller.ts</url>
+          <line>90</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/controllers/users.controller.ts</url>
+          <line>92</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/repositories/UserRepository.ts</url>
+          <line>44</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/repositories/UserRepository.ts</url>
+          <line>51</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/repositories/UserRepository.ts</url>
+          <line>52</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+      </breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="js.build_tools.npm">
-        <watch expression="this.bookings" language="TypeScript" />
-        <watch expression="timeslot.weekday" language="TypeScript" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>

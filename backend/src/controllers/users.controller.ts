@@ -19,6 +19,8 @@ import { AuthRequestData, SignupRequestData } from 'common';
 import TypesafeRequest from './TypesafeRequest';
 import UserRepository from '../repositories/UserRepository';
 import UserDBInterface from '../repositories/model_interfaces/UserDBInterface';
+import InviteForSignupResponse from '../types/response-types/InviteForSignupResponse';
+import { AuthResponseData } from 'common/dist/typechecking/api/responses/AuthResponseData';
 
 @boundClass
 export class UsersController {
@@ -37,29 +39,44 @@ export class UsersController {
     return await asyncJwtSign(data, jwtSecret, {});
   }
 
-  private static async sendSignupMail(targetUrl: string, email: EMailString) {
-    const signupToken = await UsersController.makeSignupToken(email);
-
+  private static async sendSignupMail(
+    signupToken: string,
+    targetUrl: string,
+    email: EMailString
+  ) {
     await sendMail(
       email,
       'Signup',
       '', // TODO text represenation
-      `<a href="${targetUrl}?token=${signupToken}">Signup</a>`
+      `<a href="${targetUrl}?signupToken=${signupToken}">Signup</a>`
     );
   }
 
-  public async inviteForSignup(req: TypesafeRequest, res: Response) {
+  public async inviteForSignup(
+    req: TypesafeRequest,
+    res: Response<InviteForSignupResponse>
+  ) {
     const invitationData = checkType(req.body, InviteForSignupData);
 
+    const signupToken = await UsersController.makeSignupToken(
+      invitationData.email
+    );
+
     await UsersController.sendSignupMail(
+      signupToken,
       invitationData.targetUrl,
       invitationData.email
     );
 
-    res.status(200).json('Ok');
+    res.status(200).json({
+      signupToken: signupToken,
+    });
   }
 
-  public async signup(req: TypesafeRequest, res: Response<string>) {
+  public async signup(
+    req: TypesafeRequest,
+    res: Response<AuthResponseData | string>
+  ) {
     const data = checkType(req.body, SignupRequestData);
 
     const signupTokenData = await UsersController.decodeSignupToken(
@@ -73,7 +90,9 @@ export class UsersController {
 
     const authToken = await UsersController.getAuthToken(user);
 
-    res.json(authToken);
+    res.json(
+      noRefinementChecks<AuthResponseData>({ authToken: authToken })
+    );
   }
 
   private static async getAuthToken(user: UserDBInterface): Promise<string> {
@@ -89,10 +108,10 @@ export class UsersController {
     if (
       typeof req.body === 'object' &&
       req.body != null &&
-      hasProperty(req.body, 'token')
+      hasProperty(req.body, 'signupToken')
     ) {
       try {
-        const signupToken = req.body.token;
+        const signupToken = req.body.signupToken;
         await UsersController.decodeSignupToken(signupToken);
 
         res.json(true);
@@ -119,7 +138,10 @@ export class UsersController {
     throw new Error('Could not decode token,');
   }
 
-  public async auth(req: TypesafeRequest, res: Response<string>) {
+  public async auth(
+    req: TypesafeRequest,
+    res: Response<AuthResponseData | string>
+  ) {
     const authData = checkType(req.body, AuthRequestData);
 
     const user = await this.userRepository.findUserByName(authData.username);
@@ -128,7 +150,11 @@ export class UsersController {
       if (await user?.doesPasswordMatch(authData.password)) {
         const token = await UsersController.getAuthToken(user);
 
-        res.status(200).json(token);
+        res.status(200).json(
+          noRefinementChecks<AuthResponseData>({
+            authToken: token,
+          })
+        );
       } else {
         res.status(401).json('Wrong password.');
       }

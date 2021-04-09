@@ -2,14 +2,7 @@
   "details": {
     "summary": "Sign up new admin user",
     "description": "Signs up a new admin user using a signup token. Signup tokens are sent via mail to new admin users which are invited by /users/inviteForSignup.\nThe token will be embedded in a link in the mail. ",
-    "externalId": "",
-    "condition": "",
-    "loopSource": "",
-    "waitForSeconds": null,
-    "runnable": true,
-    "editable": true,
-    "operationId": "post-users-signup",
-    "authorizationId": null
+    "operationId": "post-users-signup"
   },
   "validation": {
     "assertions": [
@@ -23,14 +16,18 @@
         "operator": "Default Schema Validator"
       }
     ],
-    "expectedBody": {
-      "content": {},
-      "type": "json"
-    },
     "expectedSchema": {
       "content": {
-        "type": "string",
-        "description": "JWT admin authentication token"
+        "type": "object",
+        "properties": {
+          "authToken": {
+            "type": "string",
+            "description": "JWT admin authentication token"
+          }
+        },
+        "required": [
+          "authToken"
+        ]
       },
       "type": "json"
     }
@@ -41,20 +38,16 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "queryParams": [],
     "body": {
       "content": {
-        "signupToken": "string",
+        "signupToken": "{{signupToken}}",
         "userData": {
-          "name": "string",
-          "email": "string",
+          "name": "Hans",
+          "email": "Musterhans",
           "password": "pa$$word"
         }
       },
-      "type": "json",
-      "formParams": []
+      "type": "json"
     }
-  },
-  "variables": [],
-  "extensions": {}
+  }
 }

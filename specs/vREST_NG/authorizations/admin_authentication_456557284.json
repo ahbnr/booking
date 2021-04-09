@@ -1,0 +1,10 @@
+{
+  "name": "admin authentication token (bearer)",
+  "headerName": "Authorization",
+  "authType": "Raw",
+  "details": {
+    "default": {
+      "authHeader": "Bearer {{admin_token}}"
+    }
+  }
+}
