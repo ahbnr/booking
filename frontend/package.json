@@ -40,7 +40,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "start": "PORT=8000 react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "echo \"Currently no tests. Replace this with 'react-scripts test', once tests have been defined.\"",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

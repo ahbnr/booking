@@ -74,7 +74,7 @@ export default class DeleteConfirmer extends React.Component<
     const child = this.getChild();
 
     const originalOnClick = child.props.onClick;
-    if (originalOnClick != this.state.originalOnClick) {
+    if (originalOnClick !== this.state.originalOnClick) {
       this.setState({
         originalOnClick: originalOnClick,
       });
