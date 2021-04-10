@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 
-const styles = (theme: Theme) =>
+const styles = (_theme: Theme) =>
   createStyles({
     progressContainer: {
       width: '100%',

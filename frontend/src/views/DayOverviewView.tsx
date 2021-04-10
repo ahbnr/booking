@@ -1,4 +1,4 @@
-import React, { ChangeEvent, createRef } from 'react';
+import React, { createRef } from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   CircularProgress,
@@ -92,7 +92,7 @@ const styles = (theme: Theme) =>
 class UnstyledDayOverviewView extends React.Component<Properties, State> {
   private calendarRef = createRef<HTMLDivElement>();
 
-  private bookingsGroupToEvent(
+  private static bookingsGroupToEvent(
     bookings: BookingWithContextGetInterface[]
   ): CalendarEvent {
     if (bookings.length < 1) {
@@ -111,7 +111,7 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
     return data as CalendarEvent;
   }
 
-  private resourceToCalendarResource(
+  private static resourceToCalendarResource(
     resource: ResourceGetInterface
   ): { resourceId: string; resourceTitle: string } {
     return {
@@ -162,7 +162,7 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
             (booking) => [booking.startDate, booking.endDate]
           );
           const events = _.map(groupedBookings, (group) =>
-            this.bookingsGroupToEvent(group)
+            UnstyledDayOverviewView.bookingsGroupToEvent(group)
           );
 
           const resources = _.map(
@@ -170,7 +170,7 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
               _.map(downloadedData.bookings, (booking) => booking.resource),
               (resource) => resource.name
             ),
-            this.resourceToCalendarResource
+            UnstyledDayOverviewView.resourceToCalendarResource
           );
 
           const sortedBookings = downloadedData.bookings.sort(bookingCompare);

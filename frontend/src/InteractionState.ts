@@ -5,7 +5,7 @@ import {
   WeekdayName,
 } from 'common/dist';
 
-import { ADT, ADTMember } from 'ts-adt';
+import { ADT } from 'ts-adt';
 
 export interface ViewingResources {}
 

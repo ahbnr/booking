@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Fragment } from 'react';
+import React from 'react';
 import '../App.css';
 import { boundClass } from 'autobind-decorator';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
@@ -7,22 +7,18 @@ import LuxonUtils from '@date-io/luxon';
 import { DateTime } from 'luxon';
 import { DateType } from '@date-io/type';
 import {
-  Button,
   Chip,
   createStyles,
-  Divider,
   Grid,
   IconButton,
   ListItem,
   ListItemSecondaryAction,
   ListItemText,
   Theme,
-  Typography,
   WithStyles,
   withStyles,
 } from '@material-ui/core';
 import { Client } from '../Client';
-import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import { TimeslotGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';

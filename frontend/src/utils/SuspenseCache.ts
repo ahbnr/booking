@@ -14,7 +14,7 @@ type State<T> = ADT<{
 export default class SuspenseCache<T> {
   private state: State<T> = construct('uninitialized', {});
 
-  private promiseConstructor: () => Promise<T>;
+  private readonly promiseConstructor: () => Promise<T>;
 
   constructor(promiseConstructor: SuspenseCache<T>['promiseConstructor']) {
     console.log('Reconstructing');

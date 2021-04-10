@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import '../App.css';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';

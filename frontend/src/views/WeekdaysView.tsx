@@ -4,11 +4,7 @@ import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
 import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import {
-  ResourceGetInterface,
-  WeekdayGetInterface,
-  WeekdayName,
-} from 'common/dist';
+import { ResourceGetInterface, WeekdayGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import {
   createStyles,

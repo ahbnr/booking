@@ -1,38 +1,25 @@
 import React from 'react';
 import '../App.css';
-import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
+import { nameSorter } from '../models/WeekdayUtils';
 import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import {
-  ResourceGetInterface,
-  WeekdayGetInterface,
-  WeekdayName,
-} from 'common/dist';
+import { WeekdayName } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import {
   createStyles,
-  Fab,
-  IconButton,
   ListItem,
-  ListItemSecondaryAction,
   ListItemText,
   Theme,
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
-import { UnstyledAddWeekdayDialog } from './AddWeekdayDialog';
 import LoadingBackdrop from './LoadingBackdrop';
-import DeleteConfirmer from './DeleteConfirmer';
-import { DateTime, Interval } from 'luxon';
-import { weekdayToISOInt } from 'common/dist/typechecking/api/Weekday';
 
 const styles = (theme: Theme) =>
   createStyles({

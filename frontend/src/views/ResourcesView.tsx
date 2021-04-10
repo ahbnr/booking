@@ -9,23 +9,19 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   IconButton,
-  List,
   ListItem,
   ListItemSecondaryAction,
   ListItemText,
   TextField,
   Theme,
-  Typography,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
-import MoodBadIcon from '@material-ui/icons/MoodBad';
 import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';

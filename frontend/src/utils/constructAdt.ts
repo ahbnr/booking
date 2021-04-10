@@ -1,4 +1,4 @@
-import { ADT, ADTMember } from 'ts-adt';
+import { ADT } from 'ts-adt';
 
 export function construct<
   C extends string,

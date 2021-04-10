@@ -29,8 +29,8 @@ export default class Suspense<T> extends React.Component<
 
   async componentDidUpdate(
     prevProps: Readonly<Properties<T>>,
-    prevState: Readonly<State<T>>,
-    snapshot?: any
+    _prevState: Readonly<State<T>>,
+    _snapshot?: any
   ) {
     if (prevProps.asyncAction !== this.props.asyncAction) {
       await this.load();

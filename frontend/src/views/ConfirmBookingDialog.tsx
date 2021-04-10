@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   Avatar,
@@ -6,19 +6,12 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  Grid,
-  TextField,
   Theme,
   Typography,
   WithStyles,
 } from '@material-ui/core';
-import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
-import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
-import getBaseUrl from '../utils/getBaseUrl';
-import { changeInteractionStateT } from '../App';
-import LoadingBackdrop from './LoadingBackdrop';
 import { Alert } from '@material-ui/lab';
 
 const styles = (theme: Theme) =>

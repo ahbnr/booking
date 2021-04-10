@@ -179,8 +179,8 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
                     left: [TimeslotGetInterface, BookingGetInterface[]],
                     right: [TimeslotGetInterface, BookingGetInterface[]]
                   ) => {
-                    const [leftTimeslot, _1] = left;
-                    const [rightTimeslot, _2] = right;
+                    const [leftTimeslot] = left;
+                    const [rightTimeslot] = right;
 
                     return timeslotCompare(leftTimeslot, rightTimeslot);
                   }
@@ -191,8 +191,8 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
             );
 
             renderList.sort((left, right) => {
-              const [leftWeekday, _1] = left;
-              const [rightWeekday, _2] = right;
+              const [leftWeekday] = left;
+              const [rightWeekday] = right;
 
               return nameSorter(leftWeekday.name, rightWeekday.name);
             });

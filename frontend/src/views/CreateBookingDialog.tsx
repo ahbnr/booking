@@ -110,10 +110,6 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       lookupUrl: `${getBaseUrl()}/`,
     });
 
-    const weekday = await this.props.client.getWeekday(
-      this.props.timeslot.weekdayId
-    );
-
     this.props.changeInteractionState('confirmingBookingDialog', {});
   }
 

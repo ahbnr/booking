@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Fragment } from 'react';
+import React, { ChangeEvent } from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   Avatar,

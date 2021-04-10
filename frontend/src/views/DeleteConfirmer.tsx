@@ -42,14 +42,14 @@ export default class DeleteConfirmer extends React.Component<
   }
 
   componentDidUpdate(
-    prevProps: Readonly<Properties>,
-    prevState: Readonly<State>,
-    snapshot?: any
+    _prevProps: Readonly<Properties>,
+    _prevState: Readonly<State>,
+    _snapshot?: any
   ) {
     this.retrieveOnClick();
   }
 
-  getChild(): React.ReactElement<any> & {
+  getChild(): React.ReactElement & {
     props: { onClick: State['originalOnClick'] };
   } {
     const child = React.Children.only(this.props.children);
