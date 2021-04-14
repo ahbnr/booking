@@ -7,7 +7,7 @@ type DbConfigType = {
   sequelize_options: SequelizeOptions;
 };
 
-const models = [__dirname + '/../models/**/*.model.ts'];
+const models = [__dirname + '/../models/**/*.model.@(ts|js)'];
 const modelMatch: ModelMatch = (filename, member) => {
   return (
     filename.substring(0, filename.indexOf('.model')) === member.toLowerCase()

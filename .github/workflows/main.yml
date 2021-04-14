@@ -95,11 +95,28 @@ jobs:
         working-directory: backend
         run: |
           yarn build
+          echo "web: yarn start" > build/src/Procfile
+          echo "{ \"scripts\": { \"start\": \"node index.js\" } }" > build/src/package.json
 
       - name: Test Backend
         working-directory: backend
         run: |
           yarn test
+
+      - name: Pre-deployment Inspection
+        working-directory: backend
+        run: |
+          ls build/src
+          cat build/src/Procfile
+          cat build/src/package.json
+
+      - name: Deploy Backend to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "booking-backend-api"
+          heroku_email: ${{secrets.HEROKU_API_MAIL}}
+          appdir: "backend/build/src"
 
       # Frontend
       - name: Install Frontend Dependencies
