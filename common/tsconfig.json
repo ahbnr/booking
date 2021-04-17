@@ -2,7 +2,8 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "outDir": "dist",
-    "module": "esnext",
+    "target": "es6",
+    "module": "commonjs",
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "jsx": "react",

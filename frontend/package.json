@@ -23,7 +23,7 @@
     "autobind-decorator": "^2.4.0",
     "cldr-data": "^36.0.0",
     "clsx": "^1.1.1",
-    "common": "../common",
+    "common": "common",
     "date-fns": "^2.16.1",
     "io-ts": "^2.2.11",
     "lodash": "^4.17.19",

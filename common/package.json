@@ -12,8 +12,7 @@
   },
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "microbundle-crl --no-compress --format modern,cjs",
-    "start": "microbundle-crl watch --no-compress --format modern,cjs",
+    "build": "tsc -p tsconfig.json",
     "test": "echo \"No tests defined\""
   },
   "peerDependencies": {
