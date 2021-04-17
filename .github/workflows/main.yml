@@ -59,12 +59,12 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      # Common
-      - name: Install Common Dependencies
-        working-directory: common
+      # Install dependencies
+      - name: Install Dependencies
         run: |
           yarn install
 
+      # Common
       - name: Lint Common
         working-directory: common
         run: |
@@ -81,11 +81,6 @@ jobs:
           yarn test
 
       # Backend
-      - name: Install Backend Dependencies
-        working-directory: backend
-        run: |
-          yarn install
-
       - name: Lint Backend
         working-directory: backend
         run: |
@@ -116,14 +111,8 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "booking-backend-api"
           heroku_email: ${{secrets.HEROKU_API_MAIL}}
-          appdir: "backend/build/src"
 
       # Frontend
-      - name: Install Frontend Dependencies
-        working-directory: frontend
-        run: |
-          yarn install
-
       - name: Lint Frontend
         working-directory: frontend
         run: |
