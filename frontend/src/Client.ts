@@ -22,8 +22,10 @@ import {
 } from 'common/dist';
 import DisplayableError from './errors/DisplayableError';
 
-const address = window.location.hostname;
-const port = 3000;
+const { REACT_APP_API_ADDRESS, REACT_APP_API_PORT } = process.env;
+
+const address = REACT_APP_API_ADDRESS || window.location.hostname;
+const port = REACT_APP_API_PORT || 3000;
 const baseUrl = `http://${address}:${port}`;
 
 class RequestError {
