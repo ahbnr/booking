@@ -127,3 +127,10 @@ jobs:
         working-directory: frontend
         run: |
           yarn test
+
+      - name: Deploy Frontend to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "booking-frontend-app"
+          heroku_email: ${{secrets.HEROKU_API_MAIL}}
