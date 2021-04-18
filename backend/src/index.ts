@@ -7,7 +7,7 @@ import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 async function init() {
   const db = new DatabaseController();
