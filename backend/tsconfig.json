@@ -1,13 +1,21 @@
 {
+  "extends": "../tsconfig.packages.json",
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es6",
     "module": "commonjs",
-    "rootDir": "./",
-    "outDir": "./build",
+    "rootDir": "src",
+    "outDir": "dist",
     "esModuleInterop": true,
     "strict": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../common"
+    }
+  ]
 }

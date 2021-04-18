@@ -1,4 +1,15 @@
 {
   "private": true,
-  "workspaces": ["common", "frontend", "backend"]
+  "workspaces": [
+    "common",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach run build",
+    "clean": "rimraf **/build **/dist **/node_modules **/yarn.lock"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  }
 }
