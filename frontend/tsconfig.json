@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig.packages.json",
   "compilerOptions": {
     "experimentalDecorators": true,
     "target": "es5",
@@ -22,5 +23,10 @@
   },
   "include": [
     "src"
+  ],
+  "references": [
+    {
+      "path": "../common"
+    }
   ]
 }
