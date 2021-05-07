@@ -5,22 +5,23 @@
     "testCaseIds": []
   },
   {
-    "name": "default",
+    "name": "Shallow API Tests",
     "testCaseIds": [
       "authenticate_232878100",
+      "get_users",
       "invite_new_admin_user_522945505",
       "check_signup_token_validity_770613730",
       "sign_up_new_admin_user_115485802",
-      "get_resources_184098323"
+      "get_resources_184098323",
+      "post-resources-name_145082118",
+      "put-resources-name_312245787",
+      "delete-resources-name_246804124"
     ]
   },
   {
     "name": "API TODO",
     "description": null,
     "testCaseIds": [
-      "post-resources-name_145082118",
-      "put-resources-name_312245787",
-      "delete-resources-name_246804124",
       "access_weekday_information_for_resource_562844199",
       "post-resources-name-weekdays_686646178",
       "access_weekdays_across_resources_33992511",

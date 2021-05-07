@@ -1,7 +1,8 @@
 import bcrypt from 'bcrypt';
 import { User } from '../../models/user.model';
-import { noRefinementChecks, UserData } from 'common/dist';
+import { BookingGetInterface, noRefinementChecks, UserData } from 'common/dist';
 import { LazyGetter } from 'lazy-get-decorator';
+import { UserGetInterface } from 'common';
 
 export default class UserDBInterface {
   private readonly user: User;
@@ -21,5 +22,14 @@ export default class UserDBInterface {
 
   public async doesPasswordMatch(password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.user.password);
+  }
+
+  public toGetInterface(): UserGetInterface {
+    const data = this.data;
+
+    return noRefinementChecks<UserGetInterface>({
+      name: data.name,
+      email: data.email,
+    });
   }
 }

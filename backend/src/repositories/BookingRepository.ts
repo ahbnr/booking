@@ -18,8 +18,13 @@ import {
 import ResourceRepository from './ResourceRepository';
 import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
-import { Conflict, UnprocessableEntity } from '../controllers/errors';
+import {
+  Conflict,
+  ElementNotFound,
+  UnprocessableEntity,
+} from '../controllers/errors';
 import TimeslotRepository from './TimeslotRepository';
+import { NoElementToDestroy, NoElementToUpdate } from './errors';
 
 @boundClass
 export default class BookingRepository {
@@ -143,35 +148,42 @@ export default class BookingRepository {
   }
 
   public async findById(bookingId: number): Promise<BookingDBInterface | null> {
-    let booking = await Booking.findByPk<Booking>(bookingId, {
-      include: [Timeslot],
-    });
+    const maybeBooking = await this.findByIdInternal(bookingId);
 
-    if (booking != null && (await booking.hasPassed())) {
-      await booking.destroy();
-      booking = null;
-    }
-
-    if (booking != null) {
-      return this.toInterface(booking);
+    if (maybeBooking != null) {
+      return this.toInterface(maybeBooking);
     }
 
     return null;
+  }
+
+  private async findByIdInternal(bookingId: number): Promise<Booking | null> {
+    const maybeBooking = await Booking.findByPk<Booking>(bookingId, {
+      include: [Timeslot],
+    });
+
+    if (maybeBooking != null && (await maybeBooking.hasPassed())) {
+      await maybeBooking.destroy();
+
+      return null;
+    } else {
+      return maybeBooking;
+    }
   }
 
   public async update(
     id: number,
     data: BookingPostInterface
   ): Promise<BookingDBInterface> {
-    const update: UpdateOptions = {
-      where: { id: id },
-      limit: 1,
-    };
+    const maybeBooking = await this.findByIdInternal(id);
 
-    // noinspection JSUnusedLocalSymbols
-    const [_, [booking]] = await Booking.update(data, update); // eslint-disable-line @typescript-eslint/no-unused-vars
+    if (maybeBooking != null) {
+      const updatedBooking = await maybeBooking.update(data);
 
-    return this.toInterface(booking);
+      return this.toInterface(updatedBooking);
+    } else {
+      throw new NoElementToUpdate('booking');
+    }
   }
 
   public async destroy(bookingId: number) {

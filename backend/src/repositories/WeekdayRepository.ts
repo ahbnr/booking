@@ -1,12 +1,11 @@
-import { WeekdayData, WeekdayName, WeekdayPostInterface } from 'common/dist';
+import { WeekdayPostInterface } from 'common/dist';
 import {
   DestroyOptions,
   UniqueConstraintError,
   UpdateOptions,
 } from 'sequelize';
-import { DataIdAlreadyExists } from './errors';
+import { DataIdAlreadyExists, NoElementToUpdate } from './errors';
 import { Weekday } from '../models/weekday.model';
-import { Resource } from '../models/resource.model';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
 import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import { boundClass } from 'autobind-decorator';
@@ -74,15 +73,15 @@ export default class WeekdayRepository {
     weekdayId: number,
     data: WeekdayPostInterface
   ): Promise<WeekdayDBInterface> {
-    const update: UpdateOptions = {
-      where: { id: weekdayId },
-      limit: 1,
-    };
+    const maybeWeekday = await Weekday.findByPk(weekdayId);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, [updatedWeekday]] = await Weekday.update(data, update);
+    if (maybeWeekday != null) {
+      const updatedWeekday = await maybeWeekday.update(data);
 
-    return this.toInterface(updatedWeekday);
+      return this.toInterface(updatedWeekday);
+    } else {
+      throw new NoElementToUpdate('weekday');
+    }
   }
 
   public async delete(weekdayId: number) {

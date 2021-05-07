@@ -56,16 +56,17 @@ export default class TimeslotRepository {
     return this.toInterface(timeslot);
   }
 
-  public async update(timeslotId: number, timeslotData: TimeslotPostInterface) {
-    const update: UpdateOptions = {
-      where: { id: timeslotId },
-      limit: 1,
-    };
+  public async update(
+    timeslotId: number,
+    timeslotData: TimeslotPostInterface
+  ): Promise<TimeslotDBInterface> {
+    const maybeTimeslot = await Timeslot.findByPk(timeslotId);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [numAffectedRows, _] = await Timeslot.update(timeslotData, update);
+    if (maybeTimeslot != null) {
+      const updatedTimeslot = await maybeTimeslot.update(timeslotData);
 
-    if (numAffectedRows < 1) {
+      return this.toInterface(updatedTimeslot);
+    } else {
       throw new NoElementToUpdate('timeslot');
     }
   }

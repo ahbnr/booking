@@ -2996,7 +2996,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^4.3.0":
+"@typescript-eslint/eslint-plugin@npm:^4.22.0, @typescript-eslint/eslint-plugin@npm:^4.3.0":
   version: 4.22.0
   resolution: "@typescript-eslint/eslint-plugin@npm:4.22.0"
   dependencies:
@@ -3065,7 +3065,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^4.3.0":
+"@typescript-eslint/parser@npm:^4.22.0, @typescript-eslint/parser@npm:^4.3.0":
   version: 4.22.0
   resolution: "@typescript-eslint/parser@npm:4.22.0"
   dependencies:
@@ -7243,6 +7243,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-config-prettier@npm:^8.2.0":
+  version: 8.2.0
+  resolution: "eslint-config-prettier@npm:8.2.0"
+  peerDependencies:
+    eslint: ">=7.0.0"
+  bin:
+    eslint-config-prettier: bin/cli.js
+  checksum: 0fe60cc42dd84fd878ee437dfe73340ba8b18f41ba2538878c54ff15f24a6855bf7e048b36290022b21e0e050ee6cf61d66bfdf39bedb5ccc15c28997cda7016
+  languageName: node
+  linkType: hard
+
 "eslint-config-react-app@npm:^5.2.1":
   version: 5.2.1
   resolution: "eslint-config-react-app@npm:5.2.1"
@@ -7436,7 +7447,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-prettier@npm:^3.1.4":
+"eslint-plugin-prettier@npm:^3.1.4, eslint-plugin-prettier@npm:^3.4.0":
   version: 3.4.0
   resolution: "eslint-plugin-prettier@npm:3.4.0"
   dependencies:
@@ -7489,7 +7500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:^7.21.3":
+"eslint-plugin-react@npm:^7.21.3, eslint-plugin-react@npm:^7.23.2":
   version: 7.23.2
   resolution: "eslint-plugin-react@npm:7.23.2"
   dependencies:
@@ -7619,7 +7630,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^7.10.0":
+"eslint@npm:^7.10.0, eslint@npm:^7.24.0":
   version: 7.24.0
   resolution: "eslint@npm:7.24.0"
   dependencies:
@@ -14761,7 +14772,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.1.2":
+"prettier@npm:^2.1.2, prettier@npm:^2.2.1":
   version: 2.2.1
   resolution: "prettier@npm:2.2.1"
   bin:
@@ -16087,6 +16098,13 @@ resolve@^2.0.0-next.3:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
+    "@typescript-eslint/eslint-plugin": ^4.22.0
+    "@typescript-eslint/parser": ^4.22.0
+    eslint: ^7.24.0
+    eslint-config-prettier: ^8.2.0
+    eslint-plugin-prettier: ^3.4.0
+    eslint-plugin-react: ^7.23.2
+    prettier: ^2.2.1
     rimraf: ^3.0.2
   languageName: unknown
   linkType: soft

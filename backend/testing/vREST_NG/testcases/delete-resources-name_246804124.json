@@ -1,15 +1,9 @@
 {
   "details": {
-    "summary": "delete-resources-name",
-    "description": "Delete resource by name\n\nFIXME: Add response when resource does not exist",
-    "externalId": "",
-    "condition": "",
-    "loopSource": "",
-    "waitForSeconds": null,
-    "runnable": true,
-    "editable": true,
+    "summary": "Delete resource by name",
+    "description": "Delete resource by name",
     "operationId": "delete-resources-name",
-    "authorizationId": null
+    "authorizationId": "admin_authentication_456557284"
   },
   "validation": {
     "assertions": [
@@ -17,32 +11,15 @@
         "source": "statusCode",
         "operator": "equalToNumber",
         "expectedValue": "204"
-      },
-      {
-        "source": "textBody",
-        "operator": "Default Schema Validator"
       }
-    ],
-    "expectedBody": {
-      "content": {},
-      "type": "json"
-    },
-    "expectedSchema": {
-      "content": {},
-      "type": "json"
-    }
+    ]
   },
   "request": {
-    "url": "http://localhost:3000/resources/{{name}}",
+    "url": "http://localhost:3000/resources/MeetingRoomA",
     "method": "DELETE",
-    "headers": {},
-    "queryParams": [],
     "body": {
       "content": null,
-      "type": "form-urlencoded",
-      "formParams": []
+      "type": "form-urlencoded"
     }
-  },
-  "variables": [],
-  "extensions": {}
+  }
 }

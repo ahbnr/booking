@@ -1,14 +1,6 @@
-import {
-  noRefinementChecks,
-  ResourceGetInterface,
-  ResourcePostInterface,
-} from 'common/dist';
+import { ResourcePostInterface } from 'common/dist';
 import { Resource } from '../models/resource.model';
-import {
-  DestroyOptions,
-  UniqueConstraintError,
-  UpdateOptions,
-} from 'sequelize';
+import { DestroyOptions, UniqueConstraintError } from 'sequelize';
 import {
   DataIdAlreadyExists,
   NoElementToDestroy,
@@ -74,16 +66,14 @@ export default class ResourceRepository {
   public async update(
     resourceName: string,
     resourceData: ResourcePostInterface
-  ) {
-    const update: UpdateOptions = {
-      where: { name: resourceName },
-      limit: 1,
-    };
+  ): Promise<ResourceDBInterface> {
+    const maybeResource = await Resource.findByPk(resourceName);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [numAffectedRows, _] = await Resource.update(resourceData, update);
+    if (maybeResource != null) {
+      const updatedResource = await maybeResource.update(resourceData);
 
-    if (numAffectedRows < 1) {
+      return this.toInterface(updatedResource);
+    } else {
       throw new NoElementToUpdate('resource');
     }
   }

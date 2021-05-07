@@ -51,6 +51,14 @@ export class Routes {
     app.route('/').get((req, res) => res.json('Hello'));
 
     app
+      .route('/users')
+      .get(authHandler, Routes.asyncHandler(this.usersController.index));
+
+    app
+      .route('/users/:name')
+      .delete(authHandler, Routes.asyncHandler(this.usersController.delete));
+
+    app
       .route('/users/auth')
       .post(Routes.asyncHandler(this.usersController.auth));
 

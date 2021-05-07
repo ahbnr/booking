@@ -1,15 +1,9 @@
 {
   "details": {
-    "summary": "post-resources-name",
-    "description": "Create a new resource with the given name\n\nFIXME: Handle case that resource exists in response",
-    "externalId": "",
-    "condition": "",
-    "loopSource": "",
-    "waitForSeconds": null,
-    "runnable": true,
-    "editable": true,
+    "summary": "Create a new resource with the given name",
+    "description": "Create a new resource with the given name",
     "operationId": "post-resources-name",
-    "authorizationId": null
+    "authorizationId": "admin_authentication_456557284"
   },
   "validation": {
     "assertions": [
@@ -23,10 +17,6 @@
         "operator": "Default Schema Validator"
       }
     ],
-    "expectedBody": {
-      "content": {},
-      "type": "json"
-    },
     "expectedSchema": {
       "content": {
         "$ref": "#/components/schemas/ResourceGetInterface"
@@ -35,18 +25,10 @@
     }
   },
   "request": {
-    "url": "http://localhost:3000/resources/{{name}}",
+    "url": "http://localhost:3000/resources/MeetingRoomA",
     "method": "POST",
     "headers": {
       "Content-Type": "application/json"
-    },
-    "queryParams": [],
-    "body": {
-      "content": {},
-      "type": "json",
-      "formParams": []
     }
-  },
-  "variables": [],
-  "extensions": {}
+  }
 }

@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1
 info:
   title: booking
   version: '0.1'
@@ -21,8 +21,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                description: JSON web token to authenticate further requests
+                $ref: '#/components/schemas/AuthResponseData'
         '401':
           description: Unauthorized
           content:
@@ -46,8 +45,10 @@ paths:
             schema:
               $ref: '#/components/schemas/AuthRequestData'
             examples: {}
+        description: ''
       tags:
         - users
+      parameters: []
   /users/inviteForSignup:
     post:
       summary: Invite new admin user
@@ -55,6 +56,15 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signupToken:
+                    type: string
+                required:
+                  - signupToken
         '401':
           description: Unauthorized
           content:
@@ -102,8 +112,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                description: JWT admin authentication token
+                $ref: '#/components/schemas/AuthResponseData'
         '400':
           description: Bad Request
           content:
@@ -165,7 +174,7 @@ paths:
         in: path
         required: true
     post:
-      summary: ''
+      summary: Create a new resource with the given name
       operationId: post-resources-name
       responses:
         '201':
@@ -175,15 +184,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResourceGetInterface'
         '400':
-          description: Bad Request
+          description: 'Bad Request: Request did not conform to expected data format'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DataValidationError'
-      description: |-
-        Create a new resource with the given name
-
-        FIXME: Handle case that resource exists in response
+                $ref: '#/components/schemas/MalformedRequestBody'
+        '401':
+          description: Unauthorized
+        '409':
+          description: 'Conflict: A resource with this name already exists'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAlreadyExists'
+      description: Create a new resource with the given name
       security:
         - admin authentication token: []
       requestBody:
@@ -194,7 +208,7 @@ paths:
       tags:
         - resources
     put:
-      summary: ''
+      summary: Update a resource by name
       operationId: put-resources-name
       responses:
         '202':
@@ -205,10 +219,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataValidationError'
-      description: |-
-        Update a resource by name
-
-        FIXME: Handle case when resource does not exist in response
+        '404':
+          description: Not Found
+      description: Update a resource by name
       security:
         - admin authentication token: []
       requestBody:
@@ -224,10 +237,9 @@ paths:
       responses:
         '204':
           description: No Content
-      description: |-
-        Delete resource by name
-
-        FIXME: Add response when resource does not exist
+        '404':
+          description: Not Found
+      description: Delete resource by name
       security:
         - admin authentication token: []
       tags:
@@ -732,6 +744,47 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BookingIntervalIndexRequestData'
+  /users:
+    parameters: []
+    get:
+      summary: Your GET endpoint
+      tags:
+        - users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGetInterface'
+        '401':
+          description: Unauthorized
+      operationId: get-users-id
+      description: List all registered admins
+      security:
+        - admin authentication token: []
+  '/users/{name}':
+    parameters:
+      - schema:
+          type: string
+        name: name
+        in: path
+        required: true
+    delete:
+      summary: Delete admin user
+      operationId: delete-users-name
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+      description: Delete admin user by name
+      security:
+        - admin authentication token: []
+      tags:
+        - users
 components:
   schemas:
     AuthRequestData:
@@ -795,8 +848,8 @@ components:
       required:
         - signupToken
         - userData
-    DataValidationError:
-      title: DataValidationError
+    MalformedRequestBody:
+      title: MalformedRequestBody
       type: string
       description: Client sent data of incorrect / unexpected format
     UnauthorizedActionError:
@@ -1008,6 +1061,30 @@ components:
       required:
         - start
         - end
+    AuthResponseData:
+      title: AuthResponseData
+      type: object
+      properties:
+        authToken:
+          type: string
+          description: JWT admin authentication token
+      required:
+        - authToken
+    DataAlreadyExists:
+      title: DataAlreadyExists
+      type: string
+      description: Tried to create an element which already exists (there is already an element with that id). Usually this is an error code 409 (Conflict).
+    UserGetInterface:
+      title: UserGetInterface
+      type: object
+      description: Describes an admin user
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+      required:
+        - name
   securitySchemes:
     admin authentication token:
       type: http

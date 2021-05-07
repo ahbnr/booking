@@ -1,0 +1,19 @@
+{
+  "title": "UserGetInterface",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "version": "openapi3"
+}

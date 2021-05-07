@@ -1,0 +1,40 @@
+{
+  "details": {
+    "summary": "List all registered admins",
+    "description": "List all registered admins",
+    "operationId": "get-resources",
+    "authorizationId": "admin_authentication_456557284"
+  },
+  "validation": {
+    "assertions": [
+      {
+        "source": "statusCode",
+        "operator": "equalToNumber",
+        "expectedValue": "200"
+      },
+      {
+        "source": "textBody",
+        "operator": "Default Schema Validator"
+      }
+    ],
+    "expectedSchema": {
+      "content": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/UserGetInterface"
+        }
+      },
+      "type": "json"
+    }
+  },
+  "request": {
+    "url": "http://localhost:3000/users",
+    "method": "GET"
+  },
+  "variables": [
+    {
+      "name": "users",
+      "path": "method"
+    }
+  ]
+}
