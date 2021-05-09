@@ -191,12 +191,19 @@ class UnstyledAppBar extends React.Component<Properties, State> {
               </Link>
             </Typography>
             {!this.props.isAuthenticated && (
-              <Button color="inherit" onClick={this.login}>
+              <Button
+                color="inherit"
+                onClick={this.login}
+                data-cy={'login-button'}
+              >
                 Login
               </Button>
             )}
             {this.props.isAuthenticated && (
-              <AccountCircle onClick={this.openLogoutDialog} />
+              <AccountCircle
+                data-cy="account-button"
+                onClick={this.openLogoutDialog}
+              />
             )}
           </Toolbar>
         </MaterialAppBar>

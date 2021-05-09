@@ -59,6 +59,30 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: Cache cypress
+        uses: actions/cache@v2
+        with:
+          path: '~/.cache/Cypress'
+          key: ${{ runner.os }}-modules-frontend-cypress-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Cache common build artifacts
+        uses: actions/cache@v2
+        with:
+          path: 'common/dist'
+          key: ${{ runner.os }}-modules-common-build-${{ hashFiles('common/yarn.lock') }}
+
+      - name: Cache backend build artifacts
+        uses: actions/cache@v2
+        with:
+          path: 'backend/dist'
+          key: ${{ runner.os }}-modules-backend-build-${{ hashFiles('backend/yarn.lock') }}
+
+      - name: Cache frontend build artifacts
+        uses: actions/cache@v2
+        with:
+          path: 'frontend/build'
+          key: ${{ runner.os }}-modules-frontend-build-${{ hashFiles('frontend/yarn.lock') }}
+
       # Install dependencies
       - name: Install Dependencies
         run: |
@@ -113,6 +137,12 @@ jobs:
         working-directory: frontend
         run: |
           yarn build
+
+      # Install cypress dependencies, cache them correctly. Dont run tests yet
+      - name: Cypress install
+        uses: cypress-io/github-action@v2
+        with:
+          runTests: false
 
       - name: Test Frontend
         working-directory: frontend

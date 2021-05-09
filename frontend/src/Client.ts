@@ -164,6 +164,8 @@ export class Client {
   }
 
   public async authenticate(username: string, password: string) {
+    // TODO: Maybe only allow authentication when connection is secure (SSL) so that data is never leaked?`
+    // Likewise, all requests requiring sending an auth token should also enforce SSL
     this.jsonWebToken = undefined;
 
     const data: AuthRequestData = {

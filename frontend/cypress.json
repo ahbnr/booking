@@ -1,0 +1,5 @@
+{
+  "ignoreTestFiles": "**/examples/*.spec.js",
+  "screenshotOnRunFailure": false,
+  "video": false
+}

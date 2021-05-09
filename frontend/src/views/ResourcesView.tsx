@@ -165,12 +165,14 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
               notEmptyTitle="Für welche Ressource möchten Sie buchen?"
               emptyTitle="Es wurden keine Resourcen erstellt."
               emptyMessage="Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen."
+              data-cy={'resource-list'}
             >
               {resources.map((resource) => (
                 <ListItem
                   button
                   onClick={() => this.viewWeekdays(resource)}
                   key={resource.name}
+                  data-cy="resource-list-item"
                 >
                   <ListItemText>{resource.name}</ListItemText>
                   {this.props.isAuthenticated && (
@@ -180,6 +182,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
                           onClick={() => this.deleteResource(resource.name)}
                           edge="end"
                           aria-label="delete"
+                          data-cy="resource-delete-button"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -200,6 +203,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
         {this.props.isAuthenticated && (
           <Fab
             className={this.props.classes.fab}
+            data-cy={'add-resource-button'}
             variant="extended"
             onClick={this.launchAddResourceModal}
           >
@@ -228,6 +232,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
                 required
                 margin="dense"
                 id="name"
+                data-cy={'add-resource-dialog-name-input'}
                 label="Name der Resource"
                 fullWidth
                 value={this.state.newResourceName}
@@ -241,6 +246,7 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
             </Button>
             <Button
               disabled={this.state.newResourceName.length <= 0}
+              data-cy={'add-resource-dialog-confirm-button'}
               onClick={this.handleAcceptAddResourceModal}
               color="primary"
             >

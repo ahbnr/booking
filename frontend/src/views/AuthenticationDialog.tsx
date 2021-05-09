@@ -124,6 +124,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 margin="normal"
                 fullWidth
                 label={'Nutzer'}
+                data-cy={'admin-login-username'}
                 autoFocus
                 autoCapitalize="off"
                 autoComplete="off"
@@ -139,6 +140,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 required
                 fullWidth
                 label={'Passwort'}
+                data-cy={'admin-login-password'}
                 type="password"
                 autoComplete="current-password"
                 value={this.state.password}
@@ -153,6 +155,7 @@ class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
                 color="primary"
                 className={this.props.classes.submit}
                 disabled={!this.canBeSubmitted()}
+                data-cy={'admin-login-confirm-button'}
               >
                 Einloggen
               </Button>

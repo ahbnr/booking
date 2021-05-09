@@ -72,6 +72,7 @@ class UnstyledMainView extends React.Component<Properties, State> {
           color="primary"
           className={this.props.classes.startButton}
           onClick={this.openResources}
+          data-cy={'start-button'}
         >
           Start
         </Button>

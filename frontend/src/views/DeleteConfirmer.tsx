@@ -119,6 +119,7 @@ export default class DeleteConfirmer extends React.Component<
               variant="contained"
               onClick={this.handleDelete}
               color="secondary"
+              data-cy={'delete-confirm-button'}
             >
               Löschen
             </Button>
