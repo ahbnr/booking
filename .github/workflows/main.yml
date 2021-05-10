@@ -16,6 +16,9 @@ jobs:
         backendPath:
           - backend
     steps:
+      - name: Setup kernel to allow many file watchers for our frontend tests
+        run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
       - name: Install Yarn
         uses: actions/setup-node@v2
         with:

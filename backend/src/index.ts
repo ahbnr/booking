@@ -1,4 +1,6 @@
 import express from 'express';
+import * as https from 'https';
+import * as fs from 'fs';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { Routes } from './config/routes';
@@ -7,6 +9,8 @@ import { ControllerError } from './controllers/errors';
 import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
+
+const { SSL_CRT_FILE, SSL_KEY_FILE } = process.env;
 
 const port = process.env.PORT || 3000;
 
@@ -60,8 +64,20 @@ async function init() {
     }
   );
 
-  app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+  const server = https.createServer(
+    {
+      key: fs.readFileSync(
+        SSL_KEY_FILE || '../dev-certificate/generated/server.key'
+      ),
+      cert: fs.readFileSync(
+        SSL_CRT_FILE || '../dev-certificate/generated/server.crt'
+      ),
+    },
+    app
+  );
+
+  server.listen(port, () => {
+    console.log(`Example app listening at https://localhost:${port}`);
   });
 }
 

@@ -37,7 +37,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('login', () => {
-  cy.visit('localhost:8000');
+  cy.visit('https://localhost:8000');
 
   cy.getBySel('login-button').click();
 
