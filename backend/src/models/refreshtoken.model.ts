@@ -27,6 +27,10 @@ export class RefreshToken extends BaseModel<RefreshToken> {
   @Column
   public token!: string;
 
+  @NotEmpty
+  @Column
+  public activation!: string;
+
   @ForeignKey(() => User)
   @Column({ allowNull: false })
   public userName!: string;

@@ -2,6 +2,8 @@ import { boundClass } from 'autobind-decorator';
 import RefreshTokenDBInterface from './model_interfaces/RefreshTokenDBInterface';
 import UserDBInterface from './model_interfaces/UserDBInterface';
 import { RefreshToken } from '../models/refreshtoken.model';
+import { User } from '../models/user.model';
+import { NoElementToDestroy } from './errors';
 
 @boundClass
 export default class RefreshTokensRepository {
@@ -26,18 +28,32 @@ export default class RefreshTokensRepository {
 
   public async create(
     refreshTokenId: string,
+    activation: string,
     user: UserDBInterface,
-    expiresAt: Date
+    expiresAt: Date,
+    createdAt: Date
   ): Promise<RefreshTokenDBInterface> {
     // FIXME: Delete old tokens of same client
 
     const refreshToken = await RefreshToken.create<RefreshToken>({
       token: refreshTokenId,
+      activation: activation,
       userName: user.data.name,
       expiresAt: expiresAt,
+      createdAt: createdAt,
     });
 
     return this.toInterface(refreshToken);
+  }
+
+  public async destroy(tokenId: string) {
+    const refreshTokenToDestroy = await RefreshToken.findByPk(tokenId);
+
+    if (refreshTokenToDestroy != null) {
+      refreshTokenToDestroy.destroy();
+    } else {
+      throw new NoElementToDestroy('RefreshToken');
+    }
   }
 
   public async getUserOfRefreshToken(

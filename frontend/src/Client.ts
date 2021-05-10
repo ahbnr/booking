@@ -81,9 +81,21 @@ export class Client {
     return this.jsonWebToken != null;
   }
 
-  public logout() {
-    this.jsonWebToken = undefined;
-    // FIXME: Ask server to delete http only cookie
+  public async logout() {
+    try {
+      await this.request('POST', 'auth/logout', {}, true);
+    } catch (e) {
+      console.log(
+        `Could not log out at server (${JSON.stringify(
+          e
+        )}). This is not so bad, since we can simply delete the local auth data.`
+      );
+    } finally {
+      this.jsonWebToken = undefined;
+      // Delete refresh token activation cookie
+      document.cookie =
+        'refreshTokenActivation=;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Strict;';
+    }
   }
 
   private async typedRequest<A, O, I>(
@@ -142,7 +154,13 @@ export class Client {
 
     // If authentication failed
     if (response.status === 401) {
-      this.logout();
+      try {
+        await this.logout();
+      } catch (e) {
+        console.error(
+          'Authentication failed, so we attempted logout. However, that failed too :/'
+        );
+      }
     }
 
     if (!response.ok) {
@@ -194,10 +212,8 @@ export class Client {
       try {
         await this.getAuthTokenWithRefreshToken();
       } catch (e) {
-        console.error(e);
-        console.error(e.originalError);
         console.log(
-          `Failed automatic auth with refresh token. New refresh token via login is required.`
+          `Could not automatically authenticate with refresh token. New refresh token via login is required.`
         );
       }
     } else {

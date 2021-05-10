@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { boundClass } from 'autobind-decorator';
 import {
   asyncJwtSign,
@@ -23,12 +23,35 @@ import RefreshTokensRepository from '../repositories/RefreshTokensRepository';
 import { RefreshTokenData } from '../types/token-types/RefreshTokenData';
 import UserRepository from '../repositories/UserRepository';
 
-import * as crypto from 'crypto';
 import { SignupTokenData } from '../types/token-types/SignupTokenData';
 import InviteForSignupResponse from '../types/response-types/InviteForSignupResponse';
 import { sendMail } from '../utils/email';
 import { DateTime, Duration } from 'luxon';
 import { ControllerError } from './errors';
+import asyncRandomBytes from '../utils/cryptoRandomBytes';
+
+class RefreshTokenGenerationResult {
+  public readonly signedJWT: TokenGenerationResult;
+  public readonly activation: string;
+
+  constructor(signedJWT: TokenGenerationResult, activation: string) {
+    this.signedJWT = signedJWT;
+    this.activation = activation;
+  }
+}
+
+class RefreshTokenCookieOptions {
+  public readonly refreshTokenOptions: CookieOptions;
+  public readonly refreshTokenActivationOptions: CookieOptions;
+
+  constructor(
+    refreshTokenOptions: CookieOptions,
+    refreshTokenActivationOptions: CookieOptions
+  ) {
+    this.refreshTokenOptions = refreshTokenOptions;
+    this.refreshTokenActivationOptions = refreshTokenActivationOptions;
+  }
+}
 
 @boundClass
 export class AuthController {
@@ -54,12 +77,24 @@ export class AuthController {
 
     if (user != null) {
       if (await user?.doesPasswordMatch(authData.password)) {
-        const token = await this.generateRefreshToken(user);
+        const tokenGeneration = await this.generateRefreshToken(user);
 
-        res.cookie('refreshToken', token.token, {
-          httpOnly: true,
-          sameSite: 'strict',
-        }); // FIXME: Maybe also add option secure: true
+        const cookieOptions = this.buildRefreshActivationCookieOptions(
+          tokenGeneration.signedJWT.createdAt,
+          tokenGeneration.signedJWT.expiresAt
+        );
+
+        res.cookie(
+          'refreshToken',
+          tokenGeneration.signedJWT.token,
+          cookieOptions.refreshTokenOptions
+        );
+        res.cookie(
+          'refreshTokenActivation',
+          tokenGeneration.activation,
+          cookieOptions.refreshTokenActivationOptions
+        );
+
         res.status(200).json();
       } else {
         res.status(401).json('Wrong password.');
@@ -69,13 +104,38 @@ export class AuthController {
     }
   }
 
-  public async getAuthToken(
-    req: TypesafeRequest,
-    res: Response<AuthResponseData | string>
-  ) {
+  private buildRefreshActivationCookieOptions(
+    createdAt: DateTime,
+    expiresAt: DateTime
+  ): RefreshTokenCookieOptions {
+    const maxAge = expiresAt.diff(createdAt, ['seconds']).seconds;
+
+    // FIXME: Maybe also add option secure: true
+    const refreshTokenOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: maxAge,
+    };
+
+    const refreshTokenActivationOptions: CookieOptions = {
+      sameSite: 'strict',
+      maxAge: maxAge,
+    };
+
+    return new RefreshTokenCookieOptions(
+      refreshTokenOptions,
+      refreshTokenActivationOptions
+    );
+  }
+
+  public async logout(req: TypesafeRequest, res: Response) {
     const maybeRefreshToken = req.cookies?.refreshToken;
 
-    if (maybeRefreshToken != null && typeof maybeRefreshToken === 'string') {
+    if (
+      maybeRefreshToken != null &&
+      typeof maybeRefreshToken === 'string' &&
+      maybeRefreshToken.length > 0
+    ) {
       const verifiedToken = await asyncJwtVerify(maybeRefreshToken);
       const tokenData = checkType(verifiedToken, RefreshTokenData);
 
@@ -84,30 +144,83 @@ export class AuthController {
       );
 
       if (refreshToken != null) {
-        const user = await refreshToken.getUser();
+        const cookieOptions = this.buildRefreshActivationCookieOptions(
+          DateTime.fromJSDate(refreshToken.createdAt),
+          DateTime.fromJSDate(refreshToken.expiresAt)
+        );
 
-        if (user.data.name === tokenData.username) {
-          // FIXME: Automatically check for expired tokens inside database
-          if (!refreshToken.hasExpired()) {
-            const tokenResult = await AuthController.generateAuthToken(user);
+        await this.refreshTokenRepository.destroy(refreshToken.tokenId);
 
-            res.status(200).json(
-              noRefinementChecks<AuthResponseData>({
-                authToken: tokenResult.token,
-                expiresAt: tokenResult.expiresAt.toISO(),
-              })
-            );
+        res.clearCookie('refreshToken', cookieOptions.refreshTokenOptions);
+        res.clearCookie(
+          'refreshTokenActivation',
+          cookieOptions.refreshTokenActivationOptions
+        );
+      }
+    }
+
+    res.status(200).json({});
+  }
+
+  public async getAuthToken(
+    req: TypesafeRequest,
+    res: Response<AuthResponseData | string>
+  ) {
+    const maybeRefreshToken = req.cookies?.refreshToken;
+
+    if (
+      maybeRefreshToken != null &&
+      typeof maybeRefreshToken === 'string' &&
+      maybeRefreshToken.length > 0
+    ) {
+      const verifiedToken = await asyncJwtVerify(maybeRefreshToken);
+      const tokenData = checkType(verifiedToken, RefreshTokenData);
+
+      const refreshToken = await this.refreshTokenRepository.findRefreshTokenById(
+        tokenData.token
+      );
+
+      if (refreshToken != null) {
+        const maybeActivation = req.cookies?.refreshTokenActivation;
+
+        if (
+          maybeActivation != null &&
+          typeof maybeActivation === 'string' &&
+          maybeActivation === refreshToken.activation
+        ) {
+          const user = await refreshToken.getUser();
+
+          if (user.data.name === tokenData.username) {
+            // FIXME: Automatically check for expired tokens inside database
+            if (!refreshToken.hasExpired()) {
+              const tokenResult = await AuthController.generateAuthToken(user);
+
+              res.status(200).json(
+                noRefinementChecks<AuthResponseData>({
+                  authToken: tokenResult.token,
+                  expiresAt: tokenResult.expiresAt.toISO(),
+                })
+              );
+            } else {
+              console.log(
+                `Rejected token because it expired. Now: ${DateTime.now().toISO()}. Expiration date: ${refreshToken.expiresAt.toISOString()}`
+              );
+              res.status(401).json('Invalid refresh token (expired!).');
+            }
           } else {
             console.log(
-              `Rejected token because it expired. Now: ${DateTime.now().toISO()}. Expiration date: ${refreshToken.expiresAt.toISOString()}`
+              `Received inconsistent refresh token: The token is for user ${user.data.name}, but the token data specifies user ${tokenData.username}`
             );
-            res.status(401).json('Invalid refresh token (expired!).');
+            res.status(401).json('Invalid refresh token (wrong user).');
           }
         } else {
-          console.log(
-            `Received inconsistent refresh token: The token is for user ${user.data.name}, but the token data specifies user ${tokenData.username}`
-          );
-          res.status(401).json('Invalid refresh token (wrong user).');
+          await this.refreshTokenRepository.destroy(refreshToken.tokenId);
+
+          res
+            .status(401)
+            .json(
+              'Activation code missing or invalid. Invalidated refresh token.'
+            );
         }
       } else {
         res.status(401).json('Invalid refresh token (maybe expired?)');
@@ -202,22 +315,14 @@ export class AuthController {
 
   private async generateRefreshToken(
     user: UserDBInterface
-  ): Promise<TokenGenerationResult> {
-    const randomTokenPromise = new Promise<string>((resolve, reject) =>
-      crypto.randomBytes(128, (err: Error | null, buffer: Buffer) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(buffer.toString('hex'));
-        }
-      })
-    );
-
-    const tokenId = await randomTokenPromise;
+  ): Promise<RefreshTokenGenerationResult> {
+    const tokenId = (await asyncRandomBytes(128)).toString('hex');
+    const activation = (await asyncRandomBytes(128)).toString('hex');
 
     const data: RefreshTokenData = noRefinementChecks<RefreshTokenData>({
       type: 'RefreshToken',
       token: tokenId,
+      activation: activation,
       username: user.data.name,
     });
 
@@ -227,8 +332,10 @@ export class AuthController {
 
     const dbEntry = await this.refreshTokenRepository.create(
       tokenId,
+      activation,
       user,
-      signedJWT.expiresAt.toJSDate()
+      signedJWT.expiresAt.toJSDate(),
+      signedJWT.createdAt.toJSDate()
     );
 
     if (dbEntry != null) {
@@ -236,7 +343,7 @@ export class AuthController {
         `Created new refresh token for user ${user.data.name} which expires at ${signedJWT.expiresAt}.`
       );
 
-      return signedJWT;
+      return new RefreshTokenGenerationResult(signedJWT, activation);
     } else {
       throw new ControllerError(
         'Could not save new refresh token in database.',

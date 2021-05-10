@@ -22,8 +22,13 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-                example: refreshToken=<JWT refresh token>; HttpOnly
-              description: refresh token. HttpOnly
+                example: refreshToken=<JWT refresh token>; HttpOnly; SameSite
+              description: refresh token. See the refreshToken security scheme
+            "Set-Cookie\0":
+              schema:
+                type: string
+                example: refreshTokenActivation=<JWT refresh token>
+              description: refresh token activation. See the refreshTokenActivation security scheme
         '401':
           description: Unauthorized
           content:
@@ -51,10 +56,41 @@ paths:
       tags:
         - auth
       parameters: []
-  /auth/auth_token:
+  /auth/logout:
     post:
+      summary: Invalidate refresh token on server. Also delete the HttpOnly cookie storing it on the client.
+      operationId: post-auth-logout
+      responses:
+        '200':
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                required: false
+              description: Deletes refreshToken cookie
+            "Set-Cookie\0":
+              schema:
+                type: string
+                required: false
+              description: Deletes refreshTokenActivation cookie
+      description: |-
+        Invalidates the refresh token one retrieves from /auth/login, i.e. it can never be used again.
+
+        It also attempts to delete the refreshToken HttpOnly cookie that is set by the /auth/login route (and which can not be deleted by client side JavaScript).
+        Also deletes the refreshTokenActivation cookie set by that route.
+        Deleting the cookies only works though if the refresh token cookie that was sent by the client was valid.
+
+        Note however that a client can safely disable refresh token credentials if the server is not available by deleting the refreshTokenActivation cookie using JavaScript.
+      tags:
+        - auth
+      parameters: []
+      security:
+        - admin auth refresh token: []
+  /auth/auth_token:
+    get:
       summary: Retrieve auth token using a refresh token
-      operationId: post-auth-auth-token
+      operationId: get-auth-auth-token
       responses:
         '200':
           description: OK
@@ -85,6 +121,7 @@ paths:
       parameters: []
       security:
         - admin auth refresh token: []
+          admin auth refresh token activation: []
   /auth/invite:
     post:
       summary: Invite new admin user
@@ -1129,7 +1166,25 @@ components:
       name: refreshToken
       type: apiKey
       in: cookie
-      description: long lived JSON web token which allows to retrieve short lived authentication tokens. Can be retrieved by the /auth/login route
+      description: |-
+        long lived JSON web token which allows to retrieve short lived authentication tokens. Can be retrieved by the /auth/login route. Only valid together with refreshTokenActivation cookie.
+
+        This cookie is set by the server when requesting /auth/login as a HttpOnly cookie. This means it can not be modified by client-side javascript and only be removed by the /auth/logout route.
+        (This protects against theft of the refresh token by XSS attacks)
+
+        If the server is currently not available, client-side javascript can also delete the refreshTokenActivation cookie to invalidate local login authorization.
+    admin auth refresh token activation:
+      name: refreshTokenActivation
+      type: apiKey
+      in: cookie
+      description: |-
+        special cookie which must be present alongside the refreshToken cookie. Otherwise, the refreshToken cookie is considered invalid.
+
+        It is generated alongside the refreshToken cookie when requesting /auth/login
+
+        In contrast to the refreshToken cookie, this cookie is not set as a HttpOnly cookie. Hence, it can be removed by client-side javascript to invalidate the login data, if the server is currently offline.
+
+        (this is also the only reason why this cookie is present)
     admin authentication token:
       type: http
       scheme: bearer

@@ -39,6 +39,6 @@ Read also:
 * https://medium.com/@ryanchenkie_40935/react-authentication-how-to-store-jwt-in-a-cookie-346519310e81
 
 TODO:
-* I should watch this and add more guards agains XSS and CSRF attacks: https://www.youtube.com/watch?v=M6N7gEZ-IUQ
+* I should watch this and add more guards against XSS and CSRF attacks: https://www.youtube.com/watch?v=M6N7gEZ-IUQ
 * Apply anti XSS measures: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html#xss-prevention-rules
 * logout measure that does not require the server to delete the HttpOnly refresh token cookie

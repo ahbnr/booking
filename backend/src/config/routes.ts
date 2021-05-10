@@ -61,6 +61,10 @@ export class Routes {
       .post(Routes.asyncHandler(this.authController.login));
 
     app
+      .route('/auth/logout')
+      .post(Routes.asyncHandler(this.authController.logout));
+
+    app
       .route('/auth/auth_token')
       .get(Routes.asyncHandler(this.authController.getAuthToken));
 

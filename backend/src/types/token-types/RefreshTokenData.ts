@@ -4,6 +4,7 @@ import { NonEmptyString } from 'common';
 export const RefreshTokenData = t.type({
   type: t.literal('RefreshToken'),
   token: NonEmptyString,
+  activation: NonEmptyString,
   username: NonEmptyString,
 });
 

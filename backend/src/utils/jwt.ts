@@ -31,10 +31,12 @@ export function asyncJwtVerify(
 export class TokenGenerationResult {
   public readonly token: string;
   public readonly expiresAt: DateTime;
+  public readonly createdAt: DateTime;
 
-  constructor(token: string, expiresAt: DateTime) {
+  constructor(token: string, expiresAt: DateTime, createdAt: DateTime) {
     this.token = token;
     this.expiresAt = expiresAt;
+    this.createdAt = createdAt;
   }
 }
 
@@ -43,8 +45,8 @@ export function asyncJwtSign(
   payload: string | Buffer | object,
   options: SignOptions & { expiresIn: number /* seconds */ }
 ): Promise<TokenGenerationResult> {
-  let expiresAt = DateTime.now();
-  expiresAt = expiresAt.plus({ seconds: options.expiresIn });
+  const createdAt = DateTime.now();
+  const expiresAt = createdAt.plus({ seconds: options.expiresIn });
 
   return new Promise<TokenGenerationResult>((resolve, reject) =>
     jwt.sign(
@@ -55,7 +57,7 @@ export function asyncJwtSign(
         if (err != null) {
           reject(err);
         } else if (token != null) {
-          resolve(new TokenGenerationResult(token, expiresAt));
+          resolve(new TokenGenerationResult(token, expiresAt, createdAt));
         } else {
           reject('Could not sign token');
         }
