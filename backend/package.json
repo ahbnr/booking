@@ -13,7 +13,8 @@
     "run-vrest-now": "vrest-ng-cli run --projectdir=./testing/vREST_NG --testsuitenames=\"Shallow API Tests\" --logger=xunit",
     "wait-for-api": "wait-on tcp:3000",
     "run-vrest-when-ready": "run-s wait-for-api run-vrest-now",
-    "test": "concurrently -k -s first yarn:clear-memory-start yarn:run-vrest-when-ready"
+    "test-old": "concurrently -k -s first yarn:clear-memory-start yarn:run-vrest-when-ready",
+    "test": "echo \"Currently no isolated tests for backend. Use end-to-end tests in frontend.\""
   },
   "keywords": [],
   "author": "",
