@@ -126,7 +126,7 @@ export class Client {
     }
 
     if (this.isAuthenticated() && this.jsonWebToken != null) {
-      headers['Authorization'] = `Bearer ${this.jsonWebToken}`;
+      headers['Authorization'] = `Bearer ${this.jsonWebToken.token}`;
     }
 
     let response: Response;
@@ -237,6 +237,10 @@ export class Client {
     const expiresAt = DateTime.fromISO(response.expiresAt);
 
     this.jsonWebToken = new JsonWebTokenData(authToken, expiresAt);
+
+    console.log(
+      `Successfully authenticated until: ${this.jsonWebToken?.expiresAt}`
+    );
   }
 
   public async authenticate(username: string, password: string) {

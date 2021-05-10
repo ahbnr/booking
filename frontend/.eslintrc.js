@@ -2,12 +2,12 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react', 'prettier'],
+  plugins: ['cypress', '@typescript-eslint', 'react', 'prettier'],
   extends: [
+    'plugin:cypress/recommended',
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:cypress/recommended',
     'prettier',
     'prettier/react',
     'prettier/@typescript-eslint',
