@@ -12,6 +12,7 @@ import { UsersController } from '../controllers/users.controller';
 import { authHandler, optionalAuthHandler } from './passport';
 import { ResourcesController } from '../controllers/resources.controller';
 import DatabaseController from '../models';
+import { AuthController } from '../controllers/auth.controller';
 
 export class Routes {
   private readonly usersController: UsersController;
@@ -19,6 +20,7 @@ export class Routes {
   private readonly resourcesController: ResourcesController;
   private readonly timeslotsController: TimeslotsController;
   private readonly bookingsController: BookingsController;
+  private readonly authController: AuthController;
 
   constructor(db: DatabaseController) {
     this.usersController = new UsersController(db.repositories.userRepository);
@@ -37,6 +39,10 @@ export class Routes {
       db.repositories.bookingRepository,
       this.timeslotsController
     );
+    this.authController = new AuthController(
+      db.repositories.userRepository,
+      db.repositories.refreshTokenRepository
+    );
   }
 
   private static asyncHandler<T>(
@@ -51,31 +57,35 @@ export class Routes {
     app.route('/').get((req, res) => res.json('Hello'));
 
     app
+      .route('/auth/login')
+      .post(Routes.asyncHandler(this.authController.login));
+
+    app
+      .route('/auth/auth_token')
+      .get(Routes.asyncHandler(this.authController.getAuthToken));
+
+    app
+      .route('/auth/invite')
+      .post(
+        authHandler,
+        Routes.asyncHandler(this.authController.inviteForSignup)
+      );
+
+    app
+      .route('/auth/is_signup_token_ok')
+      .post(Routes.asyncHandler(this.authController.isSignupTokenOk));
+
+    app
+      .route('/auth/signup')
+      .post(Routes.asyncHandler(this.authController.signup));
+
+    app
       .route('/users')
       .get(authHandler, Routes.asyncHandler(this.usersController.index));
 
     app
       .route('/users/:name')
       .delete(authHandler, Routes.asyncHandler(this.usersController.delete));
-
-    app
-      .route('/users/auth')
-      .post(Routes.asyncHandler(this.usersController.auth));
-
-    app
-      .route('/users/inviteForSignup')
-      .post(
-        authHandler,
-        Routes.asyncHandler(this.usersController.inviteForSignup)
-      );
-
-    app
-      .route('/users/isSignupTokenOk')
-      .post(Routes.asyncHandler(this.usersController.isSignupTokenOk));
-
-    app
-      .route('/users/signup')
-      .post(Routes.asyncHandler(this.usersController.signup));
 
     app
       .route('/resources')

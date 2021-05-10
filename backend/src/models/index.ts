@@ -5,6 +5,7 @@ import TimeslotRepository from '../repositories/TimeslotRepository';
 import ResourceRepository from '../repositories/ResourceRepository';
 import WeekdayRepository from '../repositories/WeekdayRepository';
 import BookingRepository from '../repositories/BookingRepository';
+import RefreshTokensRepository from '../repositories/RefreshTokensRepository';
 
 export default class DatabaseController {
   public readonly sequelize = new Sequelize(
@@ -20,6 +21,7 @@ export default class DatabaseController {
     timeslotRepository: new TimeslotRepository(),
     resourceRepository: new ResourceRepository(),
     weekdayRepository: new WeekdayRepository(),
+    refreshTokenRepository: new RefreshTokensRepository(),
   };
 
   async init() {
@@ -40,6 +42,7 @@ export default class DatabaseController {
       this.repositories.resourceRepository,
       this.repositories.timeslotRepository
     );
+    this.repositories.refreshTokenRepository.init();
 
     await this.repositories.userRepository.initRootUser();
   }

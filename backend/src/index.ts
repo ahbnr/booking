@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import { Routes } from './config/routes';
 import cors from 'cors';
 import { ControllerError } from './controllers/errors';
@@ -21,6 +22,8 @@ async function init() {
 
   // parse json requests
   app.use(bodyParser.json());
+
+  app.use(cookieParser());
 
   const routes = new Routes(db);
   routes.routes(app);

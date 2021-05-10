@@ -3,6 +3,7 @@ import {
   BeforeBulkUpdate,
   BeforeCreate,
   BeforeUpdate,
+  HasMany,
   IsEmail,
   NotEmpty,
 } from 'sequelize-typescript';
@@ -10,6 +11,7 @@ import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { CreateOptions } from 'ts-node';
 import bcrypt from 'bcrypt';
 import { BaseModel } from './BaseModel';
+import { RefreshToken } from './refreshtoken.model';
 
 @Table
 export class User extends BaseModel<User> {
@@ -26,8 +28,12 @@ export class User extends BaseModel<User> {
   @Column({ allowNull: false })
   public password!: string;
 
+  @HasMany(() => RefreshToken, { onDelete: 'CASCADE' })
+  public refreshTokens!: RefreshToken[];
+
   @BeforeCreate
   public static async onCreateHashPassword(instance: User) {
+    // eslint-disable-next-line require-atomic-updates
     instance.password = await User.hashPassword(instance.password);
   }
 

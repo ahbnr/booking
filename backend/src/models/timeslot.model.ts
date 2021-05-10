@@ -11,8 +11,6 @@ import { Weekday } from './weekday.model';
 import { Booking } from './booking.model';
 import { LazyGetter } from '../utils/LazyGetter';
 import { BaseModel } from './BaseModel';
-import { noRefinementChecks, TimeslotGetInterface } from 'common/dist';
-import { BookingsController } from '../controllers/bookings.controller';
 
 @Table
 export class Timeslot extends BaseModel<Timeslot> {

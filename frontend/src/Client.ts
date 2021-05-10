@@ -21,13 +21,16 @@ import {
   BookingIntervalIndexRequestData,
 } from 'common/dist';
 import DisplayableError from './errors/DisplayableError';
+import { DateTime } from 'luxon';
 
-const { REACT_APP_API_ADDRESS, REACT_APP_API_PORT } = process.env;
+//const { REACT_APP_API_ADDRESS, REACT_APP_API_PORT } = process.env;
 
-const address = REACT_APP_API_ADDRESS || window.location.hostname;
-const port = REACT_APP_API_PORT || 3000;
-const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
-const baseUrl = `${protocol}://${address}:${port}`;
+//const address = REACT_APP_API_ADDRESS || window.location.hostname;
+//const port = REACT_APP_API_PORT || 3000;
+//const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+//const baseUrl = `${protocol}://${address}:${port}`;
+
+const baseUrl = 'api';
 
 class RequestError {
   public readonly response: Response;
@@ -37,10 +40,26 @@ class RequestError {
   }
 }
 
+class JsonWebTokenData {
+  public readonly token: string;
+  public readonly expiresAt: DateTime;
+
+  constructor(token: string, expiresAt: DateTime) {
+    this.token = token;
+    this.expiresAt = expiresAt;
+  }
+
+  public hasExpired(): boolean {
+    const now = DateTime.now();
+
+    return now >= this.expiresAt;
+  }
+}
+
 @boundClass
 export class Client {
-  private _jwtStore?: string;
-  private set jsonWebToken(value: string | undefined) {
+  private _jwtStore?: JsonWebTokenData;
+  private set jsonWebToken(value: JsonWebTokenData | undefined) {
     this._jwtStore = value;
 
     if (this.onAuthenticationChanged != null) {
@@ -48,7 +67,11 @@ export class Client {
     }
   }
 
-  private get jsonWebToken(): string | undefined {
+  private get jsonWebToken(): JsonWebTokenData | undefined {
+    if (this._jwtStore?.hasExpired()) {
+      this.jsonWebToken = undefined;
+    }
+
     return this._jwtStore;
   }
 
@@ -60,6 +83,7 @@ export class Client {
 
   public logout() {
     this.jsonWebToken = undefined;
+    // FIXME: Ask server to delete http only cookie
   }
 
   private async typedRequest<A, O, I>(
@@ -67,9 +91,10 @@ export class Client {
     method: 'POST' | 'GET' | 'PUT' | 'DELETE',
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body?: any
+    body?: any,
+    dontAutoAuth?: boolean
   ): Promise<A> {
-    const response = await this.request(method, subUrl, body);
+    const response = await this.request(method, subUrl, body, dontAutoAuth);
     const parsed = await response.json();
 
     return checkType(parsed, type);
@@ -79,11 +104,16 @@ export class Client {
     method: 'POST' | 'GET' | 'PUT' | 'DELETE',
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body?: any
+    body?: any,
+    dontAutoAuth?: boolean
   ): Promise<Response> {
     const headers: HeadersInit = {};
 
-    if (this.jsonWebToken != null) {
+    if (!dontAutoAuth && !this.isAuthenticated()) {
+      await this.tryAutoAuth();
+    }
+
+    if (this.isAuthenticated() && this.jsonWebToken != null) {
       headers['Authorization'] = `Bearer ${this.jsonWebToken}`;
     }
 
@@ -133,7 +163,7 @@ export class Client {
     return await this.typedRequest(
       t.boolean,
       'POST',
-      'users/isSignupTokenOk',
+      'auth/is_signup_token_ok',
       postData
     );
   }
@@ -153,14 +183,44 @@ export class Client {
       },
     };
 
+    await this.request('POST', 'auth/signup', data);
+
+    await this.authenticate(username, password);
+  }
+
+  public async tryAutoAuth() {
+    if (!this.isAuthenticated()) {
+      // Try getting a new auth token using a refresh token (might be set as HttpOnly cookie)
+      try {
+        await this.getAuthTokenWithRefreshToken();
+      } catch (e) {
+        console.error(e);
+        console.error(e.originalError);
+        console.log(
+          `Failed automatic auth with refresh token. New refresh token via login is required.`
+        );
+      }
+    } else {
+      console.log(`Authenticated until: ${this.jsonWebToken?.expiresAt}`);
+    }
+  }
+
+  private async getAuthTokenWithRefreshToken() {
+    // TODO: Maybe only allow authentication when connection is secure (SSL) so that data is never leaked?`
+    // Likewise, all requests requiring sending an auth token should also enforce SSL
+
     const response = await this.typedRequest(
       AuthResponseData,
-      'POST',
-      'users/signup',
-      data
+      'GET',
+      'auth/auth_token',
+      undefined,
+      true
     );
 
-    this.jsonWebToken = response.authToken;
+    const authToken = response.authToken;
+    const expiresAt = DateTime.fromISO(response.expiresAt);
+
+    this.jsonWebToken = new JsonWebTokenData(authToken, expiresAt);
   }
 
   public async authenticate(username: string, password: string) {
@@ -173,14 +233,9 @@ export class Client {
       password: password,
     };
 
-    const response = await this.typedRequest(
-      AuthResponseData,
-      'POST',
-      'users/auth',
-      data
-    );
+    await this.request('POST', 'auth/login', data, true);
 
-    this.jsonWebToken = response.authToken;
+    await this.tryAutoAuth();
   }
 
   public async inviteForSignup(email: EMailString, signupPath: string) {
@@ -189,7 +244,7 @@ export class Client {
       targetUrl: signupPath,
     };
 
-    await this.request('POST', 'users/inviteForSignup', data);
+    await this.request('POST', 'auth/invite', data);
   }
 
   public async getTimeslot(timeslotId: number): Promise<TimeslotGetInterface> {

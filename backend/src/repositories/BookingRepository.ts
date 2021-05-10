@@ -1,7 +1,7 @@
 import { Booking } from '../models/booking.model';
 import { Timeslot } from '../models/timeslot.model';
 import { ISO8601 } from 'common/dist/typechecking/ISO8601';
-import { DestroyOptions, Op, UpdateOptions } from 'sequelize';
+import { DestroyOptions, Op } from 'sequelize';
 import { Weekday } from '../models/weekday.model';
 import { Resource } from '../models/resource.model';
 import BookingDBInterface from './model_interfaces/BookingDBInterface';
@@ -11,20 +11,15 @@ import {
   EMailString,
   getCurrentTimeslotEndDate,
   getCurrentTimeslotStartDate,
-  ResourceGetInterface,
   throwExpr,
-  TimeslotData,
 } from 'common/dist';
 import ResourceRepository from './ResourceRepository';
 import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
-import {
-  Conflict,
-  ElementNotFound,
-  UnprocessableEntity,
-} from '../controllers/errors';
+import { Conflict } from '../controllers/errors';
 import TimeslotRepository from './TimeslotRepository';
-import { NoElementToDestroy, NoElementToUpdate } from './errors';
+import { NoElementToUpdate } from './errors';
+import '../utils/array_extensions';
 
 @boundClass
 export default class BookingRepository {

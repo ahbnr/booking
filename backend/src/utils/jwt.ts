@@ -1,14 +1,9 @@
-import jwt, {
-  GetPublicKeyOrSecret,
-  Secret,
-  SignOptions,
-  VerifyErrors,
-  VerifyOptions,
-} from 'jsonwebtoken';
+import jwt, { SignOptions, VerifyErrors, VerifyOptions } from 'jsonwebtoken';
+import { jwtSecret } from '../config/passport';
+import { DateTime } from 'luxon';
 
 export function asyncJwtVerify(
   token: string,
-  secretOrPublicKey: Secret | GetPublicKeyOrSecret,
   options?: VerifyOptions
   // eslint-disable-next-line @typescript-eslint/ban-types
 ): Promise<object> {
@@ -17,7 +12,7 @@ export function asyncJwtVerify(
     // eslint-disable-next-line @typescript-eslint/ban-types
     jwt.verify(
       token,
-      secretOrPublicKey,
+      jwtSecret,
       options,
       // eslint-disable-next-line @typescript-eslint/ban-types
       (err: VerifyErrors | null, decoded?: object) => {
@@ -33,22 +28,34 @@ export function asyncJwtVerify(
   );
 }
 
+export class TokenGenerationResult {
+  public readonly token: string;
+  public readonly expiresAt: DateTime;
+
+  constructor(token: string, expiresAt: DateTime) {
+    this.token = token;
+    this.expiresAt = expiresAt;
+  }
+}
+
 export function asyncJwtSign(
   // eslint-disable-next-line @typescript-eslint/ban-types
   payload: string | Buffer | object,
-  secretOrPrivateKey: Secret,
-  options: SignOptions
-): Promise<string> {
-  return new Promise<string>((resolve, reject) =>
+  options: SignOptions & { expiresIn: number /* seconds */ }
+): Promise<TokenGenerationResult> {
+  let expiresAt = DateTime.now();
+  expiresAt = expiresAt.plus({ seconds: options.expiresIn });
+
+  return new Promise<TokenGenerationResult>((resolve, reject) =>
     jwt.sign(
       payload,
-      secretOrPrivateKey,
+      jwtSecret,
       options,
       (err: Error | null, token?: string) => {
         if (err != null) {
           reject(err);
         } else if (token != null) {
-          resolve(token);
+          resolve(new TokenGenerationResult(token, expiresAt));
         } else {
           reject('Could not sign token');
         }

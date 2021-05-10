@@ -86,13 +86,19 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     const search = window.location.search;
     const signupToken = new URLSearchParams(search).get('signupToken');
     const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
-    if (signupToken != null) {
-      this.changeInteractionState('signingUp', { signupToken: signupToken });
-    } else if (bookingsLookupToken != null) {
-      this.changeInteractionState('lookingUpBookings', {
-        lookupToken: bookingsLookupToken,
-      });
-    }
+
+    (async () => {
+      // Try automatic login if we still have a refresh token
+      await this.client.tryAutoAuth();
+
+      if (signupToken != null) {
+        this.changeInteractionState('signingUp', { signupToken: signupToken });
+      } else if (bookingsLookupToken != null) {
+        this.changeInteractionState('lookingUpBookings', {
+          lookupToken: bookingsLookupToken,
+        });
+      }
+    })();
   }
 
   componentWillUnmount() {

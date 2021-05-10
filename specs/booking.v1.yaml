@@ -11,10 +11,50 @@ info:
 servers:
   - url: 'http://localhost:3000'
 paths:
-  /users/auth:
+  /auth/login:
     post:
-      summary: Authenticate
-      operationId: post-users-auth
+      summary: Authenticate and receive refresh token
+      operationId: post-auth-login
+      responses:
+        '200':
+          description: OK. A refresh token is returned as HttpOnly cookie
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=<JWT refresh token>; HttpOnly
+              description: refresh token. HttpOnly
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  '':
+                    type: string
+                required:
+                  - message
+      description: |-
+        Admin authentication point.
+
+        Returns JSON web refresh token as HttpOnly cookie which can be used to receive auth tokens from /auth/auth_token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequestData'
+            examples: {}
+        description: ''
+      tags:
+        - auth
+      parameters: []
+  /auth/auth_token:
+    post:
+      summary: Retrieve auth token using a refresh token
+      operationId: post-auth-auth-token
       responses:
         '200':
           description: OK
@@ -36,20 +76,16 @@ paths:
                 required:
                   - message
       description: |-
-        Admin authentication point
+        Retrieve an JWT authentication token.
+        It can be used to verify further requests.
 
-        Returns JSON web token which can be used to verify further requests
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthRequestData'
-            examples: {}
-        description: ''
+        However, a refresh token must be sent as HttpOnly cookie, see /auth/login
       tags:
-        - users
+        - auth
       parameters: []
-  /users/inviteForSignup:
+      security:
+        - admin auth refresh token: []
+  /auth/invite:
     post:
       summary: Invite new admin user
       operationId: post-users-inviteForSignup
@@ -80,8 +116,9 @@ paths:
       security:
         - admin authentication token: []
       tags:
+        - auth
         - users
-  /users/isSignupTokenOk:
+  /auth/is_signup_token_ok:
     post:
       summary: Check signup token validity
       operationId: post-users-isSignupTokenOk
@@ -101,8 +138,9 @@ paths:
               type: string
               description: JWT signup token to validate
       tags:
+        - auth
         - users
-  /users/signup:
+  /auth/signup:
     post:
       summary: Sign up new admin user
       operationId: post-users-signup
@@ -134,6 +172,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SignupRequestData'
       tags:
+        - auth
         - users
   /resources:
     get:
@@ -1086,11 +1125,16 @@ components:
       required:
         - name
   securitySchemes:
+    admin auth refresh token:
+      name: refreshToken
+      type: apiKey
+      in: cookie
+      description: long lived JSON web token which allows to retrieve short lived authentication tokens. Can be retrieved by the /auth/login route
     admin authentication token:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JSON web token. Can be retrieved by the /users/auth route
+      description: JSON web token which allows admin access to most resources. Can be retrieved by the /auth/auth_token route
     booking lookup token:
       name: token
       type: apiKey

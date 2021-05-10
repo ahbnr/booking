@@ -80,9 +80,7 @@ export class BookingsController {
       reqData.end
     );
 
-    const bookingsWithContext: Promise<
-      BookingWithContextGetInterface
-    >[] = bookings.map(
+    const bookingsWithContext: Promise<BookingWithContextGetInterface>[] = bookings.map(
       async (booking): Promise<BookingWithContextGetInterface> => {
         const resource = await booking.getResource();
 
@@ -141,9 +139,11 @@ export class BookingsController {
       email: email,
     };
 
-    return await asyncJwtSign(data, jwtSecret, {
+    const tokenResult = await asyncJwtSign(data, {
       expiresIn: secondsUntilExpiration,
     });
+
+    return tokenResult.token;
   }
 
   private static async sendBookingLookupMail(
@@ -181,7 +181,7 @@ export class BookingsController {
   private async listBookingsByLookupToken(
     lookupToken: string
   ): Promise<BookingDBInterface[]> {
-    const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
+    const verifiedToken = await asyncJwtVerify(lookupToken);
 
     const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
@@ -192,7 +192,7 @@ export class BookingsController {
     bookingId: number,
     lookupToken: string
   ): Promise<BookingDBInterface | null> {
-    const verifiedToken = await asyncJwtVerify(lookupToken, jwtSecret);
+    const verifiedToken = await asyncJwtVerify(lookupToken);
 
     const tokenData = checkType(verifiedToken, BookingLookupTokenData);
 
