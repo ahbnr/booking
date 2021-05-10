@@ -138,12 +138,6 @@ jobs:
         run: |
           yarn build
 
-      # Install cypress dependencies, cache them correctly. Dont run tests yet
-      - name: Cypress install
-        uses: cypress-io/github-action@v2
-        with:
-          runTests: false
-
       - name: Test Frontend
         working-directory: frontend
         run: |
