@@ -8,6 +8,8 @@ describe('Add and remove resources as an admin', () => {
       cy.getBySel('add-resource-button').click();
       cy.getBySel('add-resource-dialog-name-input').type(resourceName);
       cy.getBySel('add-resource-dialog-confirm-button').click();
+
+      cy.contains('[data-cy=resource-list-item]', resourceName)
     }
 
     function deleteResource(resourceName) {
@@ -18,6 +20,9 @@ describe('Add and remove resources as an admin', () => {
         });
 
       cy.getBySel('delete-confirm-button').click();
+
+      cy.contains('[data-cy=resource-list-item]', resourceName)
+          .should('not.exist')
     }
 
     addResource('ResourceA');

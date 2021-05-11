@@ -115,11 +115,13 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'strict',
       maxAge: maxAge,
+      secure: true,
     };
 
     const refreshTokenActivationOptions: CookieOptions = {
       sameSite: 'strict',
       maxAge: maxAge,
+      secure: true,
     };
 
     return new RefreshTokenCookieOptions(

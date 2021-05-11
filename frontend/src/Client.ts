@@ -28,9 +28,7 @@ import { DateTime } from 'luxon';
 //const address = REACT_APP_API_ADDRESS || window.location.hostname;
 //const port = REACT_APP_API_PORT || 3000;
 //const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
-//const baseUrl = `${protocol}://${address}:${port}`;
-
-const baseUrl = 'api';
+const baseUrl = `https://${window.location.hostname}:${window.location.port}/api`;
 
 class RequestError {
   public readonly response: Response;
@@ -129,18 +127,25 @@ export class Client {
       headers['Authorization'] = `Bearer ${this.jsonWebToken.token}`;
     }
 
+    const url = `${baseUrl}/${subUrl}`;
+    if (!url.startsWith('https')) {
+      throw new DisplayableError(
+        'We only allow communication with the backend when it is secured with the https protocol.'
+      );
+    }
+
     let response: Response;
     try {
       if (body != null) {
         headers['Content-Type'] = 'application/json';
 
-        response = await fetch(`${baseUrl}/${subUrl}`, {
+        response = await fetch(url, {
           method: method,
           headers: headers,
           body: JSON.stringify(body),
         });
       } else {
-        response = await fetch(`${baseUrl}/${subUrl}`, {
+        response = await fetch(url, {
           headers: headers,
           method: method,
         });

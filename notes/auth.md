@@ -28,7 +28,16 @@ Warning: Please note, that the author of the implementation is not an expert in 
     * the server remembers refresh tokens and only accepts those that are in the database (and not expired)
         * this allows to invalidate refresh tokens at any time from the server
             * It is debatable though, if this feature is really necessary for this application...
-    * TODO: Set Secure and Max-Age on cookie
+
+* an "activation token" is sent together with the refresh token as a cookie.
+    * the server remembers the activation token together with the refresh token
+    * it must also be sent together with the refresh token to get new auth tokens
+    * However, differently than the refresh token, the activation token is not a HttpOnly cookie so it can be deleted by javascript.
+        * This allows the frontend to invalidate the refresh credentials by deleting the activation token, even if the backend is offline / not reachable
+        * though it can be stolen by XSS, it is useless on its own without the refresh token
+    * The refresh token can also be deleted and invalidated by the server using a /auth/logout route
+    * the term "activation token" is just a silly invention. Maybe we should rename the two tokens to "refresh token A" and "refresh token B"
+        
     
 * the frontend automatically tries to obtain authentication tokens whenever they expire using a refresh token, if present.
   Only if the refresh token is not present or expired, the user needs to manually log in again
@@ -41,4 +50,3 @@ Read also:
 TODO:
 * I should watch this and add more guards against XSS and CSRF attacks: https://www.youtube.com/watch?v=M6N7gEZ-IUQ
 * Apply anti XSS measures: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html#xss-prevention-rules
-* logout measure that does not require the server to delete the HttpOnly refresh token cookie
