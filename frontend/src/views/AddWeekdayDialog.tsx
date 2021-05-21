@@ -149,12 +149,17 @@ export class UnstyledAddWeekdayDialog extends React.Component<
                   autoFocus
                   onChange={this.onSelectedWeekdayNameChanged}
                   label="Wochentag auswählen"
+                  data-cy={'weekday-select'}
                 >
                   <MenuItem value="">
                     <em>Nichts gewählt</em>
                   </MenuItem>
                   {missingWeekdayNames.map((weekdayName, index) => (
-                    <MenuItem key={index} value={weekdayName}>
+                    <MenuItem
+                      key={index}
+                      value={weekdayName}
+                      data-cy={`weekday-select-option-${weekdayName}`}
+                    >
                       {weekdayName}
                     </MenuItem>
                   ))}
@@ -167,6 +172,7 @@ export class UnstyledAddWeekdayDialog extends React.Component<
                 className={this.props.classes.submit}
                 disabled={!this.canBeSubmitted()}
                 onClick={this.onSubmit}
+                data-cy={'add-weekday-confirm-button'}
               >
                 Anlegen
               </Button>

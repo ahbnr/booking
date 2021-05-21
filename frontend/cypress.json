@@ -1,5 +1,6 @@
 {
   "ignoreTestFiles": "**/examples/*.spec.js",
   "screenshotOnRunFailure": false,
-  "video": false
+  "video": false,
+  "defaultCommandTimeout": 8000
 }

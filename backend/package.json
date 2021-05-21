@@ -5,7 +5,7 @@
   "main": "dist/index",
   "scripts": {
     "clear-memory": "rimraf memory",
-    "start": "ts-node-dev --respawn src/index.ts",
+    "start": "DEV_MODE=1 ts-node-dev --respawn src/index.ts",
     "clear-memory-start": "run-s clear-memory start",
     "start-prod": "node dist/index.js",
     "build": "tsc --build tsconfig.json",

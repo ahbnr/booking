@@ -14,7 +14,11 @@ import { ResourcesController } from '../controllers/resources.controller';
 import DatabaseController from '../models';
 import { AuthController } from '../controllers/auth.controller';
 
+const { DEV_MODE } = process.env;
+
 export class Routes {
+  private readonly db: DatabaseController;
+
   private readonly usersController: UsersController;
   private readonly weekdaysController: WeekdaysController;
   private readonly resourcesController: ResourcesController;
@@ -23,6 +27,8 @@ export class Routes {
   private readonly authController: AuthController;
 
   constructor(db: DatabaseController) {
+    this.db = db;
+
     this.usersController = new UsersController(db.repositories.userRepository);
     this.weekdaysController = new WeekdaysController(
       db.repositories.weekdayRepository,
@@ -55,6 +61,16 @@ export class Routes {
 
   public routes(app: Application): void {
     app.route('/').get((req, res) => res.json('Hello'));
+
+    if (DEV_MODE === '1') {
+      app.route('/reset').post(
+        Routes.asyncHandler(async (req, res) => {
+          await this.db.reset();
+
+          res.status(200).json({});
+        })
+      );
+    }
 
     app
       .route('/auth/login')

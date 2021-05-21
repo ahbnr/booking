@@ -14,7 +14,15 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import './commands';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+
+export const FRONTEND_URL = 'https://localhost:8000';
+export const BACKEND_URL = `${FRONTEND_URL}/api`;
+
+// Reset backend database before every test suite
+before(() => {
+  cy.task('db:reset');
+});

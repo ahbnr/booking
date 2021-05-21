@@ -6,7 +6,9 @@ import ResourceRepository from '../repositories/ResourceRepository';
 import WeekdayRepository from '../repositories/WeekdayRepository';
 import BookingRepository from '../repositories/BookingRepository';
 import RefreshTokensRepository from '../repositories/RefreshTokensRepository';
+import { boundClass } from 'autobind-decorator';
 
+@boundClass
 export default class DatabaseController {
   public readonly sequelize = new Sequelize(
     dbConfig.db,
@@ -45,5 +47,11 @@ export default class DatabaseController {
     this.repositories.refreshTokenRepository.init();
 
     await this.repositories.userRepository.initRootUser();
+  }
+
+  async reset() {
+    await this.sequelize.drop();
+
+    await this.init();
   }
 }

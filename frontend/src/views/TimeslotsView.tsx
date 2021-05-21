@@ -100,6 +100,7 @@ class UnstyledTimeslotsView extends React.Component<Properties, State> {
                   className={this.props.classes.fab}
                   variant="extended"
                   onClick={this.addTimeslot}
+                  data-cy={'add-timeslot-button'}
                 >
                   <AddIcon className={this.props.classes.extendedIcon} />
                   Timeslot

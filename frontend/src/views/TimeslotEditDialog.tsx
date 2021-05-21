@@ -189,6 +189,7 @@ class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
                   ampm={false}
                   value={this.state.startTime}
                   onChange={this.onChangeStartTime}
+                  data-cy={'start-time'}
                 />
                 <TimePicker
                   required

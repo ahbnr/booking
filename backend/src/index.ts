@@ -10,7 +10,7 @@ import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
 
-const { SSL_CRT_FILE, SSL_KEY_FILE } = process.env;
+const { SSL_CRT_FILE, SSL_KEY_FILE, DEV_MODE } = process.env;
 
 const port = process.env.PORT || 3000;
 
@@ -78,6 +78,12 @@ async function init() {
 
   server.listen(port, () => {
     console.log(`Example app listening at https://localhost:${port}`);
+
+    if (DEV_MODE === '1') {
+      console.warn(
+        '\nApplication runs in development mode! (Environment variable DEV_MODE is set to 1)\nNever use this mode in production.\n'
+      );
+    }
   });
 }
 

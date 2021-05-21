@@ -121,8 +121,12 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                     button
                     key={weekday.name}
                     onClick={() => this.viewTimeslots(weekday)}
+                    data-cy={'weekday-list-item'}
                   >
-                    <ListItemText> {weekday.name} </ListItemText>
+                    <ListItemText data-cy={`weekday-list-item-${weekday.name}`}>
+                      {' '}
+                      {weekday.name}{' '}
+                    </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
                         <DeleteConfirmer name={`der Wochentag ${weekday.name}`}>
@@ -130,6 +134,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                             edge="end"
                             aria-label="end"
                             onClick={() => this.deleteWeekday(weekday.id)}
+                            data-cy={'weekday-delete-button'}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -145,6 +150,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                   className={this.props.classes.fab}
                   variant="extended"
                   onClick={() => this.openAddWeekdayDialog(weekdays)}
+                  data-cy={'add-weekday-button'}
                 >
                   <AddIcon className={this.props.classes.extendedIcon} />
                   Wochentag

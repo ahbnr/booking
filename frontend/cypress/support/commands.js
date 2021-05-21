@@ -24,6 +24,8 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+import { FRONTEND_URL } from './index';
+
 Cypress.Commands.add('getBySel', (selector, ...args) => {
   return cy.get(`[data-cy=${selector}]`, ...args);
 });
@@ -37,7 +39,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('login', () => {
-  cy.visit('https://localhost:8000');
+  cy.visit(FRONTEND_URL);
 
   cy.getBySel('login-button').click();
 

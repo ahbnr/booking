@@ -50,3 +50,4 @@ Read also:
 TODO:
 * I should watch this and add more guards against XSS and CSRF attacks: https://www.youtube.com/watch?v=M6N7gEZ-IUQ
 * Apply anti XSS measures: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html#xss-prevention-rules
+* maybe we really don't need CSRF protection for this kind of application: https://github.com/pillarjs/understanding-csrf
