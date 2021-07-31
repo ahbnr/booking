@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 import PrintIcon from '@material-ui/icons/Print';
 import { Client } from '../Client';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   bookingCompare,
   BookingWithContextGetInterface,
@@ -152,6 +153,8 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
   }
 
   render() {
+    const { t } = this.props;
+
     const content = (
       <Suspense
         asyncAction={this.state.downloadedData}
@@ -225,7 +228,7 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
               align="center"
               className={this.props.classes.header}
             >
-              Tagesübersicht - {this.props.dateInterval.start.weekdayLong}
+              Tagesübersicht - {t(this.props.dateInterval.start.weekdayLong)}
             </Typography>
             {content}
           </div>
@@ -235,10 +238,12 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
   }
 }
 
-const DayOverviewView = withStyles(styles)(UnstyledDayOverviewView);
+const DayOverviewView = withTranslation()(
+  withStyles(styles)(UnstyledDayOverviewView)
+);
 export default DayOverviewView;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   isAuthenticated: boolean;
   changeInteractionState: changeInteractionStateT;

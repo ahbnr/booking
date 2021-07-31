@@ -38,16 +38,22 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       display: 'flex',
+      paddingLeft: '0',
+      paddingRight: '0',
     },
     appBarSpacer: theme.mixins.toolbar,
     content: {
       flexGrow: 1,
       height: '100vh',
       overflow: 'auto',
+      paddingLeft: '0',
+      paddingRight: '0',
     },
     container: {
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
+      paddingLeft: '0',
+      paddingRight: '0',
     },
     paper: {
       padding: theme.spacing(2),

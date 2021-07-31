@@ -1,5 +1,6 @@
 import React from 'react';
 import { boundClass } from 'autobind-decorator';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   Avatar,
   Button,
@@ -117,6 +118,8 @@ export class UnstyledAddWeekdayDialog extends React.Component<
   }
 
   render() {
+    const { t } = this.props;
+
     const missingWeekdayNames = UnstyledAddWeekdayDialog.getMissingWeekdayNames(
       this.props.existingWeekdays
     );
@@ -160,7 +163,7 @@ export class UnstyledAddWeekdayDialog extends React.Component<
                       value={weekdayName}
                       data-cy={`weekday-select-option-${weekdayName}`}
                     >
-                      {weekdayName}
+                      {t(weekdayName)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -185,10 +188,12 @@ export class UnstyledAddWeekdayDialog extends React.Component<
   }
 }
 
-const AddWeekdayDialog = withStyles(styles)(UnstyledAddWeekdayDialog);
+const AddWeekdayDialog = withTranslation()(
+  withStyles(styles)(UnstyledAddWeekdayDialog)
+);
 export default AddWeekdayDialog;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   changeInteractionState: changeInteractionStateT;
   resource: ResourceGetInterface;

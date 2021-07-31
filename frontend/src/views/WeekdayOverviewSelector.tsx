@@ -6,6 +6,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { WeekdayName } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   createStyles,
   ListItem,
@@ -79,6 +80,8 @@ class UnstyledWeekdayOverviewSelector extends React.Component<
   }
 
   render() {
+    const { t } = this.props;
+
     return (
       <Suspense
         asyncAction={this.state.relevantWeekdays}
@@ -96,7 +99,7 @@ class UnstyledWeekdayOverviewSelector extends React.Component<
                   key={index}
                   onClick={() => this.overviewWeekday(weekdayName)}
                 >
-                  <ListItemText> {weekdayName} </ListItemText>
+                  <ListItemText> {t(weekdayName)} </ListItemText>
                 </ListItem>
               ))}
             </ListEx>
@@ -108,13 +111,13 @@ class UnstyledWeekdayOverviewSelector extends React.Component<
   }
 }
 
-const WeekdayOverviewSelector = withStyles(styles)(
-  UnstyledWeekdayOverviewSelector
+const WeekdayOverviewSelector = withTranslation()(
+  withStyles(styles)(UnstyledWeekdayOverviewSelector)
 );
 
 export default WeekdayOverviewSelector;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   changeInteractionState: changeInteractionStateT;
 }

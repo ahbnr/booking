@@ -6,6 +6,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { ResourceGetInterface, WeekdayGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   createStyles,
   Fab,
@@ -103,6 +104,8 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
   }
 
   render() {
+    const { t } = this.props;
+
     return (
       <Suspense
         asyncAction={this.state.weekdays}
@@ -125,7 +128,7 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                   >
                     <ListItemText data-cy={`weekday-list-item-${weekday.name}`}>
                       {' '}
-                      {weekday.name}{' '}
+                      {t(weekday.name)}{' '}
                     </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
@@ -164,10 +167,12 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
   }
 }
 
-const WeekdaysView = withStyles(styles)(UnstyledWeekdaysView);
+const WeekdaysView = withTranslation()(
+  withStyles(styles)(UnstyledWeekdaysView)
+);
 export default WeekdaysView;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   resource: ResourceGetInterface;
   isAuthenticated: boolean;
   client: Client;

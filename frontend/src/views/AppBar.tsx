@@ -31,6 +31,7 @@ import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { changeInteractionStateT } from '../App';
 import { Client } from '../Client';
+import Config from '../booking.config.json';
 
 const drawerWidth = 240;
 
@@ -187,7 +188,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                   this.props.changeInteractionState('viewingMainPage', {})
                 }
               >
-                Timeslot Booking
+                {Config.appBarTitle}
               </Link>
             </Typography>
             {!this.props.isAuthenticated && (
