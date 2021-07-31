@@ -14,6 +14,8 @@ import {
 import { changeInteractionStateT } from '../App';
 import Config from '../booking.config.json';
 
+import { withTranslation, WithTranslation } from 'react-i18next';
+
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
@@ -52,6 +54,8 @@ class UnstyledMainView extends React.Component<Properties, State> {
   }
 
   render() {
+    const { t } = this.props;
+
     return (
       <Grid
         container
@@ -61,11 +65,13 @@ class UnstyledMainView extends React.Component<Properties, State> {
         justify="center"
         style={{ minHeight: '70vh' }}
       >
-        <Typography variant="h5" align="center">
-          Willkommen
-        </Typography>
+        <React.Suspense fallback="Loading...">
+          <Typography variant="h5" align="center">
+            {t('welcome')}
+          </Typography>
+        </React.Suspense>
         <Typography variant="subtitle1" align="center">
-          Im Buchungssystem der {Config.organization}
+          {t('welcome-subtitle')} {Config.organization}
         </Typography>
         <Button
           variant="contained"
@@ -74,17 +80,17 @@ class UnstyledMainView extends React.Component<Properties, State> {
           onClick={this.openResources}
           data-cy={'start-button'}
         >
-          Start
+          {t('start-button')}
         </Button>
       </Grid>
     );
   }
 }
 
-const MainView = withStyles(styles)(UnstyledMainView);
+const MainView = withTranslation()(withStyles(styles)(UnstyledMainView));
 export default MainView;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   changeInteractionState: changeInteractionStateT;
 }
 

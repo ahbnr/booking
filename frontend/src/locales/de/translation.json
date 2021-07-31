@@ -1,0 +1,9 @@
+{
+  "welcome": "Willkommen",
+  "welcome-subtitle": "Im Buchungssystem der",
+  "start-button": "Start",
+  "resources-view-not-empty-title": "Welche Ressource möchten Sie buchen?",
+  "resources-view-empty-title": "Es wurden keine Resourcen erstellt.",
+  "resources-view-empty-message": "Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen.",
+  "resources-view-delete-confirmer-name-prefix": "die Ressource"
+}

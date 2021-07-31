@@ -3,6 +3,7 @@ import '../App.css';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   Button,
   createStyles,
@@ -155,6 +156,8 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 
   render() {
+    const { t } = this.props;
+
     const content = (
       <Suspense
         asyncAction={this.state.resources}
@@ -162,9 +165,9 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
         content={(resources) => {
           return (
             <ListEx
-              notEmptyTitle="Für welche Ressource möchten Sie buchen?"
-              emptyTitle="Es wurden keine Resourcen erstellt."
-              emptyMessage="Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen."
+              notEmptyTitle={t('resources-view-not-empty-title')}
+              emptyTitle={t('resources-view-empty-title')}
+              emptyMessage={t('resources-view-empty-message')}
               data-cy={'resource-list'}
             >
               {resources.map((resource) => (
@@ -177,7 +180,11 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
                   <ListItemText>{resource.name}</ListItemText>
                   {this.props.isAuthenticated && (
                     <ListItemSecondaryAction>
-                      <DeleteConfirmer name={`die Ressource ${resource.name}`}>
+                      <DeleteConfirmer
+                        name={`${t(
+                          'resources-view-delete-confirmer-name-prefix'
+                        )} ${resource.name}`}
+                      >
                         <IconButton
                           onClick={() => this.deleteResource(resource.name)}
                           edge="end"
@@ -260,10 +267,13 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
   }
 }
 
-const ResourcesView = withStyles(styles)(UnstyledResourcesView);
+const ResourcesView = withTranslation()(
+  withStyles(styles)(UnstyledResourcesView)
+);
+
 export default ResourcesView;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   isAuthenticated: boolean;
   client: Client;
   changeInteractionState: changeInteractionStateT;
