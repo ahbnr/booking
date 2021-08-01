@@ -6,6 +6,7 @@ import { DataIdAlreadyExists, NoElementToDestroy } from './errors';
 import UserDBInterface from './model_interfaces/UserDBInterface';
 import password from 'secure-random-password';
 const { DEV_MODE } = process.env;
+import fs from 'fs';
 
 @boundClass
 export default class UserRepository {
@@ -23,8 +24,14 @@ export default class UserRepository {
         password: generatedPassword,
       });
 
-      console.log(
-        `\n\nCreated "root" user with password ${generatedPassword}. Remember this password and erase this log!\n\n`
+      fs.writeFile(
+        'root-password.txt',
+        `Created "root" user with password ${generatedPassword}. Remember this password and erase this log!\n\n`,
+        (err) => {
+          if (err != null) {
+            console.log(err.message);
+          }
+        }
       );
     }
   }
