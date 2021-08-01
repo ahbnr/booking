@@ -15,14 +15,9 @@ module.exports = function (app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'https://localhost:3000',
+      target: 'http://localhost:3000',
       changeOrigin: true,
       pathRewrite: { '^/api': '' }, // remove /api url prefix when redirecting to backend
-      ssl: {
-        key: SSL_KEY_FILE,
-        cert: SSL_CRT_FILE,
-      },
-      secure: false,
     })
   );
 };

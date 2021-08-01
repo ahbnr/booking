@@ -10,6 +10,8 @@ import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
 import { init as i18nextInit, i18nextInstance } from './utils/i18n';
+import { HttpBase } from 'http';
+import * as http from 'http';
 
 const { SSL_CRT_FILE, SSL_KEY_FILE, DEV_MODE } = process.env;
 
@@ -66,20 +68,10 @@ async function init() {
     }
   );
 
-  const server = https.createServer(
-    {
-      key: fs.readFileSync(
-        SSL_KEY_FILE || '../dev-certificate/generated/server.key'
-      ),
-      cert: fs.readFileSync(
-        SSL_CRT_FILE || '../dev-certificate/generated/server.crt'
-      ),
-    },
-    app
-  );
+  const server = http.createServer(app);
 
   server.listen(port, () => {
-    console.log(`Example app listening at https://localhost:${port}`);
+    console.log(`Example app listening at http://localhost:${port}`);
 
     if (DEV_MODE === '1') {
       console.warn(

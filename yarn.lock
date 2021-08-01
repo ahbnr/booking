@@ -4422,6 +4422,7 @@ __metadata:
     eslint-plugin-prettier: ^3.1.4
     express: ^4.17.1
     fp-ts: ^2.8.3
+    http: ^0.0.1-security
     humanize-duration: ^3.27.0
     i18next: ^20.3.5
     io-ts: ^2.2.11
@@ -9846,6 +9847,13 @@ fsevents@~2.3.1:
     jsprim: ^1.2.2
     sshpk: ^1.7.0
   checksum: d28227eed37cb0dae0e76c46b2a5e611c678808433e5642238f17dba7f2c9c8f8d1646122d57ec1a110ecc7e8b9f5b7aa0462f1e2a5fa3b41f2fca5a69af7edf
+  languageName: node
+  linkType: hard
+
+"http@npm:^0.0.1-security":
+  version: 0.0.1-security
+  resolution: "http@npm:0.0.1-security"
+  checksum: 247d987fbaa60d0d74203a7be7bc853eb4d77cb8f5b41f4346bb6e2cf45b80bd335ce1245f78405fc91f9d2158a0c57c1a30190aedb4a2af8ff7e76e5c999254
   languageName: node
   linkType: hard
 
