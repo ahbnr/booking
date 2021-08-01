@@ -135,6 +135,19 @@
     RequestHeader set X-Forwarded-Port "443"
     ```
     
+    If you are using `mod_security` and/or the OWASP rules, then you might want to deactivate some of the rules which
+    cause false positives and result in `FORBIDDEN` responses:
+    ```
+    # Needed to disable some security rules to make booking work through the reverse proxy
+    <LocationMatch "/booking/api">
+            SecRuleRemoveById 980130
+            SecRuleRemoveById 949110
+    </LocationMatch>
+    ```
+    In general, if the reverse proxy fails for some requests, this can be a sign of `mod_security` interfering.
+    Check the apache error log in this case.
+    (TODO: We need to check why booking triggers these rules, and whether there is a better solution than just removing these security rules.)
+    
     Restart your apache service:
     ```sh
     systemctl restart apache2

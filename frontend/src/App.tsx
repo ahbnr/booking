@@ -21,7 +21,6 @@ import InviteAdminDialog from './views/InviteAdminDialog';
 import SignupDialog from './views/SignupDialog';
 import BookingsLookupView from './views/BookingsLookupView';
 import DayOverviewView from './views/DayOverviewView';
-import { Interval } from 'luxon';
 import { ADTMember, matchI } from 'ts-adt';
 import TimeslotEditDialog from './views/TimeslotEditDialog';
 import ErrorBoundary from './views/ErrorBoundary';
@@ -32,7 +31,6 @@ import AddWeekdayDialog from './views/AddWeekdayDialog';
 import MainView from './views/MainView';
 import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
-import { getWeekdayDate } from 'common/dist';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -193,17 +191,13 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       lookingUpBookings: ({ lookupToken }) => (
         <BookingsLookupView client={this.client} lookupToken={lookupToken} />
       ),
-      overviewingDay: ({ weekdayName }) => {
-        const weekdayDate = getWeekdayDate(weekdayName);
-        const start = weekdayDate.set({ hour: 0, minute: 0 });
-        const end = weekdayDate.set({ hour: 23, minute: 59 });
-
+      overviewingDay: ({ dayInterval }) => {
         return (
           <DayOverviewView
             isAuthenticated={this.state.isAuthenticated}
             client={this.client}
             changeInteractionState={this.changeInteractionState}
-            dateInterval={Interval.fromDateTimes(start, end)}
+            dateInterval={dayInterval}
           />
         );
       },

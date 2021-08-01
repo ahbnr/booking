@@ -1,10 +1,9 @@
 import React from 'react';
 import '../App.css';
-import { nameSorter } from '../models/WeekdayUtils';
 import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { WeekdayName } from 'common/dist';
+import { WeekdayName, getWeekdayIntervals } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
@@ -21,6 +20,7 @@ import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
 import LoadingBackdrop from './LoadingBackdrop';
+import { Interval } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -59,24 +59,33 @@ class UnstyledWeekdayOverviewSelector extends React.Component<
   }
 
   refreshRelevantWeekdays() {
-    const weekdaysPromise = this.fetchRelevantWeekdays();
+    const weekdaysPromise = this.fetchRelevantWeekdayIntervals();
 
     this.setState({
       relevantWeekdays: weekdaysPromise,
     });
   }
 
-  async fetchRelevantWeekdays(): Promise<WeekdayName[]> {
+  async fetchRelevantWeekdayIntervals(): Promise<[WeekdayName, Interval][]> {
     const weekdays = await this.props.client.getWeekdays();
 
     return _.chain(weekdays)
       .map((weekday) => weekday.name)
       .uniq()
+      .flatMap((weekdayName) =>
+        getWeekdayIntervals(weekdayName).map(
+          (interval) => [weekdayName, interval] as [WeekdayName, Interval]
+        )
+      )
+      .sortBy(([_, interval]) => interval)
       .value();
   }
 
-  overviewWeekday(weekdayName: WeekdayName) {
-    this.props.changeInteractionState('overviewingDay', { weekdayName });
+  overviewWeekday(weekdayName: WeekdayName, dayInterval: Interval) {
+    this.props.changeInteractionState('overviewingDay', {
+      weekdayName,
+      dayInterval,
+    });
   }
 
   render() {
@@ -93,13 +102,18 @@ class UnstyledWeekdayOverviewSelector extends React.Component<
               emptyTitle="Keine Tage angelegt"
               emptyMessage="Im System wurden keine Wochentage angelegt."
             >
-              {relevantWeekdays.sort(nameSorter).map((weekdayName, index) => (
+              {relevantWeekdays.map(([weekdayName, dayInterval], index) => (
                 <ListItem
                   button
                   key={index}
-                  onClick={() => this.overviewWeekday(weekdayName)}
+                  onClick={() => this.overviewWeekday(weekdayName, dayInterval)}
                 >
-                  <ListItemText> {t(weekdayName)} </ListItemText>
+                  <ListItemText>
+                    {t(weekdayName)}{' '}
+                    {dayInterval.start
+                      .setLocale('de-DE') // TODO: Make this dynamic
+                      .toLocaleString()}
+                  </ListItemText>
                 </ListItem>
               ))}
             </ListEx>
@@ -123,6 +137,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 }
 
 interface State {
-  relevantWeekdays?: Promise<WeekdayName[]>;
+  relevantWeekdays?: Promise<[WeekdayName, Interval][]>;
   backdropOpen: boolean;
 }

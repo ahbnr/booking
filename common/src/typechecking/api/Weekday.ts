@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { DateTime, Duration } from 'luxon';
+import { DateTime, Duration, Interval } from 'luxon';
 
 export const WeekdayName = t.union([
   t.literal('monday'),
@@ -69,4 +69,49 @@ export function getWeekdayDate(weekdayName: WeekdayName): DateTime {
   }
 
   return result.startOf('day');
+}
+
+export function getWeekdayIntervals(weekdayName: WeekdayName): Interval[] {
+  const targetWeekdayInt = weekdayToISOInt(weekdayName);
+  const now = DateTime.local();
+  const today = now.weekday;
+
+  function toDayInterval(dt: DateTime): Interval {
+    const dtDayStart = dt.startOf('day');
+    const start = dtDayStart.set({ hour: 0, minute: 0 });
+    const end = dtDayStart.set({ hour: 23, minute: 59 });
+
+    return Interval.fromDateTimes(start, end);
+  }
+
+  let result: Interval[];
+  if (today < targetWeekdayInt) {
+    // We did not yet pass the target weekday in the current week...
+    // hence, we can just use the target day from the current week
+    const weekdayDate = now.set({ weekday: targetWeekdayInt });
+
+    result = [toDayInterval(weekdayDate)];
+  } else if (today === targetWeekdayInt) {
+    // if the target day is the current day, the user either wants to see today or the same day of next week, so we add
+    // both intervals
+    const weekdayDateThisWeek = now.set({ weekday: targetWeekdayInt });
+
+    const weekdayDateNextWeek = now
+      .set({ weekday: targetWeekdayInt })
+      .plus(Duration.fromObject({ weeks: 1 }));
+
+    result = [
+      toDayInterval(weekdayDateThisWeek),
+      toDayInterval(weekdayDateNextWeek),
+    ];
+  } else {
+    // otherwise we need to get the target day from the next week
+    const weekdayDate = now
+      .plus(Duration.fromObject({ weeks: 1 }))
+      .set({ weekday: targetWeekdayInt });
+
+    result = [toDayInterval(weekdayDate)];
+  }
+
+  return result;
 }

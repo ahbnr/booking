@@ -4,6 +4,7 @@ import {
   WeekdayGetInterface,
   WeekdayName,
 } from 'common/dist';
+import { Interval } from 'luxon';
 
 import { ADT } from 'ts-adt';
 
@@ -39,6 +40,7 @@ export interface LookingUpBookings {
 
 export interface OverviewingDay {
   weekdayName: WeekdayName;
+  dayInterval: Interval;
 }
 
 export interface EditingTimeslot {
