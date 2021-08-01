@@ -1,18 +1,22 @@
 import { User } from '../models/user.model';
 import { boundClass } from 'autobind-decorator';
 import { EMailString, UserPostInterface } from 'common/dist';
-import { DestroyOptions, UniqueConstraintError } from 'sequelize';
+import { UniqueConstraintError } from 'sequelize';
 import { DataIdAlreadyExists, NoElementToDestroy } from './errors';
 import UserDBInterface from './model_interfaces/UserDBInterface';
-import { UserGetInterface } from 'common';
-import { Resource } from '../models/resource.model';
+import password from 'secure-random-password';
+const { DEV_MODE } = process.env;
 
 @boundClass
 export default class UserRepository {
   public async initRootUser() {
     if ((await this.findUserByName('root')) == null) {
-      //const generatedPassword = password.randomPassword();
-      const generatedPassword = 'root';
+      let generatedPassword;
+      if (DEV_MODE === '1') {
+        generatedPassword = 'root';
+      } else {
+        generatedPassword = password.randomPassword();
+      }
 
       await User.create({
         name: 'root',

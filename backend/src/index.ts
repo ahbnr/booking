@@ -1,6 +1,4 @@
 import express from 'express';
-import * as https from 'https';
-import * as fs from 'fs';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { Routes } from './config/routes';
