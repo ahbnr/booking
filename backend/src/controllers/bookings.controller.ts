@@ -20,6 +20,7 @@ import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterf
 import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
 import humanizeDuration from 'humanize-duration';
+import BackendConfig from '../booking-backend.config';
 
 @boundClass
 export class BookingsController {
@@ -118,10 +119,14 @@ export class BookingsController {
       bookingPostData
     );
 
-    await BookingsController.sendBookingLookupMail(
-      bookingPostData.lookupUrl,
-      booking
-    );
+    if (BackendConfig.sendConfirmationMail) {
+      await BookingsController.sendBookingLookupMail(
+        bookingPostData.lookupUrl,
+        booking
+      );
+    } else {
+      await booking.markAsVerified();
+    }
 
     res.status(201).json(booking.toGetInterface());
   }

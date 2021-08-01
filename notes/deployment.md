@@ -48,6 +48,11 @@
   PUBLIC_URL=https://mydomain.com/booking
   ```
 
+  Set additional configuration options in
+  * `frontend/src/booking-frontend.config.ts`
+  * `backend/src/booking-backend.config.ts`
+  * `common/src/booking-common.config.ts`
+
 7. Install Dependencies & Build
   ```sh
   cd booking

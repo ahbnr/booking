@@ -52,3 +52,6 @@ export {
 } from './typechecking/noRefinementChecks';
 
 export { throwExpr } from './throwExpr';
+
+import CommonConfig from './booking-common.config';
+export { CommonConfig };

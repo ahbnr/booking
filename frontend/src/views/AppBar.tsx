@@ -31,7 +31,7 @@ import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { changeInteractionStateT } from '../App';
 import { Client } from '../Client';
-import Config from '../booking.config.json';
+import FrontendConfig from '../booking-frontend.config';
 
 const drawerWidth = 240;
 
@@ -188,7 +188,7 @@ class UnstyledAppBar extends React.Component<Properties, State> {
                   this.props.changeInteractionState('viewingMainPage', {})
                 }
               >
-                {Config.appBarTitle}
+                {FrontendConfig.appBarTitle}
               </Link>
             </Typography>
             {!this.props.isAuthenticated && (

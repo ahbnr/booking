@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import Config from '../booking_backend.config.json';
+import BackendConfig from '../booking-backend.config';
 
 export async function sendMail(
   receiverMail: string,
@@ -15,7 +15,7 @@ export async function sendMail(
   const testAccount = await nodemailer.createTestAccount();
 
   let transporter;
-  if (Config.useEtheral) {
+  if (BackendConfig.useEtheral) {
     // FIXME: this object is reusable, we should cache it somewhere
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',

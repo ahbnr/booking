@@ -12,7 +12,7 @@ import {
   WithStyles,
 } from '@material-ui/core';
 import { changeInteractionStateT } from '../App';
-import Config from '../booking.config.json';
+import FrontendConfig from '../booking-frontend.config';
 
 import { withTranslation, WithTranslation } from 'react-i18next';
 
@@ -71,7 +71,7 @@ class UnstyledMainView extends React.Component<Properties, State> {
           </Typography>
         </React.Suspense>
         <Typography variant="subtitle1" align="center">
-          {t('welcome-subtitle')} {Config.organization}
+          {t('welcome-subtitle')} {FrontendConfig.organization}
         </Typography>
         <Button
           variant="contained"

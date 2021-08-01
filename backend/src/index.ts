@@ -9,11 +9,10 @@ import { ControllerError } from './controllers/errors';
 import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
-import { init as i18nextInit, i18nextInstance } from './utils/i18n';
-import { HttpBase } from 'http';
+import { init as i18nextInit } from './utils/i18n';
 import * as http from 'http';
 
-const { SSL_CRT_FILE, SSL_KEY_FILE, DEV_MODE } = process.env;
+const { DEV_MODE } = process.env;
 
 const port = process.env.PORT || 3000;
 

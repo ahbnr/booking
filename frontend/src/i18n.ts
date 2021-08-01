@@ -6,7 +6,7 @@ import { initReactI18next } from 'react-i18next';
 import en_translations from './locales/en/translation.json';
 import de_translations from './locales/de/translation.json';
 
-import Config from './booking.config.json';
+import FrontendConfig from './booking-frontend.config';
 
 const { REACT_APP_DEV_MODE } = process.env;
 
@@ -26,7 +26,7 @@ i18n
     // https://www.i18next.com/overview/configuration-options
     resources,
     initImmediate: true, // make this a blocking call, i.e. load translations synchronously. Should be fine for development and even for production in such a small app
-    lng: Config.language || 'de',
+    lng: FrontendConfig.language || 'de',
     debug: REACT_APP_DEV_MODE === '1',
 
     keySeparator: false, // we do not use keys in form messages.welcome

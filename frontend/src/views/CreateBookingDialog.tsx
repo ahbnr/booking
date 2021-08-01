@@ -18,6 +18,7 @@ import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
 import getBaseUrl from '../utils/getBaseUrl';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
+import FrontendConfig from '../booking-frontend.config';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,7 +50,7 @@ class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
       firstNameError: undefined,
       lastName: '',
       lastNameError: undefined,
-      email: '',
+      email: FrontendConfig.fixedBookingMailTarget || '',
       emailError: undefined,
       backdropOpen: false,
     };
