@@ -23,12 +23,7 @@ import {
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
 
-//const { REACT_APP_API_ADDRESS, REACT_APP_API_PORT } = process.env;
-
-//const address = REACT_APP_API_ADDRESS || window.location.hostname;
-//const port = REACT_APP_API_PORT || 3000;
-//const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
-const baseUrl = `https://${window.location.hostname}:${window.location.port}/api`;
+const baseUrl = `${process.env.PUBLIC_URL}/api`;
 
 class RequestError {
   public readonly response: Response;
@@ -128,11 +123,6 @@ export class Client {
     }
 
     const url = `${baseUrl}/${subUrl}`;
-    if (!url.startsWith('https')) {
-      throw new DisplayableError(
-        'We only allow communication with the backend when it is secured with the https protocol.'
-      );
-    }
 
     let response: Response;
     try {
