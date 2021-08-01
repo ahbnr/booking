@@ -1,5 +1,5 @@
 {
-  "name": "booking_frontend",
+  "name": "frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -42,6 +42,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "start": "PORT=8000 HTTPS=true SSL_CRT_FILE=../dev-certificate/generated/server.crt SSL_KEY_FILE=../dev-certificate/generated/server.key REACT_APP_FORCE_LANGUAGE=de REACT_APP_DEV_MODE=1 react-scripts start",
     "start-no-browser": "BROWSER=none run-s start",
+    "start-prod": "node static-server/static-server.js",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "test-start-backend": "yarn workspace backend clear-memory-start",
@@ -67,6 +68,7 @@
     ]
   },
   "devDependencies": {
+    "@types/express": "^4.17.13",
     "@types/i18next": "^13.0.0",
     "@types/lodash": "^4.14.159",
     "@types/luxon": "^1.25.0",
@@ -81,6 +83,7 @@
     "eslint-plugin-cypress": "^2.11.3",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.3",
+    "express": "^4.17.1",
     "http-proxy-middleware": "^2.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.2",

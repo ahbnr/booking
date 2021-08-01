@@ -161,7 +161,7 @@ export class BookingsController {
 
     await sendMail(
       booking.data.email,
-      'Ihre Buchung',
+      `Ihre Buchung - ${booking.toGetInterface().name}`,
       '', // TODO text representation
       `
         <p>
