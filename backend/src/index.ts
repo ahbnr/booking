@@ -9,14 +9,16 @@ import { ControllerError } from './controllers/errors';
 import { DataValidationError, hasProperty } from 'common/dist';
 import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
+import { init as i18nextInit, i18nextInstance } from './utils/i18n';
 
 const { SSL_CRT_FILE, SSL_KEY_FILE, DEV_MODE } = process.env;
 
 const port = process.env.PORT || 3000;
 
 async function init() {
-  const db = new DatabaseController();
+  await i18nextInit();
 
+  const db = new DatabaseController();
   await db.init();
 
   const app = express();

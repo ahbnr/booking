@@ -3,7 +3,7 @@ import { VerificationTimeout } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
 import { sendMail } from '../utils/email';
-import { jwtSecret } from '../config/passport';
+import { i18nextInstance } from '../utils/i18n';
 import { TimeslotsController } from './timeslots.controller';
 import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
 import {
@@ -19,6 +19,7 @@ import BookingRepository from '../repositories/BookingRepository';
 import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterface';
 import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
+import humanizeDuration from 'humanize-duration';
 
 @boundClass
 export class BookingsController {
@@ -164,12 +165,31 @@ export class BookingsController {
       '', // TODO text representation
       `
         <p>
-          Sie haben die Ressource "${resourceName}" am ${weekday.data.name} von ${booking.startDate} bis ${booking.endDate} gebucht.<br />
+          Sie haben die Ressource
+          <p>
+            <i style="margin-left: 2em">
+              "${resourceName}"
+              am
+              ${i18nextInstance.t(weekday.data.name)}
+              von
+              ${booking.startDate.toLocaleTimeString('de-DE')}
+              bis
+              ${booking.endDate.toLocaleTimeString('de-DE')}
+            </i>
+          </p>
+          gebucht.<br />
+          
           Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
         </p>
         <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
         <p>
-          IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH ${VerificationTimeout} WENN SIE NICHT BESTÄTIGT WIRD.
+          <b style="font-size: 1.5em;">
+            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
+            ${humanizeDuration(VerificationTimeout.toMillis(), {
+              language: 'de',
+            }).toUpperCase()}
+            WENN SIE NICHT BESTÄTIGT WIRD.
+          </b>
         </p>
         <p>
           Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen.
