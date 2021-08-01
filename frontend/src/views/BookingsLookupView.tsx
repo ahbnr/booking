@@ -3,6 +3,7 @@ import '../App.css';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   createStyles,
   IconButton,
@@ -36,6 +37,10 @@ const styles = (theme: Theme) =>
     },
     extendedIcon: {
       marginRight: theme.spacing(1),
+    },
+    mainText: {
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
     },
   });
 
@@ -100,7 +105,19 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
     this.refreshData();
   }
 
+  private stringifyTimeslot(timeslot: TimeslotGetInterface) {
+    function zeroPad(n: number): string {
+      return String(n).padStart(2, '0');
+    }
+
+    return `${zeroPad(timeslot.startHours)}:${zeroPad(
+      timeslot.startMinutes
+    )} - ${zeroPad(timeslot.endHours)}:${zeroPad(timeslot.endMinutes)}`;
+  }
+
   render() {
+    const { t } = this.props;
+
     return (
       <>
         <Suspense
@@ -199,12 +216,23 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
 
             return (
               <>
+                <Typography variant="h4">Ihre Buchungen</Typography>
+                <Typography
+                  variant="body1"
+                  className={this.props.classes.mainText}
+                >
+                  Sie können eine Buchung löschen, indem Sie auf das
+                  &quot;Eimer&quot;-Symbol an der rechten Seite einer Buchung
+                  klicken.
+                </Typography>
                 {renderList.map((weekdayEntry) => {
                   const [weekday, timeslotsAndBookings] = weekdayEntry;
 
                   return (
                     <>
-                      <Typography variant="h5">{weekday.name}</Typography>
+                      <Typography variant="h5">
+                        {weekday.resourceName} - {t(weekday.name)}
+                      </Typography>
                       <List>
                         {timeslotsAndBookings.map((timeslotEntry) => {
                           const [timeslot, bookings] = timeslotEntry;
@@ -212,8 +240,7 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
                           return bookings.map((booking) => (
                             <ListItem key={booking.id}>
                               <ListItemText>
-                                {timeslot.startHours}:{timeslot.startMinutes} -{' '}
-                                {timeslot.endHours}:{timeslot.endMinutes}
+                                {this.stringifyTimeslot(timeslot)}
                               </ListItemText>
                               <ListItemSecondaryAction>
                                 <IconButton
@@ -241,10 +268,12 @@ class UnstyledBookingsLookupView extends React.Component<Properties, State> {
   }
 }
 
-const BookingsLookupView = withStyles(styles)(UnstyledBookingsLookupView);
+const BookingsLookupView = withTranslation()(
+  withStyles(styles)(UnstyledBookingsLookupView)
+);
 export default BookingsLookupView;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   lookupToken: string;
 }
