@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { Hours } from '../Hours';
 import { Minutes } from '../Minutes';
 import { DateTime, Duration } from 'luxon';
-import { getWeekdayDate, WeekdayName } from './Weekday';
+import { getNextWeekdayDate, WeekdayName } from './Weekday';
 
 export const TimeslotData = t.type({
   startHours: Hours,
@@ -43,7 +43,7 @@ function getCurrentTimeslotWeekdayDate(
   timeslot: TimeslotData,
   weekdayName: WeekdayName
 ): DateTime {
-  const weekdayDate = getWeekdayDate(weekdayName);
+  const weekdayDate = getNextWeekdayDate(weekdayName);
   const now = DateTime.local();
 
   let result = weekdayDate;

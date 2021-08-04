@@ -17,7 +17,7 @@ export {
   WeekdayData,
   WeekdayGetInterface,
   WeekdayPostInterface,
-  getWeekdayDate,
+  getNextWeekdayDate,
   getWeekdayIntervals,
 } from './typechecking/api/Weekday';
 export {

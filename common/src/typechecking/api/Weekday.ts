@@ -51,7 +51,7 @@ export function weekdayToISOInt(weekday: WeekdayName): number {
   }
 }
 
-export function getWeekdayDate(weekdayName: WeekdayName): DateTime {
+export function getNextWeekdayDate(weekdayName: WeekdayName): DateTime {
   const targetWeekdayInt = weekdayToISOInt(weekdayName);
   const now = DateTime.local();
   const today = now.weekday;

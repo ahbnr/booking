@@ -28,6 +28,7 @@ import ListEx from './ListEx';
 import { UnstyledAddWeekdayDialog } from './AddWeekdayDialog';
 import LoadingBackdrop from './LoadingBackdrop';
 import DeleteConfirmer from './DeleteConfirmer';
+import { getNextWeekdayDate } from 'common/dist/typechecking/api/Weekday';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -113,9 +114,17 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
         content={(weekdays) => (
           <>
             <ListEx
-              notEmptyTitle="An welchem Wochentag möchten Sie buchen?"
+              notEmptyTitle={
+                this.props.client.isAuthenticated()
+                  ? 'Wählen Sie den Wochentag aus welchen Sie bearbeiten möchten:'
+                  : 'An welchem Wochentag möchten Sie buchen?'
+              }
               emptyTitle="Keine Wochentage angelegt"
-              emptyMessage="Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage."
+              emptyMessage={
+                this.props.client.isAuthenticated()
+                  ? 'Es wurden noch keine Wochentage angelegt.'
+                  : 'Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage.'
+              }
             >
               {weekdays
                 .sort((left, right) => nameSorter(left.name, right.name))
@@ -127,8 +136,11 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                     data-cy={'weekday-list-item'}
                   >
                     <ListItemText data-cy={`weekday-list-item-${weekday.name}`}>
-                      {' '}
-                      {t(weekday.name)}{' '}
+                      {t(weekday.name)}
+                      {' - '}
+                      {getNextWeekdayDate(weekday.name)
+                        .setLocale('de-DE') // TODO: Make this dynamic
+                        .toLocaleString()}
                     </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
