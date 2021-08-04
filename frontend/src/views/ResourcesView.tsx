@@ -60,6 +60,12 @@ const styles = (theme: Theme) =>
       marginRight: theme.spacing(1),
     },
     fab: fabStyle(theme),
+    listItemText: {
+      textAlign: 'center',
+    },
+    listButton: {
+      width: '90%',
+    },
   });
 
 @boundClass
@@ -173,11 +179,20 @@ class UnstyledResourcesView extends React.Component<Properties, State> {
               {resources.map((resource) => (
                 <ListItem
                   button
-                  onClick={() => this.viewWeekdays(resource)}
                   key={resource.name}
                   data-cy="resource-list-item"
                 >
-                  <ListItemText>{resource.name}</ListItemText>
+                  <ListItemText className={this.props.classes.listItemText}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => this.viewWeekdays(resource)}
+                      data-cy={'resource-button'}
+                      className={this.props.classes.listButton}
+                    >
+                      {resource.name}
+                    </Button>
+                  </ListItemText>
                   {this.props.isAuthenticated && (
                     <ListItemSecondaryAction>
                       <DeleteConfirmer

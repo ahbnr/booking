@@ -8,6 +8,7 @@ import { ResourceGetInterface, WeekdayGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
+  Button,
   createStyles,
   Fab,
   IconButton,
@@ -46,6 +47,12 @@ const styles = (theme: Theme) =>
     },
     dialogActionsRoot: {
       overflowY: 'visible',
+    },
+    listItemText: {
+      textAlign: 'center',
+    },
+    listButton: {
+      width: '90%',
     },
   });
 
@@ -132,15 +139,25 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                   <ListItem
                     button
                     key={weekday.name}
-                    onClick={() => this.viewTimeslots(weekday)}
                     data-cy={'weekday-list-item'}
                   >
-                    <ListItemText data-cy={`weekday-list-item-${weekday.name}`}>
-                      {t(weekday.name)}
-                      {' - '}
-                      {getNextWeekdayDate(weekday.name)
-                        .setLocale('de-DE') // TODO: Make this dynamic
-                        .toLocaleString()}
+                    <ListItemText
+                      className={this.props.classes.listItemText}
+                      data-cy={`weekday-list-item-${weekday.name}`}
+                    >
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => this.viewTimeslots(weekday)}
+                        data-cy={'weekday-button'}
+                        className={this.props.classes.listButton}
+                      >
+                        {t(weekday.name)}
+                        {' - '}
+                        {getNextWeekdayDate(weekday.name)
+                          .setLocale('de-DE') // TODO: Make this dynamic
+                          .toLocaleString()}
+                      </Button>
                     </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
