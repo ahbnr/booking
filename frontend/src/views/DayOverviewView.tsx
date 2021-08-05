@@ -5,29 +5,22 @@ import {
   Container,
   createStyles,
   CssBaseline,
+  Grid,
+  GridSize,
   Theme,
   Typography,
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import PrintIcon from '@material-ui/icons/Print';
+import ShareIcon from '@material-ui/icons/Share';
 import { Client } from '../Client';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
-  bookingCompare,
   BookingWithContextGetInterface,
   noRefinementChecks,
-  ResourceGetInterface,
 } from 'common/dist';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import {
-  Calendar,
-  Event as CalendarEvent,
-  ToolbarProps,
-  dateFnsLocalizer,
-} from 'react-big-calendar';
-import ReactToPrint from 'react-to-print';
 import { DateTime, Interval } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import _ from 'lodash';
@@ -36,37 +29,10 @@ import Fab from '@material-ui/core/Fab';
 import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
 
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import startOfWeek from 'date-fns/startOfWeek';
-import getDay from 'date-fns/getDay';
-import de from 'date-fns/locale/de';
-
-const locales = {
-  'de-DE': de,
-};
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
-interface CalendarResource {
-  resourceId: string;
-  resourceTitle: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-class CalendarToolbar extends React.Component<
-  ToolbarProps<CalendarEvent, CalendarResource>,
-  unknown
-> {
-  render() {
-    return <></>;
-  }
-}
+import { NonEmptyString } from 'common';
+import ResourceBookingsOverview from './ResourceBookingsOverview';
+import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -92,34 +58,6 @@ const styles = (theme: Theme) =>
 @boundClass
 class UnstyledDayOverviewView extends React.Component<Properties, State> {
   private calendarRef = createRef<HTMLDivElement>();
-
-  private static bookingsGroupToEvent(
-    bookings: BookingWithContextGetInterface[]
-  ): CalendarEvent {
-    if (bookings.length < 1) {
-      throw new Error('The bookings group may not be empty.');
-    }
-
-    const sampleBooking = bookings[0];
-
-    const data = {
-      title: bookings.map((booking) => booking.name).join(', '),
-      start: DateTime.fromISO(sampleBooking.startDate).toJSDate(),
-      end: DateTime.fromISO(sampleBooking.endDate).toJSDate(),
-      resourceId: sampleBooking.resource.name,
-    };
-
-    return data as CalendarEvent;
-  }
-
-  private static resourceToCalendarResource(
-    resource: ResourceGetInterface
-  ): { resourceId: string; resourceTitle: string } {
-    return {
-      resourceId: resource.name,
-      resourceTitle: resource.name,
-    };
-  }
 
   constructor(props: Properties) {
     super(props);
@@ -155,85 +93,100 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
   render() {
     const { t } = this.props;
 
-    const content = (
+    return (
       <Suspense
         asyncAction={this.state.downloadedData}
         fallback={<CircularProgress size="6vw" />}
         content={(downloadedData) => {
-          const groupedBookings = _.groupBy(
-            downloadedData.bookings,
-            (booking) => [booking.startDate, booking.endDate]
-          );
-          const events = _.map(groupedBookings, (group) =>
-            UnstyledDayOverviewView.bookingsGroupToEvent(group)
-          );
+          const resourceGroupedBookings: ResourceGroupedBookings[] = _.chain(
+            downloadedData.bookings
+          )
+            .groupBy((booking) => booking.resource.name)
+            .map((bookingList) => {
+              const booking = bookingList[0];
 
-          const resources = _.map(
-            _.uniqBy(
-              _.map(downloadedData.bookings, (booking) => booking.resource),
-              (resource) => resource.name
-            ),
-            UnstyledDayOverviewView.resourceToCalendarResource
-          );
+              return {
+                resourceName: booking.name,
+                bookings: bookingList,
+              };
+            })
+            .sortBy((group) => group.resourceName)
+            .value();
 
-          const sortedBookings = downloadedData.bookings.sort(bookingCompare);
-          const firstTime =
-            sortedBookings.length > 0
-              ? DateTime.fromISO(sortedBookings[0].startDate).toJSDate()
-              : undefined;
+          let gridColumnSize: GridSize = 12;
+          if (resourceGroupedBookings.length >= 4) {
+            gridColumnSize = 3;
+          } else if (resourceGroupedBookings.length === 3) {
+            gridColumnSize = 4;
+          } else if (resourceGroupedBookings.length === 2) {
+            gridColumnSize = 6;
+          }
+
+          const weekdayLocaleTitle = t(
+            this.props.dateInterval.start.weekdayLong
+          );
+          const dateLocaleTitle = this.props.dateInterval.start.toLocaleString({
+            ...DateTime.DATE_SHORT,
+            locale: 'de-DE',
+          });
 
           return (
-            <>
-              <div ref={this.calendarRef} style={{ width: '100%' }}>
-                <Calendar
-                  events={events}
-                  components={{
-                    toolbar: CalendarToolbar,
+            <Container component="main">
+              <CssBaseline />
+              <div className={this.props.classes.paper}>
+                <Typography
+                  component="h5"
+                  variant="h5"
+                  align="center"
+                  className={this.props.classes.header}
+                >
+                  Tagesübersicht - {weekdayLocaleTitle} - {dateLocaleTitle}
+                </Typography>
+                <Grid
+                  container
+                  spacing={3}
+                  ref={this.calendarRef}
+                  style={{
+                    width: '100%',
                   }}
-                  localizer={localizer}
-                  defaultView={'day'}
-                  views={['day']}
-                  defaultDate={this.props.dateInterval.start.toJSDate()}
-                  resources={resources}
-                  resourceIdAccessor="resourceId"
-                  resourceTitleAccessor="resourceTitle"
-                  style={{ minWidth: '100%' }}
-                  className={this.props.classes.calendar}
-                  scrollToTime={firstTime}
-                  culture="de-DE"
-                />
+                >
+                  {resourceGroupedBookings.map((group) => (
+                    <Grid
+                      item
+                      xs={12}
+                      md={gridColumnSize}
+                      key={group.resourceName}
+                    >
+                      <ResourceBookingsOverview
+                        resourceName={group.resourceName}
+                        bookings={group.bookings}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+                <PDFDownloadLink
+                  document={renderDayOverviewPDF(
+                    weekdayLocaleTitle,
+                    dateLocaleTitle,
+                    resourceGroupedBookings
+                  )}
+                  fileName={`${weekdayLocaleTitle}-${this.props.dateInterval.start.toISODate()}.pdf`}
+                >
+                  {({ loading }) =>
+                    loading ? (
+                      <CircularProgress />
+                    ) : (
+                      <Fab className={this.props.classes.fab}>
+                        <ShareIcon />
+                      </Fab>
+                    )
+                  }
+                </PDFDownloadLink>
               </div>
-              <ReactToPrint
-                trigger={() => (
-                  <Fab className={this.props.classes.fab}>
-                    <PrintIcon />
-                  </Fab>
-                )}
-                content={() => this.calendarRef.current}
-              />
-            </>
+            </Container>
           );
         }}
       />
-    );
-
-    return (
-      <>
-        <Container component="main">
-          <CssBaseline />
-          <div className={this.props.classes.paper}>
-            <Typography
-              component="h5"
-              variant="h5"
-              align="center"
-              className={this.props.classes.header}
-            >
-              Tagesübersicht - {t(this.props.dateInterval.start.weekdayLong)}
-            </Typography>
-            {content}
-          </div>
-        </Container>
-      </>
     );
   }
 }
@@ -255,5 +208,10 @@ interface State {
 }
 
 interface DownloadedData {
+  bookings: BookingWithContextGetInterface[];
+}
+
+export interface ResourceGroupedBookings {
+  resourceName: NonEmptyString;
   bookings: BookingWithContextGetInterface[];
 }

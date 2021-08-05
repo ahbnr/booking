@@ -161,7 +161,9 @@ class UnstyledWeekdaysView extends React.Component<Properties, State> {
                     </ListItemText>
                     {this.props.isAuthenticated && (
                       <ListItemSecondaryAction>
-                        <DeleteConfirmer name={`der Wochentag ${weekday.name}`}>
+                        <DeleteConfirmer
+                          name={`der Wochentag "${t(weekday.name)}"`}
+                        >
                           <IconButton
                             edge="end"
                             aria-label="end"

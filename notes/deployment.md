@@ -129,8 +129,11 @@
 
     RewriteRule ^/booking/api/(.*) http://localhost:3000/$1 [P,L]
     ProxyPassReverse /booking/api/ http://localhost:3000/
+    
     RewriteRule ^/booking/(.*) http://localhost:8000/$1 [P,L]
     ProxyPassReverse /booking/ http://localhost:8000/
+    RewriteRule ^/booking /booking/ [L,R=304]
+    
     RequestHeader set X-Forwarded-Proto "https"
     RequestHeader set X-Forwarded-Port "443"
     ```

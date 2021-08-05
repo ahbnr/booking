@@ -5,6 +5,7 @@
   "dependencies": {
     "@date-io/core": "1.x",
     "@date-io/luxon": "1.x",
+    "@david.kucsai/react-pdf-table": "^0.3.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.30",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@fortawesome/react-fontawesome": "^0.1.11",
@@ -12,6 +13,7 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
     "@material-ui/pickers": "^3.2.10",
+    "@react-pdf/renderer": "^2.0.18",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -23,6 +25,7 @@
     "autobind-decorator": "^2.4.0",
     "cldr-data": "^36.0.0",
     "clsx": "^1.1.1",
+    "color-hash": "^2.0.1",
     "common": "1.0.0",
     "date-fns": "^2.16.1",
     "i18next": "^20.2.4",
@@ -34,7 +37,6 @@
     "react-dom": "^16.13.1",
     "react-i18next": "^11.8.15",
     "react-scripts": "3.4.1",
-    "react-to-print": "^2.10.0",
     "ts-adt": "^1.0.1",
     "typescript": "^3.9.7"
   },
@@ -68,6 +70,7 @@
     ]
   },
   "devDependencies": {
+    "@types/color-hash": "^1.0.1",
     "@types/express": "^4.17.13",
     "@types/i18next": "^13.0.0",
     "@types/lodash": "^4.14.159",
