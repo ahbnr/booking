@@ -106,7 +106,7 @@ class UnstyledDayOverviewView extends React.Component<Properties, State> {
               const booking = bookingList[0];
 
               return {
-                resourceName: booking.name,
+                resourceName: booking.resource.name,
                 bookings: bookingList,
               };
             })
