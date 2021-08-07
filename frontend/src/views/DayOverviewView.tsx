@@ -110,7 +110,7 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                 bookings: bookingList,
               };
             })
-            .sortBy((group) => group.resourceName)
+            .orderBy((group) => group.bookings.length, ['desc'])
             .value();
 
           let gridColumnSize: GridSize = 12;
