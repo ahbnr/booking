@@ -5,6 +5,7 @@ import {
   createStyles,
   Divider,
   Paper,
+  Popover,
   Theme,
   Typography,
   WithStyles,
@@ -14,14 +15,28 @@ import { BookingWithContextGetInterface, NonEmptyString } from 'common';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
 import ColorHash from 'color-hash';
+import { changeInteractionStateT } from '../App';
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (theme: Theme) =>
+  createStyles({
+    popoverTypography: {
+      padding: theme.spacing(2),
+    },
+  });
 
 @boundClass
 class UnstyledResourceBookingsOverview extends React.PureComponent<
   Properties,
   State
 > {
+  constructor(props: Properties) {
+    super(props);
+
+    this.state = {
+      popoverLocation: undefined,
+    };
+  }
+
   private groupBookings(
     bookings: BookingWithContextGetInterface[]
   ): BookingsGroup[] {
@@ -34,12 +49,24 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
           names: bookingList.map((booking) => booking.name),
           startDate: DateTime.fromISO(sampleBooking.startDate),
           endDate: DateTime.fromISO(sampleBooking.endDate),
+          timeslotIds: _.chain(bookingList)
+            .map((booking) => booking.timeslotId)
+            .uniq()
+            .value(),
         };
       })
       .sortBy((bookingGroup) => bookingGroup.startDate)
       .value();
 
     return groupedBookings;
+  }
+
+  private handlePopoverOpen(event: React.MouseEvent<HTMLElement>) {
+    this.setState({ popoverLocation: event.currentTarget });
+  }
+
+  private handlePopoverClose() {
+    this.setState({ popoverLocation: undefined });
   }
 
   render() {
@@ -65,7 +92,18 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
               style={{
                 display: 'flex',
                 marginBottom: '1.5ex',
+                cursor:
+                  bookingGroup.timeslotIds.length === 1 ? 'pointer' : 'auto',
               }}
+              onClick={
+                bookingGroup.timeslotIds.length === 1
+                  ? () => {
+                      this.props.changeInteractionState('viewingBookings', {
+                        timeslotId: bookingGroup.timeslotIds[0],
+                      });
+                    }
+                  : this.handlePopoverOpen
+              }
             >
               <div
                 style={{
@@ -99,6 +137,24 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
             </Paper>
           ))}
         </div>
+        <Popover
+          open={this.state.popoverLocation != null}
+          onClose={this.handlePopoverClose}
+          anchorEl={this.state.popoverLocation}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          <Typography className={this.props.classes.popoverTypography}>
+            Mehrere Timeslots überlappen für diese Buchungen. Bitte wählen Sie
+            den gewünschten Timeslot zum editieren manuell über das Hauptmenü.
+          </Typography>
+        </Popover>
       </div>
     );
   }
@@ -112,12 +168,16 @@ export default ResourceBookingsOverview;
 interface Properties extends WithStyles<typeof styles> {
   resourceName: NonEmptyString;
   bookings: BookingWithContextGetInterface[];
+  changeInteractionState: changeInteractionStateT;
 }
 
-interface State {}
+interface State {
+  popoverLocation?: HTMLElement;
+}
 
 export interface BookingsGroup {
   names: NonEmptyString[];
   startDate: DateTime;
   endDate: DateTime;
+  timeslotIds: number[];
 }

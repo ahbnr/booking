@@ -52,6 +52,7 @@ export default function renderResourceBookingsPDF(
         names: bookingList.map((booking) => booking.name),
         startDate: DateTime.fromISO(sampleBooking.startDate),
         endDate: DateTime.fromISO(sampleBooking.endDate),
+        timeslotIds: [],
       };
     })
     .sortBy((bookingGroup) => bookingGroup.startDate)

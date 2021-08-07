@@ -19,7 +19,7 @@ export interface ViewingTimeslots {
 }
 
 export interface ViewingBookings {
-  timeslot: TimeslotGetInterface;
+  timeslotId: number;
 }
 
 export interface CreateBooking {

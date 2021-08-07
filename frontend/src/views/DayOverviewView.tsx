@@ -160,6 +160,9 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                       <ResourceBookingsOverview
                         resourceName={group.resourceName}
                         bookings={group.bookings}
+                        changeInteractionState={
+                          this.props.changeInteractionState
+                        }
                       />
                     </Grid>
                   ))}

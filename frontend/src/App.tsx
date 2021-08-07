@@ -159,8 +159,8 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           weekday={weekday}
         />
       ),
-      viewingBookings: ({ timeslot }) => (
-        <BookingsView client={this.client} timeslotId={timeslot.id} />
+      viewingBookings: ({ timeslotId }) => (
+        <BookingsView client={this.client} timeslotId={timeslotId} />
       ),
       createBooking: ({ timeslot }) => (
         <CreateBookingDialog

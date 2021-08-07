@@ -101,7 +101,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
 
   viewBookings(timeslot: TimeslotGetInterface) {
     this.props.changeInteractionState('viewingBookings', {
-      timeslot: timeslot,
+      timeslotId: timeslot.id,
     });
   }
 
