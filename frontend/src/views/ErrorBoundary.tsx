@@ -4,7 +4,10 @@ import React, { ErrorInfo } from 'react';
  * Dont be confused that react-overlay-error still displays even when an error has been caught by this boundary.
  * The overlay can be closed and is only displayed in development mode.
  */
-export default class ErrorBoundary extends React.Component<Properties, State> {
+export default class ErrorBoundary extends React.PureComponent<
+  Properties,
+  State
+> {
   constructor(props: Properties) {
     super(props);
 

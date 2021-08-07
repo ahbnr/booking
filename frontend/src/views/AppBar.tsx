@@ -91,7 +91,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledAppBar extends React.Component<Properties, State> {
+class UnstyledAppBar extends React.PureComponent<Properties, State> {
   public static displayName = 'AppBar';
 
   constructor(props: Properties) {

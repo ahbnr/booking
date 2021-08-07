@@ -18,7 +18,7 @@ import ColorHash from 'color-hash';
 const styles = (theme: Theme) => createStyles({});
 
 @boundClass
-class UnstyledResourceBookingsOverview extends React.Component<
+class UnstyledResourceBookingsOverview extends React.PureComponent<
   Properties,
   State
 > {

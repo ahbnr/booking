@@ -57,7 +57,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledWeekdaysView extends React.Component<Properties, State> {
+class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 

@@ -52,7 +52,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-export class UnstyledAddWeekdayDialog extends React.Component<
+export class UnstyledAddWeekdayDialog extends React.PureComponent<
   Properties,
   State
 > {

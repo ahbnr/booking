@@ -38,7 +38,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-class UnstyledErrorView extends React.Component<Properties, State> {
+class UnstyledErrorView extends React.PureComponent<Properties, State> {
   render() {
     let content;
     if (this.props.error instanceof DisplayableError) {

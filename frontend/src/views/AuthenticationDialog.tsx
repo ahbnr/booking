@@ -38,7 +38,10 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledAuthenticationDialog extends React.Component<Properties, State> {
+class UnstyledAuthenticationDialog extends React.PureComponent<
+  Properties,
+  State
+> {
   constructor(props: Properties) {
     super(props);
 

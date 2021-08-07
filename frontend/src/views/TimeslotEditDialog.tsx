@@ -52,7 +52,10 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledTimeslotEditDialog extends React.Component<Properties, State> {
+class UnstyledTimeslotEditDialog extends React.PureComponent<
+  Properties,
+  State
+> {
   constructor(props: Properties) {
     super(props);
 

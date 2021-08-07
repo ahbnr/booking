@@ -40,7 +40,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledSignupDialog extends React.Component<Properties, State> {
+class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 

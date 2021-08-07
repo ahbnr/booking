@@ -56,7 +56,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledDayOverviewView extends React.Component<Properties, State> {
+class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
   private calendarRef = createRef<HTMLDivElement>();
 
   constructor(props: Properties) {

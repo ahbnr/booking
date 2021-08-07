@@ -58,7 +58,7 @@ const InfoMessage = withStyles(styles)(UnstyledInfoMessage);
 /**
  * Same as <List> but displays a message if the list is empty.
  */
-export default class ListEx extends React.Component<Properties, State> {
+export default class ListEx extends React.PureComponent<Properties, State> {
   render() {
     const { emptyTitle, emptyMessage, children, ...listProps } = this.props;
 

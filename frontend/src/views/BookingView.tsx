@@ -29,7 +29,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledBookingView extends React.Component<Properties, State> {
+class UnstyledBookingView extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 

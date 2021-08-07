@@ -16,7 +16,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-class UnstyledLoadingBackdrop extends React.Component<Properties, State> {
+class UnstyledLoadingBackdrop extends React.PureComponent<Properties, State> {
   render() {
     return (
       <Backdrop className={this.props.classes.backdrop} open={this.props.open}>

@@ -41,7 +41,10 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledCreateBookingDialog extends React.Component<Properties, State> {
+class UnstyledCreateBookingDialog extends React.PureComponent<
+  Properties,
+  State
+> {
   constructor(props: Properties) {
     super(props);
 

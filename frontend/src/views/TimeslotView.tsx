@@ -20,6 +20,7 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import EditIcon from '@material-ui/icons/Edit';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { TimeslotGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import noop from '../utils/noop';
@@ -51,7 +52,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledTimeslotView extends React.Component<Properties, State> {
+class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
@@ -187,9 +188,22 @@ class UnstyledTimeslotView extends React.Component<Properties, State> {
                   onClick={clickAction}
                 />
                 {this.props.isAuthenticated && (
-                  <IconButton onClick={() => this.onEdit(displayData.timeslot)}>
-                    <EditIcon />
-                  </IconButton>
+                  <span style={{ paddingLeft: '10px' }}>
+                    {bookingsAvailable ? (
+                      <IconButton
+                        onClick={() => this.createBooking(displayData.timeslot)}
+                      >
+                        <PersonAddIcon />
+                      </IconButton>
+                    ) : (
+                      <></>
+                    )}
+                    <IconButton
+                      onClick={() => this.onEdit(displayData.timeslot)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </span>
                 )}
               </ListItemSecondaryAction>
             </ListItem>

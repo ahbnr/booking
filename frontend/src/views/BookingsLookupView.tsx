@@ -45,7 +45,10 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledBookingsLookupView extends React.Component<Properties, State> {
+class UnstyledBookingsLookupView extends React.PureComponent<
+  Properties,
+  State
+> {
   public static readonly displayName = 'BookingsLookupView';
 
   constructor(props: Properties) {

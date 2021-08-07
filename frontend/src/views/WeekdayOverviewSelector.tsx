@@ -42,7 +42,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledWeekdayOverviewSelector extends React.Component<
+class UnstyledWeekdayOverviewSelector extends React.PureComponent<
   Properties,
   State
 > {

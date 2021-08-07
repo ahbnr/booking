@@ -10,7 +10,10 @@ import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 
 @boundClass
-export default class BookingsView extends React.Component<Properties, State> {
+export default class BookingsView extends React.PureComponent<
+  Properties,
+  State
+> {
   constructor(props: Properties) {
     super(props);
 

@@ -69,7 +69,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledResourcesView extends React.Component<Properties, State> {
+class UnstyledResourcesView extends React.PureComponent<Properties, State> {
   public static readonly displayName = 'ResourcesView';
 
   constructor(props: Properties) {

@@ -40,7 +40,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledMainView extends React.Component<Properties, State> {
+class UnstyledMainView extends React.PureComponent<Properties, State> {
   public static readonly displayName = 'MainView';
 
   constructor(props: Properties) {

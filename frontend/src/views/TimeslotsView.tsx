@@ -34,7 +34,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledTimeslotsView extends React.Component<Properties, State> {
+class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 

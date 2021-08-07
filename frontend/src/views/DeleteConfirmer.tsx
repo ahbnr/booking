@@ -11,7 +11,7 @@ import { boundClass } from 'autobind-decorator';
 import { hasProperty } from 'common/dist';
 
 @boundClass
-export default class DeleteConfirmer extends React.Component<
+export default class DeleteConfirmer extends React.PureComponent<
   Properties,
   State
 > {

@@ -19,7 +19,7 @@ const styles = (_theme: Theme) =>
     },
   });
 
-class UnstyledLoadingScreen extends React.Component<Properties, State> {
+class UnstyledLoadingScreen extends React.PureComponent<Properties, State> {
   render() {
     if (this.props.isLoading == null || this.props.isLoading) {
       return (

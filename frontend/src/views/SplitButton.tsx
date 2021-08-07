@@ -13,7 +13,10 @@ import { boundClass } from 'autobind-decorator';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 @boundClass
-export default class SplitButton extends React.Component<Properties, State> {
+export default class SplitButton extends React.PureComponent<
+  Properties,
+  State
+> {
   private anchorRef = React.createRef<HTMLDivElement>();
 
   constructor(props: Properties) {

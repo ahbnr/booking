@@ -41,7 +41,7 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledInviteAdminDialog extends React.Component<Properties, State> {
+class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 

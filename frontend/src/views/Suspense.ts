@@ -12,7 +12,7 @@ type ActionState<T> = ADT<{
 }>;
 
 @boundClass
-export default class Suspense<T> extends React.Component<
+export default class Suspense<T> extends React.PureComponent<
   Properties<T>,
   State<T>
 > {
