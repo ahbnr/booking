@@ -23,7 +23,7 @@ export interface ViewingBookings {
 }
 
 export interface CreateBooking {
-  timeslot: TimeslotGetInterface;
+  timeslotId: number;
 }
 
 export interface Authenticating {}

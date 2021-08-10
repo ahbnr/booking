@@ -20,7 +20,6 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import EditIcon from '@material-ui/icons/Edit';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { TimeslotGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import noop from '../utils/noop';
@@ -89,7 +88,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
 
   createBooking(timeslot: TimeslotGetInterface) {
     this.props.changeInteractionState('createBooking', {
-      timeslot: timeslot,
+      timeslotId: timeslot.id,
     });
   }
 
@@ -188,22 +187,9 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
                   onClick={clickAction}
                 />
                 {this.props.isAuthenticated && (
-                  <span style={{ paddingLeft: '10px' }}>
-                    {bookingsAvailable ? (
-                      <IconButton
-                        onClick={() => this.createBooking(displayData.timeslot)}
-                      >
-                        <PersonAddIcon />
-                      </IconButton>
-                    ) : (
-                      <></>
-                    )}
-                    <IconButton
-                      onClick={() => this.onEdit(displayData.timeslot)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </span>
+                  <IconButton onClick={() => this.onEdit(displayData.timeslot)}>
+                    <EditIcon />
+                  </IconButton>
                 )}
               </ListItemSecondaryAction>
             </ListItem>

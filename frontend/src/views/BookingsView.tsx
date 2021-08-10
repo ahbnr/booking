@@ -8,12 +8,20 @@ import { BookingGetInterface } from 'common/dist';
 import ListEx from './ListEx';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
+import Fab from '@material-ui/core/Fab';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import { changeInteractionStateT } from '../App';
+import { createStyles, Theme, WithStyles, withStyles } from '@material-ui/core';
+import { fabStyle } from '../styles/fab';
+import { withTranslation } from 'react-i18next';
+
+const styles = (theme: Theme) =>
+  createStyles({
+    fab: fabStyle(theme),
+  });
 
 @boundClass
-export default class BookingsView extends React.PureComponent<
-  Properties,
-  State
-> {
+class UnstyledBookingsView extends React.PureComponent<Properties, State> {
   constructor(props: Properties) {
     super(props);
 
@@ -24,6 +32,12 @@ export default class BookingsView extends React.PureComponent<
 
   componentDidMount() {
     this.refreshBookings();
+  }
+
+  createBooking() {
+    this.props.changeInteractionState('createBooking', {
+      timeslotId: this.props.timeslotId,
+    });
   }
 
   refreshBookings() {
@@ -57,6 +71,12 @@ export default class BookingsView extends React.PureComponent<
                 />
               ))}
             </ListEx>
+            <Fab
+              className={this.props.classes.fab}
+              onClick={this.createBooking}
+            >
+              <PersonAddIcon />
+            </Fab>
           </>
         )}
       />
@@ -64,9 +84,16 @@ export default class BookingsView extends React.PureComponent<
   }
 }
 
-interface Properties {
+const BookingsView = withTranslation()(
+  withStyles(styles)(UnstyledBookingsView)
+);
+
+export default BookingsView;
+
+interface Properties extends WithStyles<typeof styles> {
   client: Client;
   timeslotId: number;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

@@ -160,13 +160,17 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         />
       ),
       viewingBookings: ({ timeslotId }) => (
-        <BookingsView client={this.client} timeslotId={timeslotId} />
+        <BookingsView
+          client={this.client}
+          timeslotId={timeslotId}
+          changeInteractionState={this.changeInteractionState}
+        />
       ),
-      createBooking: ({ timeslot }) => (
+      createBooking: ({ timeslotId }) => (
         <CreateBookingDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          timeslot={timeslot}
+          timeslotId={timeslotId}
         />
       ),
       authenticating: () => (

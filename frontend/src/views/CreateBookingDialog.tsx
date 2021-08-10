@@ -14,7 +14,7 @@ import {
 import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
-import { EMailString, NonEmptyString, TimeslotGetInterface } from 'common/dist';
+import { EMailString, NonEmptyString } from 'common/dist';
 import getBaseUrl from '../utils/getBaseUrl';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
@@ -108,7 +108,7 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
     this.setState({
       backdropOpen: true,
     });
-    await this.props.client.createBooking(this.props.timeslot.id, {
+    await this.props.client.createBooking(this.props.timeslotId, {
       name: `${this.state.firstName} ${this.state.lastName}` as NonEmptyString,
       email: this.state.email as EMailString,
       lookupUrl: `${getBaseUrl()}/`,
@@ -189,7 +189,7 @@ export default CreateBookingDialog;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
-  timeslot: TimeslotGetInterface;
+  timeslotId: number;
   changeInteractionState: changeInteractionStateT;
 }
 
