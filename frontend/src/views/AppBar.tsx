@@ -26,6 +26,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import IconButton from '@material-ui/core/IconButton';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import SettingsIcon from '@material-ui/icons/Settings';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
@@ -122,6 +123,11 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
 
   onAddAdminButton() {
     this.props.changeInteractionState('invitingAdmin', {});
+    this.handleDrawerClose();
+  }
+
+  onSettingsButton() {
+    this.props.changeInteractionState('updatingSettings', {});
     this.handleDrawerClose();
   }
 
@@ -243,6 +249,12 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
                   <DateRangeIcon />
                 </ListItemIcon>
                 <ListItemText primary="Tagesübersichten" />
+              </ListItem>
+              <ListItem button onClick={this.onSettingsButton}>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Einstellungen" />
               </ListItem>
             </List>
           </Drawer>

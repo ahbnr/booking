@@ -1,8 +1,7 @@
 import * as t from 'io-ts';
 import { Hours } from '../Hours';
 import { Minutes } from '../Minutes';
-import { DateTime, Duration } from 'luxon';
-import { getNextWeekdayDate, WeekdayName } from './Weekday';
+import { DateTime } from 'luxon';
 
 export const TimeslotData = t.type({
   startHours: Hours,
@@ -39,44 +38,21 @@ export function compare(
   }
 }
 
-function getCurrentTimeslotWeekdayDate(
-  timeslot: TimeslotData,
-  weekdayName: WeekdayName
+export function setTimeslotStartDate(
+  baseDate: DateTime,
+  timeslot: TimeslotData
 ): DateTime {
-  const weekdayDate = getNextWeekdayDate(weekdayName);
-  const now = DateTime.local();
-
-  let result = weekdayDate;
-
-  // is it today?
-  if (now.weekday === weekdayDate.weekday) {
-    // has the end of the timeslot already passed?
-    if (
-      now.hour >= timeslot.endHours ||
-      (now.hour === timeslot.endHours && now.minute >= timeslot.endMinutes)
-    ) {
-      result = result.plus(Duration.fromObject({ weeks: 1 }));
-    }
-  }
-
-  return result;
-}
-
-export function getCurrentTimeslotStartDate(
-  timeslot: TimeslotData,
-  weekdayName: WeekdayName
-): DateTime {
-  return getCurrentTimeslotWeekdayDate(timeslot, weekdayName).set({
+  return baseDate.set({
     hour: timeslot.startHours,
     minute: timeslot.startMinutes,
   });
 }
 
-export function getCurrentTimeslotEndDate(
-  timeslot: TimeslotData,
-  weekdayName: WeekdayName
+export function setTimeslotEndDate(
+  baseDate: DateTime,
+  timeslot: TimeslotData
 ): DateTime {
-  return getCurrentTimeslotWeekdayDate(timeslot, weekdayName).set({
+  return baseDate.set({
     hour: timeslot.endHours,
     minute: timeslot.endMinutes,
   });

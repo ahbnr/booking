@@ -7,7 +7,9 @@ import UserDBInterface from './model_interfaces/UserDBInterface';
 import password from 'secure-random-password';
 const { DEV_MODE } = process.env;
 import fs from 'fs';
+import { injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class UserRepository {
   public async initRootUser() {

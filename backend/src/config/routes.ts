@@ -13,6 +13,7 @@ import { authHandler, optionalAuthHandler } from './passport';
 import { ResourcesController } from '../controllers/resources.controller';
 import DatabaseController from '../models';
 import { AuthController } from '../controllers/auth.controller';
+import { SettingsController } from '../controllers/settings.controller';
 
 const { DEV_MODE } = process.env;
 
@@ -25,6 +26,7 @@ export class Routes {
   private readonly timeslotsController: TimeslotsController;
   private readonly bookingsController: BookingsController;
   private readonly authController: AuthController;
+  private readonly settingsController: SettingsController;
 
   constructor(db: DatabaseController) {
     this.db = db;
@@ -32,7 +34,8 @@ export class Routes {
     this.usersController = new UsersController(db.repositories.userRepository);
     this.weekdaysController = new WeekdaysController(
       db.repositories.weekdayRepository,
-      db.repositories.timeslotRepository
+      db.repositories.timeslotRepository,
+      db.repositories.settingsRepository
     );
     this.resourcesController = new ResourcesController(
       db.repositories.resourceRepository,
@@ -43,11 +46,15 @@ export class Routes {
     );
     this.bookingsController = new BookingsController(
       db.repositories.bookingRepository,
+      db.repositories.settingsRepository,
       this.timeslotsController
     );
     this.authController = new AuthController(
       db.repositories.userRepository,
       db.repositories.refreshTokenRepository
+    );
+    this.settingsController = new SettingsController(
+      db.repositories.settingsRepository
     );
   }
 
@@ -144,6 +151,9 @@ export class Routes {
         authHandler,
         Routes.asyncHandler(this.weekdaysController.createTimeslot)
       );
+    app
+      .route('/weekdays/:id/bookingConditions')
+      .get(Routes.asyncHandler(this.weekdaysController.getBookingConditions));
 
     app
       .route('/timeslots')
@@ -157,7 +167,7 @@ export class Routes {
         Routes.asyncHandler(this.timeslotsController.delete)
       );
     app
-      .route('/timeslots/:id/bookings')
+      .route('/timeslots/:id/bookings/:dayDate')
       .get(
         authHandler,
         Routes.asyncHandler(this.timeslotsController.getBookingsForTimeslot)
@@ -185,5 +195,10 @@ export class Routes {
         authHandler,
         Routes.asyncHandler(this.bookingsController.getBookingsForDateInterval)
       );
+
+    app
+      .route('/settings')
+      .get(Routes.asyncHandler(this.settingsController.show))
+      .put(authHandler, Routes.asyncHandler(this.settingsController.update));
   }
 }

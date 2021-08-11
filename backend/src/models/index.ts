@@ -7,6 +7,8 @@ import WeekdayRepository from '../repositories/WeekdayRepository';
 import BookingRepository from '../repositories/BookingRepository';
 import RefreshTokensRepository from '../repositories/RefreshTokensRepository';
 import { boundClass } from 'autobind-decorator';
+import SettingsRepository from '../repositories/SettingsRepository';
+import { container } from 'tsyringe';
 
 @boundClass
 export default class DatabaseController {
@@ -18,33 +20,18 @@ export default class DatabaseController {
   );
 
   public readonly repositories = {
-    userRepository: new UserRepository(),
-    bookingRepository: new BookingRepository(),
-    timeslotRepository: new TimeslotRepository(),
-    resourceRepository: new ResourceRepository(),
-    weekdayRepository: new WeekdayRepository(),
-    refreshTokenRepository: new RefreshTokensRepository(),
+    userRepository: container.resolve(UserRepository),
+    bookingRepository: container.resolve(BookingRepository),
+    timeslotRepository: container.resolve(TimeslotRepository),
+    resourceRepository: container.resolve(ResourceRepository),
+    weekdayRepository: container.resolve(WeekdayRepository),
+    refreshTokenRepository: container.resolve(RefreshTokensRepository),
+    settingsRepository: container.resolve(SettingsRepository),
   };
 
   async init() {
     await this.sequelize.sync();
     console.log('Synced DB.');
-
-    this.repositories.resourceRepository.init(
-      this.repositories.weekdayRepository
-    );
-    this.repositories.weekdayRepository.init(
-      this.repositories.timeslotRepository
-    );
-    this.repositories.timeslotRepository.init(
-      this.repositories.bookingRepository,
-      this.repositories.weekdayRepository
-    );
-    this.repositories.bookingRepository.init(
-      this.repositories.resourceRepository,
-      this.repositories.timeslotRepository
-    );
-    this.repositories.refreshTokenRepository.init();
 
     await this.repositories.userRepository.initRootUser();
   }

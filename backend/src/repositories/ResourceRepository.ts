@@ -10,14 +10,15 @@ import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import { boundClass } from 'autobind-decorator';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
 import WeekdayRepository from './WeekdayRepository';
+import { delay, inject, injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class ResourceRepository {
-  private weekdayRepository!: WeekdayRepository;
-
-  public init(weekdayRepository: WeekdayRepository) {
-    this.weekdayRepository = weekdayRepository;
-  }
+  constructor(
+    @inject(delay(() => WeekdayRepository))
+    private readonly weekdayRepository: WeekdayRepository
+  ) {}
 
   private toInterface(resource: Resource): ResourceDBInterface {
     return new ResourceDBInterface(resource, this);

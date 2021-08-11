@@ -4,7 +4,7 @@ import {
   WeekdayGetInterface,
   WeekdayName,
 } from 'common/dist';
-import { Interval } from 'luxon';
+import { DateTime, Interval } from 'luxon';
 
 import { ADT } from 'ts-adt';
 
@@ -16,14 +16,17 @@ export interface ViewingWeekdays {
 
 export interface ViewingTimeslots {
   weekday: WeekdayGetInterface;
+  bookingDay: DateTime;
 }
 
 export interface ViewingBookings {
   timeslotId: number;
+  bookingDay: DateTime;
 }
 
 export interface CreateBooking {
   timeslotId: number;
+  bookingDay: DateTime;
 }
 
 export interface Authenticating {}
@@ -62,6 +65,8 @@ export interface ConfirmingBookingDialog {}
 
 export interface SelectingWeekdayOverview {}
 
+export interface UpdatingSettings {}
+
 export type Activity = ADT<{
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
@@ -79,6 +84,7 @@ export type Activity = ADT<{
   viewingMainPage: ViewingMainPage;
   confirmingBookingDialog: ConfirmingBookingDialog;
   selectingWeekdayOverview: SelectingWeekdayOverview;
+  updatingSettings: UpdatingSettings;
 }>;
 
 export class InteractionState {

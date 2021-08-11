@@ -100,6 +100,7 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
                   ? () => {
                       this.props.changeInteractionState('viewingBookings', {
                         timeslotId: bookingGroup.timeslotIds[0],
+                        bookingDay: this.props.day,
                       });
                     }
                   : this.handlePopoverOpen
@@ -168,6 +169,7 @@ export default ResourceBookingsOverview;
 interface Properties extends WithStyles<typeof styles> {
   resourceName: NonEmptyString;
   bookings: BookingWithContextGetInterface[];
+  day: DateTime;
   changeInteractionState: changeInteractionStateT;
 }
 

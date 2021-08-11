@@ -19,6 +19,7 @@ import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
 import LoadingBackdrop from './LoadingBackdrop';
+import { DateTime } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -91,6 +92,7 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
                     client={this.props.client}
                     changeInteractionState={this.props.changeInteractionState}
                     timeslotId={timeslot.id}
+                    bookingDay={this.props.bookingDay}
                   />
                 ))}
               </ListEx>
@@ -122,6 +124,7 @@ interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
   weekday: WeekdayGetInterface;
+  bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }
 

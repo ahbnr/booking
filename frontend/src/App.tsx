@@ -31,6 +31,7 @@ import AddWeekdayDialog from './views/AddWeekdayDialog';
 import MainView from './views/MainView';
 import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
+import SettingsDialog from './views/SettingsDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -151,26 +152,29 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      viewingTimeslots: ({ weekday }) => (
+      viewingTimeslots: ({ weekday, bookingDay }) => (
         <TimeslotsView
           isAuthenticated={this.state.isAuthenticated}
           client={this.client}
           changeInteractionState={this.changeInteractionState}
           weekday={weekday}
+          bookingDay={bookingDay}
         />
       ),
-      viewingBookings: ({ timeslotId }) => (
+      viewingBookings: ({ timeslotId, bookingDay }) => (
         <BookingsView
           client={this.client}
           timeslotId={timeslotId}
+          bookingDay={bookingDay}
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      createBooking: ({ timeslotId }) => (
+      createBooking: ({ timeslotId, bookingDay }) => (
         <CreateBookingDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
           timeslotId={timeslotId}
+          bookingDay={bookingDay}
         />
       ),
       authenticating: () => (
@@ -237,6 +241,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
+      updatingSettings: () => <SettingsDialog client={this.client} />,
     });
 
     return (

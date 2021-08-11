@@ -25,8 +25,8 @@ export {
   TimeslotGetInterface,
   TimeslotPostInterface,
   compare as timeslotCompare,
-  getCurrentTimeslotEndDate,
-  getCurrentTimeslotStartDate,
+  setTimeslotEndDate,
+  setTimeslotStartDate,
 } from './typechecking/api/Timeslot';
 
 export {

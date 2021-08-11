@@ -1,7 +1,7 @@
 import { Booking } from '../models/booking.model';
 import { Timeslot } from '../models/timeslot.model';
 import { ISO8601 } from 'common/dist/typechecking/ISO8601';
-import { DestroyOptions, Op } from 'sequelize';
+import { DestroyOptions, Op, WhereOptions } from 'sequelize';
 import { Weekday } from '../models/weekday.model';
 import { Resource } from '../models/resource.model';
 import BookingDBInterface from './model_interfaces/BookingDBInterface';
@@ -9,31 +9,36 @@ import { boundClass } from 'autobind-decorator';
 import {
   BookingPostInterface,
   EMailString,
-  getCurrentTimeslotEndDate,
-  getCurrentTimeslotStartDate,
+  setTimeslotEndDate,
+  setTimeslotStartDate,
   throwExpr,
-} from 'common/dist';
+} from 'common';
 import ResourceRepository from './ResourceRepository';
 import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
-import { Conflict } from '../controllers/errors';
+import { Conflict, UnprocessableEntity } from '../controllers/errors';
 import TimeslotRepository from './TimeslotRepository';
 import { NoElementToUpdate } from './errors';
 import '../utils/array_extensions';
+import isValidBookingDate from '../date_math/isValidBookingDate';
+import { DateTime } from 'luxon';
+import SettingsRepository from './SettingsRepository';
+import assertNever from '../utils/assertNever';
+import { delay, inject, injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class BookingRepository {
-  // FIXME: Use dependency injection
-  private resourceRepository!: ResourceRepository;
-  private timeslotRepository!: TimeslotRepository;
+  constructor(
+    @inject(delay(() => ResourceRepository))
+    private readonly resourceRepository: ResourceRepository,
 
-  init(
-    resourceRepository: ResourceRepository,
-    timeslotRepository: TimeslotRepository
-  ) {
-    this.resourceRepository = resourceRepository;
-    this.timeslotRepository = timeslotRepository;
-  }
+    @inject(delay(() => TimeslotRepository))
+    private readonly timeslotRepository: TimeslotRepository,
+
+    @inject(delay(() => SettingsRepository))
+    private readonly settingsRepository: SettingsRepository
+  ) {}
 
   public toInterface(booking: Booking): BookingDBInterface {
     return new BookingDBInterface(booking, this);
@@ -41,40 +46,63 @@ export default class BookingRepository {
 
   public async create(
     timeslot: TimeslotDBInterface,
-    bookingPostData: BookingPostInterface
+    bookingPostData: BookingPostInterface,
+    ignoreDeadlines: boolean
   ): Promise<BookingDBInterface> {
-    const bookings = await timeslot.getBookings();
+    const weekday = await timeslot.getWeekday();
+    const settings = await this.settingsRepository.get();
+    const bookingDay = DateTime.fromISO(bookingPostData.bookingDay);
 
-    if (bookings.length < timeslot.data.capacity) {
-      const weekday = await timeslot.getWeekday();
+    const bookingDateValidation = isValidBookingDate(
+      bookingDay,
+      weekday.data.name,
+      settings,
+      ignoreDeadlines
+    );
 
-      const startDate = getCurrentTimeslotStartDate(
-        timeslot.data,
-        weekday.data.name
-      ).toJSDate();
-      const endDate = getCurrentTimeslotEndDate(
-        timeslot.data,
-        weekday.data.name
-      ).toJSDate();
+    switch (bookingDateValidation.kind) {
+      case 'error':
+        throw new UnprocessableEntity(
+          `Invalid booking date: ${bookingDateValidation.message}`
+        );
+      case 'success': {
+        const bookings = await timeslot.getBookings(bookingDay);
 
-      const booking = await Booking.create<Booking>({
-        ...bookingPostData,
-        startDate: startDate,
-        endDate: endDate,
-        timeslotId: timeslot.id,
-      });
+        if (bookings.length < timeslot.data.capacity) {
+          const startDate = setTimeslotStartDate(
+            bookingDay,
+            timeslot.data
+          ).toJSDate();
+          const endDate = setTimeslotEndDate(
+            bookingDay,
+            timeslot.data
+          ).toJSDate();
 
-      return this.toInterface(booking);
-    } else {
-      throw new Conflict(
-        'The timeslot has reached max. capacity. No more bookings can be created.'
-      );
+          const booking = await Booking.create<Booking>({
+            ...bookingPostData,
+            startDate: startDate,
+            endDate: endDate,
+            timeslotId: timeslot.id,
+          });
+
+          return this.toInterface(booking);
+        } else {
+          throw new Conflict(
+            'The timeslot has reached max. capacity. No more bookings can be created.'
+          );
+        }
+      }
+      default:
+        return assertNever();
     }
   }
 
-  public async findAll(): Promise<BookingDBInterface[]> {
+  public async findAll(
+    whereOptions?: WhereOptions
+  ): Promise<BookingDBInterface[]> {
     const bookings = await Booking.findAll({
       include: [Timeslot],
+      where: whereOptions,
     });
 
     const clearedBookings = await BookingRepository.clearPastBookings(bookings);

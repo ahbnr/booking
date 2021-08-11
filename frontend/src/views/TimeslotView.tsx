@@ -89,6 +89,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
   createBooking(timeslot: TimeslotGetInterface) {
     this.props.changeInteractionState('createBooking', {
       timeslotId: timeslot.id,
+      bookingDay: this.props.bookingDay,
     });
   }
 
@@ -101,6 +102,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
   viewBookings(timeslot: TimeslotGetInterface) {
     this.props.changeInteractionState('viewingBookings', {
       timeslotId: timeslot.id,
+      bookingDay: this.props.bookingDay,
     });
   }
 
@@ -208,6 +210,7 @@ interface Properties extends WithStyles<typeof styles> {
   isAuthenticated: boolean;
   client: Client;
   timeslotId: number;
+  bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }
 

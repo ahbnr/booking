@@ -50,6 +50,10 @@ export default class Suspense<T> extends React.PureComponent<
       try {
         const value = await this.props.asyncAction;
 
+        if (this.props.onLoaded != null) {
+          this.props.onLoaded(value);
+        }
+
         this.setState({
           actionState: construct('loaded', { value }),
         });
@@ -79,6 +83,7 @@ export default class Suspense<T> extends React.PureComponent<
 interface Properties<T> {
   asyncAction: Promise<T> | undefined;
   fallback: React.ReactNode;
+  onLoaded?: (actionResult: T) => unknown;
   content: (actionResult: T) => React.ReactNode;
 }
 

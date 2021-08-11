@@ -40,11 +40,19 @@ const styles = (theme: Theme) =>
 
 class UnstyledErrorView extends React.PureComponent<Properties, State> {
   render() {
+    console.error(this.props.error);
+
     let content;
     if (this.props.error instanceof DisplayableError) {
       content = <>{this.props.error.message}</>;
     } else {
       content = <>Ein unbekannter Fehler ist aufgetreten.</>;
+      if (this.props.error.message != null) {
+        console.error(`Error with message: ${this.props.error.message}`);
+        if (this.props.error.stack != null) {
+          console.error(`Stack Trace:\n\n${this.props.error.stack}`);
+        }
+      }
     }
 
     return (

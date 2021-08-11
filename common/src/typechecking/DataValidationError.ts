@@ -1,9 +1,8 @@
-export class DataValidationError {
-  public readonly message: string;
+export class DataValidationError extends Error {
   public readonly baseError?: any;
 
   constructor(message: string, baseError?: any) {
-    this.message = message;
+    super(message);
     this.baseError = baseError;
   }
 }

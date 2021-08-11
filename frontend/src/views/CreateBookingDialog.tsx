@@ -19,6 +19,9 @@ import getBaseUrl from '../utils/getBaseUrl';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
 import FrontendConfig from '../booking-frontend.config';
+import { DateTime } from 'luxon';
+import { noRefinementChecks } from 'common';
+import { ISO8601 } from 'common/dist/typechecking/ISO8601';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -109,6 +112,9 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
       backdropOpen: true,
     });
     await this.props.client.createBooking(this.props.timeslotId, {
+      bookingDay: noRefinementChecks<ISO8601>(
+        this.props.bookingDay.toISODate()
+      ),
       name: `${this.state.firstName} ${this.state.lastName}` as NonEmptyString,
       email: this.state.email as EMailString,
       lookupUrl: `${getBaseUrl()}/`,
@@ -190,6 +196,7 @@ export default CreateBookingDialog;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   timeslotId: number;
+  bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }
 

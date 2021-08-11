@@ -8,6 +8,7 @@ import BookingDBInterface from './BookingDBInterface';
 import TimeslotRepository from '../TimeslotRepository';
 import WeekdayDBInterface from './WeekdayDBInterface';
 import { LazyGetter } from 'lazy-get-decorator';
+import { DateTime } from 'luxon';
 
 export default class TimeslotDBInterface {
   private readonly timeslot: Timeslot;
@@ -18,8 +19,8 @@ export default class TimeslotDBInterface {
     this.repository = repository;
   }
 
-  public async getBookings(): Promise<BookingDBInterface[]> {
-    return this.repository.getAssociatedBookings(this.timeslot);
+  public async getBookings(day: DateTime): Promise<BookingDBInterface[]> {
+    return this.repository.getAssociatedBookings(this.timeslot, day);
   }
 
   public async getWeekday(): Promise<WeekdayDBInterface> {

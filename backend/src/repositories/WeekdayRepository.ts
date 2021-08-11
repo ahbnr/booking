@@ -1,9 +1,5 @@
 import { WeekdayPostInterface } from 'common/dist';
-import {
-  DestroyOptions,
-  UniqueConstraintError,
-  UpdateOptions,
-} from 'sequelize';
+import { DestroyOptions, UniqueConstraintError } from 'sequelize';
 import { DataIdAlreadyExists, NoElementToUpdate } from './errors';
 import { Weekday } from '../models/weekday.model';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
@@ -12,14 +8,15 @@ import { boundClass } from 'autobind-decorator';
 import { Timeslot } from '../models/timeslot.model';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
 import TimeslotRepository from './TimeslotRepository';
+import { delay, inject, injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class WeekdayRepository {
-  private timeslotRepository!: TimeslotRepository;
-
-  public init(timeslotRepository: TimeslotRepository) {
-    this.timeslotRepository = timeslotRepository;
-  }
+  constructor(
+    @inject(delay(() => TimeslotRepository))
+    private readonly timeslotRepository: TimeslotRepository
+  ) {}
 
   public toInterface(weekday: Weekday): WeekdayDBInterface {
     return new WeekdayDBInterface(weekday, this);

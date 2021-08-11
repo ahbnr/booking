@@ -160,6 +160,7 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                       <ResourceBookingsOverview
                         resourceName={group.resourceName}
                         bookings={group.bookings}
+                        day={this.props.dateInterval.start} // TODO: Rewrite all of this to work in day intervals
                         changeInteractionState={
                           this.props.changeInteractionState
                         }

@@ -22,6 +22,11 @@ import {
 } from 'common/dist';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
+import {
+  SettingsGetInterface,
+  SettingsPostInterface,
+} from 'common/dist/typechecking/api/Settings';
+import { BookingConditionsGetInterface } from 'common/dist/typechecking/api/BookingConditions';
 
 const baseUrl = `${process.env.PUBLIC_URL}/api`;
 
@@ -342,6 +347,16 @@ export class Client {
     await this.request('DELETE', `weekdays/${weekdayId}`);
   }
 
+  public async getWeekdayBookingConditions(
+    weekdayId: number
+  ): Promise<BookingConditionsGetInterface> {
+    return await this.typedRequest(
+      BookingConditionsGetInterface,
+      'GET',
+      `weekdays/${weekdayId}/bookingConditions`
+    );
+  }
+
   public async createBooking(timeslotId: number, data: BookingPostInterface) {
     await this.request('POST', `timeslots/${timeslotId}/bookings`, data);
   }
@@ -354,11 +369,14 @@ export class Client {
     );
   }
 
-  public async getBookings(timeslotId: number): Promise<BookingGetInterface[]> {
+  public async getBookings(
+    timeslotId: number,
+    day: DateTime
+  ): Promise<BookingGetInterface[]> {
     return await this.typedRequest(
       t.array(BookingGetInterface),
       'GET',
-      `timeslots/${timeslotId}/bookings`
+      `timeslots/${timeslotId}/bookings/${day.toISODate()}`
     );
   }
 
@@ -389,5 +407,20 @@ export class Client {
 
   public async deleteBookingByToken(bookingId: number, lookupToken: string) {
     await this.request('DELETE', `bookings/${bookingId}?token=${lookupToken}`);
+  }
+
+  public async getSettings(): Promise<SettingsGetInterface> {
+    return await this.typedRequest(SettingsGetInterface, 'GET', `settings`);
+  }
+
+  public async updateSettings(
+    data: SettingsPostInterface
+  ): Promise<SettingsGetInterface> {
+    return await this.typedRequest(
+      SettingsGetInterface,
+      'PUT',
+      'settings',
+      data
+    );
   }
 }

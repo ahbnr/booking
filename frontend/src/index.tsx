@@ -4,6 +4,12 @@ import './i18n';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { DateTime, Settings as LuxonSettings } from 'luxon';
+
+const { DEBUG_TIME_NOW } = process.env;
+if (DEBUG_TIME_NOW != null) {
+  LuxonSettings.now = () => DateTime.fromISO(DEBUG_TIME_NOW).toMillis();
+}
 
 ReactDOM.render(
   <React.StrictMode>

@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { ElementNotFound } from './errors';
+import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
 import {
   BookingGetInterface,
   checkType,
+  hasProperty,
+  NonEmptyString,
   TimeslotGetInterface,
   TimeslotPostInterface,
 } from 'common/dist';
@@ -11,6 +13,8 @@ import TimeslotRepository from '../repositories/TimeslotRepository';
 import TypesafeRequest from './TypesafeRequest';
 import TimeslotDBInterface from '../repositories/model_interfaces/TimeslotDBInterface';
 import { extractNumericIdFromRequest } from './utils';
+import { DateTime } from 'luxon';
+import { ISO8601 } from 'common/dist/typechecking/ISO8601';
 
 @boundClass
 export class TimeslotsController {
@@ -66,14 +70,26 @@ export class TimeslotsController {
   }
 
   public async getBookingsForTimeslot(
-    req: Request,
+    req: TypesafeRequest,
     res: Response<BookingGetInterface[]>
   ) {
     const timeslot = await this.getTimeslot(req);
-    const bookings = await timeslot.getBookings();
+    const day = TimeslotsController.retrieveDayDate(req);
+    const bookings = await timeslot.getBookings(day);
 
     res.json(
       await Promise.all(bookings.map((booking) => booking.toGetInterface()))
     );
+  }
+
+  private static retrieveDayDate(req: TypesafeRequest): DateTime {
+    if (hasProperty(req.params, 'dayDate')) {
+      const dateString = checkType(req.params.dayDate, ISO8601);
+      const date = DateTime.fromISO(dateString);
+
+      return date.startOf('day');
+    } else {
+      throw new MissingPathParameter('dayDate');
+    }
   }
 }

@@ -43,6 +43,7 @@ export type BookingWithContextGetInterface = t.TypeOf<
 
 export const BookingPostInterface = t.type({
   ...BookingData.props,
+  bookingDay: ISO8601,
   lookupUrl: t.string,
 });
 

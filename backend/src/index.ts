@@ -1,3 +1,4 @@
+import 'reflect-metadata'; // needed to get tsyringe dependency injection going
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -9,14 +10,21 @@ import { TokenDecodeError } from './types/errors/TokenDecodeError';
 import DatabaseController from './models';
 import { init as i18nextInit } from './utils/i18n';
 import * as http from 'http';
+import { Settings as LuxonSettings, DateTime } from 'luxon';
 
-const { DEV_MODE } = process.env;
+const { DEV_MODE, DEBUG_TIME_NOW } = process.env;
 
 const port = process.env.PORT || 3000;
 
 async function init() {
+  if (DEBUG_TIME_NOW != null) {
+    LuxonSettings.now = () => DateTime.fromISO(DEBUG_TIME_NOW).toMillis();
+  }
+
+  // setup i18n translations
   await i18nextInit();
 
+  // setup database
   const db = new DatabaseController();
   await db.init();
 

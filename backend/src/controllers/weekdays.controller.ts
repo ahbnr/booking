@@ -14,19 +14,24 @@ import WeekdayRepository from '../repositories/WeekdayRepository';
 import WeekdayDBInterface from '../repositories/model_interfaces/WeekdayDBInterface';
 import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
+import SettingsRepository from '../repositories/SettingsRepository';
+import computeBookingConditions from '../date_math/computeBookingConditions';
 
 // FIXME: Implement in terms of weekday repository
 @boundClass
 export class WeekdaysController {
   private readonly weekdayRepository: WeekdayRepository;
   private readonly timeslotRepository: TimeslotRepository;
+  private readonly settingsRepository: SettingsRepository;
 
   constructor(
     weekdayRepository: WeekdayRepository,
-    timeslotRepository: TimeslotRepository
+    timeslotRepository: TimeslotRepository,
+    settingsRepository: SettingsRepository
   ) {
     this.weekdayRepository = weekdayRepository;
     this.timeslotRepository = timeslotRepository;
+    this.settingsRepository = settingsRepository;
   }
 
   private async toGetInterface(
@@ -105,5 +110,16 @@ export class WeekdaysController {
     await this.weekdayRepository.delete(extractNumericIdFromRequest(req));
 
     res.status(204).json({ data: 'success' });
+  }
+
+  public async getBookingConditions(req: TypesafeRequest, res: Response) {
+    const weekday = await this.getWeekday(req);
+
+    const bookingConditions = await computeBookingConditions(
+      weekday.data.name,
+      this.settingsRepository
+    );
+
+    res.json(bookingConditions);
   }
 }

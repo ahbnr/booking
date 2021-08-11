@@ -7,7 +7,9 @@ export function checkType<A, O, I>(data: I, type: Type<A, O, I>): A {
 
   return getOrElse<Errors, A>((error) => {
     throw new DataValidationError(
-      `Data did not conform to expected schema: ${type.name}.`,
+      `Data did not conform to expected schema.\n\nExpected: ${
+        type.name
+      }.\n\nActual: ${JSON.stringify(data)}`,
       error
     );
   })(decoded);

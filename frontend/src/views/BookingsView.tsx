@@ -14,6 +14,7 @@ import { changeInteractionStateT } from '../App';
 import { createStyles, Theme, WithStyles, withStyles } from '@material-ui/core';
 import { fabStyle } from '../styles/fab';
 import { withTranslation } from 'react-i18next';
+import { DateTime } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,12 +38,14 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
   createBooking() {
     this.props.changeInteractionState('createBooking', {
       timeslotId: this.props.timeslotId,
+      bookingDay: this.props.bookingDay,
     });
   }
 
   refreshBookings() {
     const bookingsPromise = this.props.client.getBookings(
-      this.props.timeslotId
+      this.props.timeslotId,
+      this.props.bookingDay
     );
 
     this.setState({
@@ -93,6 +96,7 @@ export default BookingsView;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   timeslotId: number;
+  bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }
 

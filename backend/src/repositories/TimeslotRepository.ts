@@ -1,6 +1,6 @@
 import { Timeslot } from '../models/timeslot.model';
 import { TimeslotData, TimeslotPostInterface } from 'common/dist';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
+import { DestroyOptions, Op } from 'sequelize';
 import { NoElementToDestroy, NoElementToUpdate } from './errors';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
 import { boundClass } from 'autobind-decorator';
@@ -8,19 +8,19 @@ import BookingDBInterface from './model_interfaces/BookingDBInterface';
 import BookingRepository from './BookingRepository';
 import WeekdayRepository from './WeekdayRepository';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
+import { DateTime } from 'luxon';
+import { delay, inject, injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class TimeslotRepository {
-  private bookingRepository!: BookingRepository;
-  private weekdayRepository!: WeekdayRepository;
+  constructor(
+    @inject(delay(() => BookingRepository))
+    private readonly bookingRepository: BookingRepository,
 
-  init(
-    bookingRepository: BookingRepository,
-    weekdayRepository: WeekdayRepository
-  ) {
-    this.bookingRepository = bookingRepository;
-    this.weekdayRepository = weekdayRepository;
-  }
+    @inject(delay(() => WeekdayRepository))
+    private readonly weekdayRepository: WeekdayRepository
+  ) {}
 
   public toInterface(timeslot: Timeslot): TimeslotDBInterface {
     return new TimeslotDBInterface(timeslot, this);
@@ -85,11 +85,35 @@ export default class TimeslotRepository {
   }
 
   public async getAssociatedBookings(
-    timeslot: Timeslot
+    timeslot: Timeslot,
+    day: DateTime
   ): Promise<BookingDBInterface[]> {
-    const bookings = await timeslot.lazyBookings;
+    const startOfDay = day.startOf('day').toISO();
+    const endOfDay = day.endOf('day').toISO();
 
-    return bookings.map(this.bookingRepository.toInterface);
+    const bookings = await this.bookingRepository.findAll({
+      [Op.and]: [
+        {
+          timeslotId: timeslot.id,
+        },
+        {
+          [Op.or]: [
+            {
+              startDate: {
+                [Op.between]: [startOfDay, endOfDay],
+              },
+            },
+            {
+              endDate: {
+                [Op.between]: [startOfDay, endOfDay],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    return bookings;
   }
 
   public async getAssociatedWeekday(

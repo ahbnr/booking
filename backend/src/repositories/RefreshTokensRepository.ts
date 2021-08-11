@@ -2,14 +2,12 @@ import { boundClass } from 'autobind-decorator';
 import RefreshTokenDBInterface from './model_interfaces/RefreshTokenDBInterface';
 import UserDBInterface from './model_interfaces/UserDBInterface';
 import { RefreshToken } from '../models/refreshtoken.model';
-import { User } from '../models/user.model';
 import { NoElementToDestroy } from './errors';
+import { injectable } from 'tsyringe';
 
+@injectable()
 @boundClass
 export default class RefreshTokensRepository {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  init() {}
-
   private toInterface(refreshToken: RefreshToken): RefreshTokenDBInterface {
     return new RefreshTokenDBInterface(refreshToken, this);
   }

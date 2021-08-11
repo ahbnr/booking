@@ -21,18 +21,22 @@ import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
 import humanizeDuration from 'humanize-duration';
 import BackendConfig from '../booking-backend.config';
+import SettingsRepository from '../repositories/SettingsRepository';
 
 @boundClass
 export class BookingsController {
   private readonly bookingRepository: BookingRepository;
+  private readonly settingsRepository: SettingsRepository;
   private readonly timeslotController: TimeslotsController;
 
   constructor(
     bookingRepository: BookingRepository,
+    settingsRepository: SettingsRepository,
     timeslotController: TimeslotsController
   ) {
     this.bookingRepository = bookingRepository;
     this.timeslotController = timeslotController;
+    this.settingsRepository = settingsRepository;
   }
 
   private static bookingsAsGetInterfaces(
@@ -116,7 +120,8 @@ export class BookingsController {
 
     const booking = await this.bookingRepository.create(
       timeslot,
-      bookingPostData
+      bookingPostData,
+      req.isAuthenticated()
     );
 
     if (BackendConfig.sendConfirmationMail) {
