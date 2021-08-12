@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 
 export const SettingsData = t.type({
   bookingDeadlineMillis: t.number,
+  maxBookingWeekDistance: t.number,
 });
 
 export type SettingsData = t.TypeOf<typeof SettingsData>;

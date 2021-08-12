@@ -27,6 +27,7 @@ export default class SettingsDBInterface {
   public get data(): SettingsData {
     return noRefinementChecks<SettingsData>({
       bookingDeadlineMillis: this.settings.bookingDeadlineMillis,
+      maxBookingWeekDistance: this.settings.maxBookingWeekDistance,
     });
   }
 

@@ -3,9 +3,12 @@ import { boundClass } from 'autobind-decorator';
 import {
   Avatar,
   Button,
+  Checkbox,
   Container,
   createStyles,
   CssBaseline,
+  FormControlLabel,
+  FormGroup,
   TextField,
   Theme,
   Typography,
@@ -65,8 +68,48 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     if (value === '' || intValue >= 0) {
       this.setState({
         updateSettings: {
-          ...this.state.updateSettings,
+          ...this.state.updateSettings!,
           bookingDeadlineHours: value,
+        },
+      });
+    }
+  }
+
+  onChangeMaxBookingWeekDistance(
+    changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) {
+    const value = changeEvent.target.value;
+    let intValue = parseInt(value);
+    if (intValue < 0) {
+      intValue = 0;
+    }
+
+    if (value === '' || intValue >= 0) {
+      this.setState({
+        updateSettings: {
+          ...this.state.updateSettings!,
+          maxBookingWeekDistance: intValue,
+        },
+      });
+    }
+  }
+
+  onChangeLimitWeekDistance(
+    changeEvent: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) {
+    if (checked) {
+      this.setState({
+        updateSettings: {
+          ...this.state.updateSettings!,
+          maxBookingWeekDistance: -1,
+        },
+      });
+    } else {
+      this.setState({
+        updateSettings: {
+          ...this.state.updateSettings!,
+          maxBookingWeekDistance: 0,
         },
       });
     }
@@ -86,6 +129,8 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
 
       const request = this.props.client.updateSettings({
         bookingDeadlineMillis: deadlineMillis,
+        maxBookingWeekDistance: this.state.updateSettings
+          .maxBookingWeekDistance,
       });
 
       this.setState({
@@ -108,6 +153,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
               bookingDeadlineHours: Math.ceil(
                 settings.bookingDeadlineMillis / 3600000
               ).toString(),
+              maxBookingWeekDistance: settings.maxBookingWeekDistance,
             },
           })
         }
@@ -138,6 +184,31 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
                     value={this.state.updateSettings.bookingDeadlineHours}
                     onChange={this.onDeadlineChanged}
                   />
+                  <FormGroup row>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          onChange={this.onChangeLimitWeekDistance}
+                          checked={
+                            this.state.updateSettings.maxBookingWeekDistance < 0
+                          }
+                        />
+                      }
+                      label="Unbegrenzte Vorausbuchungen"
+                    />
+                  </FormGroup>
+                  {this.state.updateSettings.maxBookingWeekDistance >= 0 && (
+                    <TextField
+                      required
+                      variant="outlined"
+                      type="number"
+                      margin="normal"
+                      fullWidth
+                      label={'Maximale Anzahl Wochen zur Vorausbuchung'}
+                      value={this.state.updateSettings.maxBookingWeekDistance}
+                      onChange={this.onChangeMaxBookingWeekDistance}
+                    />
+                  )}
                   <Button
                     fullWidth
                     variant="contained"
@@ -167,5 +238,7 @@ interface Properties extends WithStyles<typeof styles> {
 
 interface State {
   getSettings: Promise<SettingsGetInterface> | undefined;
-  updateSettings: { bookingDeadlineHours: string } | undefined;
+  updateSettings:
+    | { bookingDeadlineHours: string; maxBookingWeekDistance: number }
+    | undefined;
 }

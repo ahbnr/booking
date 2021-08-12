@@ -100,6 +100,7 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
             <div style={{ width: '100%', height: '100%' }}>
               <InfiniteWeekdaysList
                 weekdays={bookingDays}
+                maxWeekDistance={-1}
                 notEmptyTitle="Zu welchem Tag möchten Sie eine Übersicht der Buchungen?"
                 emptyTitle="Keine Tage angelegt"
                 emptyMessage="Im System wurden keine Wochentage angelegt."

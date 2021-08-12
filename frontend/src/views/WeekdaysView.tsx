@@ -34,6 +34,7 @@ import {
   getValidBookingDays,
   WeekdayWithBookingDay,
 } from '../complex_queries/getValidBookingDays';
+import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -66,7 +67,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     super(props);
 
     this.state = {
-      weekdays: undefined,
+      remoteData: undefined,
       backdropOpen: false,
     };
   }
@@ -75,21 +76,28 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     this.refreshWeekdays();
   }
 
-  async getBookableWeekdays(): Promise<WeekdayWithBookingDay[]> {
+  async fetchRemoteData(): Promise<RemoteData> {
     const weekdays = await this.props.client.getWeekdaysForResource(
       this.props.resource.name
     );
 
-    return getValidBookingDays(
+    const bookingDays = await getValidBookingDays(
       weekdays,
       this.props.isAuthenticated,
       this.props.client
     );
+
+    const settings = await this.props.client.getSettings();
+
+    return {
+      bookingDays,
+      settings,
+    };
   }
 
   refreshWeekdays() {
     this.setState({
-      weekdays: this.getBookableWeekdays(),
+      remoteData: this.fetchRemoteData(),
     });
   }
 
@@ -131,16 +139,21 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
 
     return (
       <Suspense
-        asyncAction={this.state.weekdays}
+        asyncAction={this.state.remoteData}
         fallback={<LoadingScreen />}
-        content={(weekdaysWithConditions) => {
-          const weekdays = weekdaysWithConditions.map(({ weekday }) => weekday);
+        content={({ bookingDays, settings }) => {
+          const weekdays = bookingDays.map(({ weekday }) => weekday);
 
           return (
             <div style={{ width: '100%', height: '100%' }}>
               <div style={{ width: '100%', height: '100%' }}>
                 <InfiniteWeekdaysList
-                  weekdays={weekdaysWithConditions}
+                  weekdays={bookingDays}
+                  maxWeekDistance={
+                    this.props.isAuthenticated
+                      ? -1
+                      : settings.maxBookingWeekDistance
+                  }
                   notEmptyTitle={
                     this.props.isAuthenticated
                       ? 'Wählen Sie den Wochentag aus welchen Sie bearbeiten möchten:'
@@ -248,6 +261,11 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 }
 
 interface State {
-  weekdays?: Promise<WeekdayWithBookingDay[]>;
+  remoteData?: Promise<RemoteData>;
   backdropOpen: boolean;
+}
+
+interface RemoteData {
+  bookingDays: WeekdayWithBookingDay[];
+  settings: SettingsGetInterface;
 }

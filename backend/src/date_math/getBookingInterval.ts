@@ -1,4 +1,4 @@
-import { DateTime, Interval } from 'luxon';
+import { DateTime, Duration, Interval } from 'luxon';
 import {
   setTimeslotEndDate,
   setTimeslotStartDate,
@@ -19,7 +19,8 @@ export default function getBookingInterval(
   weekday: WeekdayName,
   timeslot: TimeslotData,
   settings: SettingsDBInterface,
-  ignoreDeadlines: boolean
+  ignoreDeadlines: boolean,
+  ignoreMaxWeekDistance: boolean
 ): Validation<Interval, string> {
   if (dayDate.weekday !== weekdayToISOInt(weekday)) {
     return ValidationError(`The booking date is not a ${weekday}`);
@@ -37,16 +38,24 @@ export default function getBookingInterval(
     );
   }
 
-  if (ignoreDeadlines) {
-    return ValidationSuccess(bookingInterval);
-  }
-
   const earliestBookingDate = computeEarliestBookingDate(
     weekday,
     settings.data.bookingDeadlineMillis
   );
 
-  if (dayDate < earliestBookingDate) {
+  if (!ignoreMaxWeekDistance && settings.data.maxBookingWeekDistance >= 0) {
+    const maxBookingDate = earliestBookingDate.plus(
+      Duration.fromObject({ weeks: settings.data.maxBookingWeekDistance })
+    );
+
+    if (dayDate > maxBookingDate) {
+      return ValidationError(
+        `The booking day is too late. Booking day: ${dayDate.toISODate()}. Maximum allowed day: ${maxBookingDate.toISODate()}`
+      );
+    }
+  }
+
+  if (!ignoreDeadlines && dayDate < earliestBookingDate) {
     return ValidationError(
       `The booking date is too early. The earliest date where you can create a booking is ${earliestBookingDate.toISO()}`
     );

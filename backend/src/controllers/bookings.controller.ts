@@ -121,6 +121,7 @@ export class BookingsController {
     const booking = await this.bookingRepository.create(
       timeslot,
       bookingPostData,
+      req.isAuthenticated(),
       req.isAuthenticated()
     );
 

@@ -18,4 +18,9 @@ export class Settings extends BaseModel<Settings> {
   @NotEmpty
   @Column({ defaultValue: 0 })
   public bookingDeadlineMillis!: number;
+
+  // How many weeks ahead may users create bookings? Select -1 for unlimited
+  @NotEmpty
+  @Column({ defaultValue: -1 })
+  public maxBookingWeekDistance!: number;
 }

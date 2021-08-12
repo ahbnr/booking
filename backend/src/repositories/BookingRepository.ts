@@ -47,7 +47,8 @@ export default class BookingRepository {
   public async create(
     timeslot: TimeslotDBInterface,
     bookingPostData: BookingPostInterface,
-    ignoreDeadlines: boolean
+    ignoreDeadlines: boolean,
+    ignoreMaxWeekDistance: boolean
   ): Promise<BookingDBInterface> {
     const weekday = await timeslot.getWeekday();
     const settings = await this.settingsRepository.get();
@@ -58,7 +59,8 @@ export default class BookingRepository {
       weekday.data.name,
       timeslot.data,
       settings,
-      ignoreDeadlines
+      ignoreDeadlines,
+      ignoreMaxWeekDistance
     );
 
     switch (bookingValidation.kind) {

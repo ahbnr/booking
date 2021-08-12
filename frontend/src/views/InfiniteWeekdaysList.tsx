@@ -66,8 +66,13 @@ class UnstyledInfiniteWeekdaysList extends React.PureComponent<
   }
 
   render() {
-    const itemCount =
-      this.props.weekdays.length > 0 ? this.state.bookingOptions.length + 1 : 0;
+    let itemCount = 0;
+    if (this.props.weekdays.length > 0) {
+      itemCount = this.state.bookingOptions.length + 1;
+      if (this.props.maxWeekDistance >= 0) {
+        itemCount = Math.min(itemCount, this.props.maxWeekDistance + 1);
+      }
+    }
     const itemSize = 70;
 
     let content: ReactNode;
@@ -150,6 +155,7 @@ export default InfiniteWeekdaysList;
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
   weekdays: WeekdayWithBookingDay[];
+  maxWeekDistance: number;
   notEmptyTitle: string;
   emptyTitle?: string;
   emptyMessage?: string;
