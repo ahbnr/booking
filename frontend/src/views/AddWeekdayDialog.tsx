@@ -18,11 +18,7 @@ import {
 } from '@material-ui/core';
 import TodayIcon from '@material-ui/icons/Today';
 import { Client } from '../Client';
-import {
-  ResourceGetInterface,
-  WeekdayGetInterface,
-  WeekdayName,
-} from 'common/dist';
+import { ResourceGetInterface, WeekdayName } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
 import LoadingBackdrop from './LoadingBackdrop';
@@ -90,23 +86,11 @@ export class UnstyledAddWeekdayDialog extends React.PureComponent<
     }
   }
 
-  public static getCreatedWeekdayNames(
-    weekdays: WeekdayGetInterface[]
-  ): Set<string> {
-    return new Set<string>(
-      weekdays
-        .map((weekday) => weekday.name)
-        .filter((weekdayName) => weekdayNames.has(weekdayName))
-    );
-  }
-
   static getMissingWeekdayNames(
-    weekdays: WeekdayGetInterface[]
+    existingWeekdayNames: Set<WeekdayName>
   ): Array<string> {
-    const createdWeekdayNames = this.getCreatedWeekdayNames(weekdays);
-
     return Array.from(weekdayNames)
-      .filter((name) => !createdWeekdayNames.has(name))
+      .filter((name) => !existingWeekdayNames.has(name as WeekdayName))
       .sort(nameSorter);
   }
 
@@ -121,7 +105,7 @@ export class UnstyledAddWeekdayDialog extends React.PureComponent<
     const { t } = this.props;
 
     const missingWeekdayNames = UnstyledAddWeekdayDialog.getMissingWeekdayNames(
-      this.props.existingWeekdays
+      this.props.existingWeekdayNames
     );
 
     return (
@@ -197,7 +181,7 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   changeInteractionState: changeInteractionStateT;
   resource: ResourceGetInterface;
-  existingWeekdays: WeekdayGetInterface[];
+  existingWeekdayNames: Set<WeekdayName>;
 }
 
 interface State {

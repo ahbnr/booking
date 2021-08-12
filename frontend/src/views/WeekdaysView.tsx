@@ -4,7 +4,7 @@ import { weekdayNames } from '../models/WeekdayUtils';
 import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { ResourceGetInterface, WeekdayGetInterface } from 'common/dist';
+import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
@@ -24,7 +24,6 @@ import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
-import { UnstyledAddWeekdayDialog } from './AddWeekdayDialog';
 import LoadingBackdrop from './LoadingBackdrop';
 import { DateTime } from 'luxon';
 import InfiniteWeekdaysList from './InfiniteWeekdaysList';
@@ -32,9 +31,10 @@ import DeleteConfirmer from './DeleteConfirmer';
 import DeleteIcon from '@material-ui/icons/Delete';
 import {
   getValidBookingDays,
-  WeekdayWithBookingDay,
+  WeekdayBookingConstraint,
 } from '../complex_queries/getValidBookingDays';
 import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
+import { WeekdayName } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -81,7 +81,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
       this.props.resource.name
     );
 
-    const bookingDays = await getValidBookingDays(
+    const weekdayConstraints = await getValidBookingDays(
       weekdays,
       this.props.isAuthenticated,
       this.props.client
@@ -90,7 +90,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     const settings = await this.props.client.getSettings();
 
     return {
-      bookingDays,
+      weekdayConstraints,
       settings,
     };
   }
@@ -101,11 +101,8 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     });
   }
 
-  haveAllWeekdaysBeenCreated(weekdays: WeekdayGetInterface[]) {
-    return _.isEqual(
-      weekdayNames,
-      UnstyledAddWeekdayDialog.getCreatedWeekdayNames(weekdays)
-    );
+  haveAllWeekdaysBeenCreated(createdWeekdayNames: Set<WeekdayName>) {
+    return _.isEqual(weekdayNames, createdWeekdayNames);
   }
 
   async deleteWeekday(weekdayId: number) {
@@ -127,9 +124,9 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     });
   }
 
-  openAddWeekdayDialog(weekdays: WeekdayGetInterface[]) {
+  openAddWeekdayDialog(existingWeekdayNames: Set<WeekdayName>) {
     this.props.changeInteractionState('addingWeekday', {
-      existingWeekdays: weekdays,
+      existingWeekdayNames,
       resource: this.props.resource,
     });
   }
@@ -141,14 +138,18 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
       <Suspense
         asyncAction={this.state.remoteData}
         fallback={<LoadingScreen />}
-        content={({ bookingDays, settings }) => {
-          const weekdays = bookingDays.map(({ weekday }) => weekday);
+        content={({ weekdayConstraints, settings }) => {
+          const createdWeekdayNames = new Set<WeekdayName>(
+            _.chain(weekdayConstraints)
+              .map(({ weekdayName }) => weekdayName)
+              .value()
+          );
 
           return (
             <div style={{ width: '100%', height: '100%' }}>
               <div style={{ width: '100%', height: '100%' }}>
                 <InfiniteWeekdaysList
-                  weekdays={bookingDays}
+                  weekdays={weekdayConstraints}
                   maxWeekDistance={
                     this.props.isAuthenticated
                       ? -1
@@ -228,11 +229,13 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                 </InfiniteWeekdaysList>
               </div>
               {this.props.isAuthenticated &&
-                !this.haveAllWeekdaysBeenCreated(weekdays) && (
+                !this.haveAllWeekdaysBeenCreated(createdWeekdayNames) && (
                   <Fab
                     className={this.props.classes.fab}
                     variant="extended"
-                    onClick={() => this.openAddWeekdayDialog(weekdays)}
+                    onClick={() =>
+                      this.openAddWeekdayDialog(createdWeekdayNames)
+                    }
                     data-cy={'add-weekday-button'}
                   >
                     <AddIcon className={this.props.classes.extendedIcon} />
@@ -266,6 +269,6 @@ interface State {
 }
 
 interface RemoteData {
-  bookingDays: WeekdayWithBookingDay[];
+  weekdayConstraints: WeekdayBookingConstraint[];
   settings: SettingsGetInterface;
 }

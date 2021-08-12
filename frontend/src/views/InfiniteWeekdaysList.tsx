@@ -17,7 +17,7 @@ import { FixedSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Skeleton } from '@material-ui/lab';
 import { InfoMessage } from './ListEx';
-import { WeekdayWithBookingDay } from '../complex_queries/getValidBookingDays';
+import { WeekdayBookingConstraint } from '../complex_queries/getValidBookingDays';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,8 +47,8 @@ class UnstyledInfiniteWeekdaysList extends React.PureComponent<
     return new Promise<void>((resolve) => {
       const newBookingOptions: BookingOption[] = this.props.weekdays.map(
         (base) => ({
-          weekdayName: base.weekday.name,
-          weekdayId: base.weekday.id,
+          weekdayName: base.weekdayName,
+          weekdayId: base.weekdayId,
           bookingDay: base.earliestDate.plus(
             Duration.fromObject({ weeks: this.state.weekMultiplier })
           ),
@@ -154,7 +154,7 @@ const InfiniteWeekdaysList = withTranslation()(
 export default InfiniteWeekdaysList;
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
-  weekdays: WeekdayWithBookingDay[];
+  weekdays: WeekdayBookingConstraint[];
   maxWeekDistance: number;
   notEmptyTitle: string;
   emptyTitle?: string;
@@ -170,7 +170,7 @@ interface State {
   weekMultiplier: number;
 }
 
-interface BookingOption {
+export interface BookingOption {
   weekdayName: WeekdayName;
   weekdayId: number;
   bookingDay: DateTime;

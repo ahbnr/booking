@@ -1,5 +1,5 @@
-import { ResourceGetInterface } from 'common';
-import { TimeslotGetInterface, WeekdayGetInterface } from 'common/dist';
+import { ResourceGetInterface, WeekdayName } from 'common';
+import { TimeslotGetInterface } from 'common/dist';
 import { DateTime } from 'luxon';
 
 import { ADT } from 'ts-adt';
@@ -51,7 +51,7 @@ export interface CreatingTimeslot {
 }
 
 export interface AddingWeekday {
-  existingWeekdays: WeekdayGetInterface[];
+  existingWeekdayNames: Set<WeekdayName>;
   resource: ResourceGetInterface;
 }
 

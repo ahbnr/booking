@@ -228,11 +228,11 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           mode={construct('createMode', { weekdayId })}
         />
       ),
-      addingWeekday: ({ existingWeekdays, resource }) => (
+      addingWeekday: ({ existingWeekdayNames, resource }) => (
         <AddWeekdayDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          existingWeekdays={existingWeekdays}
+          existingWeekdayNames={existingWeekdayNames}
           resource={resource}
         />
       ),

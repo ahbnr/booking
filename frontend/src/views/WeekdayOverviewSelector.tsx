@@ -21,9 +21,10 @@ import LoadingBackdrop from './LoadingBackdrop';
 import { DateTime } from 'luxon';
 import {
   getValidBookingDays,
-  WeekdayWithBookingDay,
+  WeekdayBookingConstraint,
 } from '../complex_queries/getValidBookingDays';
 import InfiniteWeekdaysList from './InfiniteWeekdaysList';
+import _ from 'lodash';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -68,17 +69,18 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
   }
 
   refreshRelevantWeekdays() {
-    const bookingDays = this.fetchBookingDays();
+    const weekdayConstraints = this.fetchWeekdayConstraints();
 
     this.setState({
-      bookingDays,
+      weekdayConstraints,
     });
   }
 
-  async fetchBookingDays(): Promise<WeekdayWithBookingDay[]> {
+  async fetchWeekdayConstraints(): Promise<WeekdayBookingConstraint[]> {
     const weekdays = await this.props.client.getWeekdays();
+    const deduplicatedWeekdays = _.uniqBy(weekdays, (weekday) => weekday.name);
 
-    return getValidBookingDays(weekdays, true, this.props.client);
+    return getValidBookingDays(deduplicatedWeekdays, true, this.props.client);
   }
 
   overviewWeekday(weekdayId: number, bookingDay: DateTime) {
@@ -93,13 +95,13 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
 
     return (
       <Suspense
-        asyncAction={this.state.bookingDays}
+        asyncAction={this.state.weekdayConstraints}
         fallback={<LoadingScreen />}
-        content={(bookingDays) => (
+        content={(weekdayConstraints) => (
           <div style={{ width: '100%', height: '100%' }}>
             <div style={{ width: '100%', height: '100%' }}>
               <InfiniteWeekdaysList
-                weekdays={bookingDays}
+                weekdays={weekdayConstraints}
                 maxWeekDistance={-1}
                 notEmptyTitle="Zu welchem Tag möchten Sie eine Übersicht der Buchungen?"
                 emptyTitle="Keine Tage angelegt"
@@ -155,6 +157,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 }
 
 interface State {
-  bookingDays?: Promise<WeekdayWithBookingDay[]>;
+  weekdayConstraints?: Promise<WeekdayBookingConstraint[]>;
   backdropOpen: boolean;
 }

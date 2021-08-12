@@ -1,13 +1,13 @@
-import { getNextWeekdayDate, WeekdayGetInterface } from 'common';
+import { getNextWeekdayDate, WeekdayName } from 'common';
 import { Client } from '../Client';
 import { DateTime } from 'luxon';
 import _ from 'lodash';
 
 export async function getValidBookingDays(
-  weekdays: WeekdayGetInterface[],
+  weekdays: { name: WeekdayName; id: number }[],
   isAuthenticated: boolean,
   client: Client
-): Promise<WeekdayWithBookingDay[]> {
+): Promise<WeekdayBookingConstraint[]> {
   const bookableWeekdays = await Promise.all(
     weekdays.map(async (weekday) => {
       let earliestDate: DateTime;
@@ -22,7 +22,8 @@ export async function getValidBookingDays(
       }
 
       return {
-        weekday,
+        weekdayName: weekday.name,
+        weekdayId: weekday.id,
         earliestDate,
       };
     })
@@ -34,7 +35,8 @@ export async function getValidBookingDays(
   );
 }
 
-export interface WeekdayWithBookingDay {
-  weekday: WeekdayGetInterface;
+export interface WeekdayBookingConstraint {
+  weekdayName: WeekdayName;
+  weekdayId: number;
   earliestDate: DateTime;
 }
