@@ -72,9 +72,13 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
 
   async fetchTimeslot(): Promise<TimeslotDisplayData> {
     const timeslot = await this.props.client.getTimeslot(this.props.timeslotId);
+    const numBookings = await this.props.client.countBookings(
+      this.props.timeslotId,
+      this.props.bookingDay
+    );
 
     return {
-      timeslot: timeslot,
+      timeslot,
       startTime: DateTime.fromObject({
         hour: timeslot.startHours,
         minute: timeslot.startMinutes,
@@ -83,6 +87,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
         hour: timeslot.endHours,
         minute: timeslot.endMinutes,
       }),
+      numBookings,
     };
   }
 
@@ -120,8 +125,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
         }
         content={(displayData) => {
           const bookingsAvailable =
-            displayData.timeslot.bookingIds.length <
-            displayData.timeslot.capacity;
+            displayData.numBookings < displayData.timeslot.capacity;
 
           const clickAction = this.props.isAuthenticated
             ? () => this.viewBookings(displayData.timeslot)
@@ -180,7 +184,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
                   clickable
                   label={
                     this.props.isAuthenticated
-                      ? `${displayData.timeslot.bookingIds.length}/${displayData.timeslot.capacity}`
+                      ? `${displayData.numBookings}/${displayData.timeslot.capacity}`
                       : bookingsAvailable
                       ? 'Frei'
                       : 'Voll'
@@ -222,4 +226,5 @@ interface TimeslotDisplayData {
   timeslot: TimeslotGetInterface;
   startTime: DateType;
   endTime: DateType;
+  numBookings: number;
 }

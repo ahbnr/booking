@@ -1,5 +1,5 @@
 import { WeekdayPostInterface } from 'common/dist';
-import { DestroyOptions, UniqueConstraintError } from 'sequelize';
+import { DestroyOptions, UniqueConstraintError, Op } from 'sequelize';
 import { DataIdAlreadyExists, NoElementToUpdate } from './errors';
 import { Weekday } from '../models/weekday.model';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
@@ -50,20 +50,30 @@ export default class WeekdayRepository {
     resource: ResourceDBInterface,
     weekdayData: WeekdayPostInterface
   ): Promise<WeekdayDBInterface> {
-    try {
-      const weekday = await Weekday.create<Weekday>({
-        resourceName: resource.data.name,
-        ...weekdayData,
-      });
+    // does this weekday already exist for this resource?
+    const doesWeekdayExist = await Weekday.findOne({
+      where: {
+        [Op.and]: [
+          {
+            name: weekdayData.name,
+          },
+          {
+            resourceName: resource.data.name,
+          },
+        ],
+      },
+    });
 
-      return this.toInterface(weekday);
-    } catch (e) {
-      if (e instanceof UniqueConstraintError) {
-        throw new DataIdAlreadyExists();
-      }
-
-      throw e;
+    if (doesWeekdayExist != null) {
+      throw new DataIdAlreadyExists();
     }
+
+    const weekday = await Weekday.create<Weekday>({
+      resourceName: resource.data.name,
+      ...weekdayData,
+    });
+
+    return this.toInterface(weekday);
   }
 
   public async update(

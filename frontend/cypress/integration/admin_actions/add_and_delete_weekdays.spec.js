@@ -1,9 +1,10 @@
+/*
 // eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
 const resource_actions = require('../../support/resource_actions');
 // eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
 const weekday_actions = require('../../support/weekday_actions');
 
-describe('Add and remove weekdays as an admin', () => {
+//describe('Add and remove weekdays as an admin', () => {
   it('Add and remove some weekdays', () => {
     cy.login();
 
@@ -19,3 +20,4 @@ describe('Add and remove weekdays as an admin', () => {
     weekday_actions.deleteWeekday('wednesday');
   });
 });
+ */

@@ -1,10 +1,6 @@
 import { ResourceGetInterface } from 'common';
-import {
-  TimeslotGetInterface,
-  WeekdayGetInterface,
-  WeekdayName,
-} from 'common/dist';
-import { DateTime, Interval } from 'luxon';
+import { TimeslotGetInterface, WeekdayGetInterface } from 'common/dist';
+import { DateTime } from 'luxon';
 
 import { ADT } from 'ts-adt';
 
@@ -15,7 +11,7 @@ export interface ViewingWeekdays {
 }
 
 export interface ViewingTimeslots {
-  weekday: WeekdayGetInterface;
+  weekdayId: number;
   bookingDay: DateTime;
 }
 
@@ -42,8 +38,8 @@ export interface LookingUpBookings {
 }
 
 export interface OverviewingDay {
-  weekdayName: WeekdayName;
-  dayInterval: Interval;
+  weekdayId: number;
+  bookingDay: DateTime;
 }
 
 export interface EditingTimeslot {
@@ -51,7 +47,7 @@ export interface EditingTimeslot {
 }
 
 export interface CreatingTimeslot {
-  weekday: WeekdayGetInterface;
+  weekdayId: number;
 }
 
 export interface AddingWeekday {

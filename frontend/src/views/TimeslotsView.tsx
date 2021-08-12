@@ -5,11 +5,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
-import {
-  timeslotCompare,
-  TimeslotGetInterface,
-  WeekdayGetInterface,
-} from 'common/dist';
+import { timeslotCompare, TimeslotGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
@@ -51,13 +47,13 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
 
   addTimeslot() {
     this.props.changeInteractionState('creatingTimeslot', {
-      weekday: this.props.weekday,
+      weekdayId: this.props.weekdayId,
     });
   }
 
   refreshTimeslots() {
     const timeslotsPromise = this.props.client.getTimeslots(
-      this.props.weekday.id
+      this.props.weekdayId
     );
 
     this.setState({
@@ -123,7 +119,7 @@ export default TimeslotsView;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
-  weekday: WeekdayGetInterface;
+  weekdayId: number;
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }

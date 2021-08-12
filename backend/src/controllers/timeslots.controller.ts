@@ -82,6 +82,17 @@ export class TimeslotsController {
     );
   }
 
+  public async countBookingsForTimeslot(
+    req: TypesafeRequest,
+    res: Response<number>
+  ) {
+    const timeslot = await this.getTimeslot(req);
+    const day = TimeslotsController.retrieveDayDate(req);
+    const bookings = await timeslot.getBookings(day);
+
+    res.json(bookings.length);
+  }
+
   private static retrieveDayDate(req: TypesafeRequest): DateTime {
     if (hasProperty(req.params, 'dayDate')) {
       const dateString = checkType(req.params.dayDate, ISO8601);

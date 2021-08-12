@@ -19,17 +19,21 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
-import ListEx from './ListEx';
 import { UnstyledAddWeekdayDialog } from './AddWeekdayDialog';
 import LoadingBackdrop from './LoadingBackdrop';
-import DeleteConfirmer from './DeleteConfirmer';
 import { DateTime } from 'luxon';
+import InfiniteWeekdaysList from './InfiniteWeekdaysList';
+import DeleteConfirmer from './DeleteConfirmer';
+import DeleteIcon from '@material-ui/icons/Delete';
+import {
+  getValidBookingDays,
+  WeekdayWithBookingDay,
+} from '../complex_queries/getValidBookingDays';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -71,29 +75,15 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     this.refreshWeekdays();
   }
 
-  async getBookableWeekdays(): Promise<WeekdayWithBookingConditions[]> {
+  async getBookableWeekdays(): Promise<WeekdayWithBookingDay[]> {
     const weekdays = await this.props.client.getWeekdaysForResource(
       this.props.resource.name
     );
 
-    const bookableWeekdays = await Promise.all(
-      weekdays.map(async (weekday) => {
-        const bookingConditions = await this.props.client.getWeekdayBookingConditions(
-          weekday.id
-        );
-
-        return {
-          weekday: weekday,
-          earliestBookingDate: DateTime.fromISO(
-            bookingConditions.earliestBookingDate
-          ),
-        };
-      })
-    );
-
-    return _.sortBy(
-      bookableWeekdays,
-      (bookableWeekday) => bookableWeekday.earliestBookingDate
+    return getValidBookingDays(
+      weekdays,
+      this.props.isAuthenticated,
+      this.props.client
     );
   }
 
@@ -122,9 +112,9 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
     this.refreshWeekdays();
   }
 
-  viewTimeslots(weekday: WeekdayGetInterface, bookingDay: DateTime) {
+  viewTimeslots(weekdayId: number, bookingDay: DateTime) {
     this.props.changeInteractionState('viewingTimeslots', {
-      weekday,
+      weekdayId,
       bookingDay,
     });
   }
@@ -147,67 +137,83 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
           const weekdays = weekdaysWithConditions.map(({ weekday }) => weekday);
 
           return (
-            <>
-              <ListEx
-                notEmptyTitle={
-                  this.props.client.isAuthenticated()
-                    ? 'Wählen Sie den Wochentag aus welchen Sie bearbeiten möchten:'
-                    : 'An welchem Wochentag möchten Sie buchen?'
-                }
-                emptyTitle="Keine Wochentage angelegt"
-                emptyMessage={
-                  this.props.client.isAuthenticated()
-                    ? 'Es wurden noch keine Wochentage angelegt.'
-                    : 'Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage.'
-                }
-              >
-                {weekdaysWithConditions.map(
-                  ({ weekday, earliestBookingDate }) => (
-                    <ListItem
-                      button
-                      key={weekday.name}
-                      data-cy={'weekday-list-item'}
-                    >
-                      <ListItemText
-                        className={this.props.classes.listItemText}
-                        data-cy={`weekday-list-item-${weekday.name}`}
+            <div style={{ width: '100%', height: '100%' }}>
+              <div style={{ width: '100%', height: '100%' }}>
+                <InfiniteWeekdaysList
+                  weekdays={weekdaysWithConditions}
+                  notEmptyTitle={
+                    this.props.isAuthenticated
+                      ? 'Wählen Sie den Wochentag aus welchen Sie bearbeiten möchten:'
+                      : 'An welchem Wochentag möchten Sie buchen?'
+                  }
+                  emptyTitle={'Keine Wochentage angelegt'}
+                  emptyMessage={
+                    this.props.isAuthenticated
+                      ? 'Es wurden noch keine Wochentage angelegt.'
+                      : 'Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage.'
+                  }
+                >
+                  {(bookingOption, style) => {
+                    const {
+                      weekdayName,
+                      weekdayId,
+                      bookingDay,
+                    } = bookingOption;
+
+                    // Depending on whether there are secondary actions, we have to inject the style differently
+                    const injectedStyle = this.props.isAuthenticated
+                      ? {
+                          ContainerComponent: 'div' as const,
+                          ContainerProps: { style },
+                        }
+                      : { style: style };
+
+                    return (
+                      <ListItem
+                        button
+                        key={`${weekdayId}-${bookingDay.toISODate()}`}
+                        data-cy={'weekday-list-item'}
+                        {...injectedStyle}
                       >
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() =>
-                            this.viewTimeslots(weekday, earliestBookingDate)
-                          }
-                          data-cy={'weekday-button'}
-                          className={this.props.classes.listButton}
+                        <ListItemText
+                          className={this.props.classes.listItemText}
                         >
-                          {t(weekday.name)}
-                          {' - '}
-                          {earliestBookingDate
-                            .setLocale('de-DE') // TODO: Make this dynamic
-                            .toLocaleString()}
-                        </Button>
-                      </ListItemText>
-                      {this.props.isAuthenticated && (
-                        <ListItemSecondaryAction>
-                          <DeleteConfirmer
-                            name={`der Wochentag "${t(weekday.name)}"`}
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() =>
+                              this.viewTimeslots(weekdayId, bookingDay)
+                            }
+                            className={this.props.classes.listButton}
                           >
-                            <IconButton
-                              edge="end"
-                              aria-label="end"
-                              onClick={() => this.deleteWeekday(weekday.id)}
-                              data-cy={'weekday-delete-button'}
+                            {t(weekdayName)}
+                            {' - '}
+                            {bookingDay
+                              .setLocale('de-DE') // TODO: Make this dynamic
+                              .toLocaleString()}
+                          </Button>
+                        </ListItemText>
+                        {this.props.isAuthenticated && (
+                          <ListItemSecondaryAction>
+                            <DeleteConfirmer
+                              name={`der Wochentag "${t(weekdayName)}"`}
                             >
-                              <DeleteIcon />
-                            </IconButton>
-                          </DeleteConfirmer>
-                        </ListItemSecondaryAction>
-                      )}
-                    </ListItem>
-                  )
-                )}
-              </ListEx>
+                              <IconButton
+                                edge="end"
+                                aria-label="end"
+                                onClick={() => this.deleteWeekday(weekdayId)}
+                                data-cy={'weekday-delete-button'}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </DeleteConfirmer>
+                          </ListItemSecondaryAction>
+                        )}
+                      </ListItem>
+                    );
+                  }}
+                </InfiniteWeekdaysList>
+              </div>
               {this.props.isAuthenticated &&
                 !this.haveAllWeekdaysBeenCreated(weekdays) && (
                   <Fab
@@ -221,7 +227,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                   </Fab>
                 )}
               <LoadingBackdrop open={this.state.backdropOpen} />
-            </>
+            </div>
           );
         }}
       />
@@ -242,11 +248,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 }
 
 interface State {
-  weekdays?: Promise<WeekdayWithBookingConditions[]>;
+  weekdays?: Promise<WeekdayWithBookingDay[]>;
   backdropOpen: boolean;
-}
-
-interface WeekdayWithBookingConditions {
-  weekday: WeekdayGetInterface;
-  earliestBookingDate: DateTime;
 }

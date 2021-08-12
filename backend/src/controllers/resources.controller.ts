@@ -14,6 +14,7 @@ import ResourceRepository from '../repositories/ResourceRepository';
 import TypesafeRequest from './TypesafeRequest';
 import WeekdayRepository from '../repositories/WeekdayRepository';
 import ResourceDBInterface from '../repositories/model_interfaces/ResourceDBInterface';
+import { WeekdayName } from 'common';
 
 @boundClass
 export class ResourcesController {

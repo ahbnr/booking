@@ -18,7 +18,6 @@ import {
   noRefinementChecks,
   TimeslotGetInterface,
   TimeslotPostInterface,
-  WeekdayGetInterface,
 } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
@@ -115,8 +114,8 @@ class UnstyledTimeslotEditDialog extends React.PureComponent<
       await matchI(this.props.mode)({
         editMode: ({ timeslot }) =>
           this.props.client.updateTimeslot(timeslot.id, postData),
-        createMode: ({ weekday }) =>
-          this.props.client.createTimeslot(weekday.id, postData),
+        createMode: ({ weekdayId }) =>
+          this.props.client.createTimeslot(weekdayId, postData),
       });
 
       window.history.back();
@@ -273,6 +272,6 @@ export type Mode = ADT<{
     timeslot: TimeslotGetInterface;
   };
   createMode: {
-    weekday: WeekdayGetInterface;
+    weekdayId: number;
   };
 }>;

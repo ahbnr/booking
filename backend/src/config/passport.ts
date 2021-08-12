@@ -6,13 +6,13 @@ import {
 } from 'passport-jwt';
 import { User } from '../models/user.model';
 import { Request, Response, NextFunction } from 'express';
+import { randomString } from 'secure-random-password';
 
-// FIXME: Load proper secret from somewhere else
-export const jwtSecret = 'secret';
+export const jwtSecret = randomString({ length: 64 });
 
 const opts: StrategyOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'secret',
+  secretOrKey: jwtSecret,
   // FIXME: Consider the other validation functionalities provided JWT
 };
 
@@ -55,7 +55,8 @@ export function optionalAuthHandler(
       session: false,
     },
     (err, user, _) => {
-      req.authenticated = user != null;
+      req.user = user;
+      req.authenticated = !!user;
       next();
     }
   )(req, res, next);

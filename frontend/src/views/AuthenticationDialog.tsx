@@ -92,10 +92,7 @@ class UnstyledAuthenticationDialog extends React.PureComponent<
       this.setState({
         backdropOpen: true,
       });
-      await this.props.client.authenticate(
-        this.state.userName,
-        this.state.password
-      );
+      await this.props.client.login(this.state.userName, this.state.password);
       this.setState({
         backdropOpen: false,
       });

@@ -72,6 +72,7 @@ const styles = (theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    drawer: { flexShrink: 0 },
     drawerPaper: {
       position: 'relative',
       whiteSpace: 'nowrap',
@@ -216,7 +217,8 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
         </MaterialAppBar>
         {this.props.isAuthenticated && (
           <Drawer
-            variant="permanent"
+            variant="temporary"
+            className={this.props.classes.drawer}
             classes={{
               paper: clsx(
                 this.props.classes.drawerPaper,

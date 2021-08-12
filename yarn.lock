@@ -3135,6 +3135,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-virtualized-auto-sizer@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@types/react-virtualized-auto-sizer@npm:1.0.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: a4549d35fa70890d65d646a9d9b772a3389064c3af4edcf9d8b0b0224e529c268172df6016f28c7acaf4c275989d63c26847b17d28b7806f9e17d4aff04d6581
+  languageName: node
+  linkType: hard
+
+"@types/react-window-infinite-loader@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@types/react-window-infinite-loader@npm:1.0.4"
+  dependencies:
+    "@types/react": "*"
+    "@types/react-window": "*"
+  checksum: d70a8a249ada39435946a97580f8d5dac62545dd83510a54307897aa86a6f3918e0975e54dcda5ab7a851c6cc24df31f76332429a96266ab5708112c9df35ab2
+  languageName: node
+  linkType: hard
+
+"@types/react-window@npm:*, @types/react-window@npm:^1.8.5":
+  version: 1.8.5
+  resolution: "@types/react-window@npm:1.8.5"
+  dependencies:
+    "@types/react": "*"
+  checksum: 08a5a2f101ab6fa686f894cfad63fc62edf8b75686fa0b4e98cfe6368a01803ad268a3fe450e826fb53f76db8a32239dcf4e2c2aacd93c8b8ecca7fdb4a44977
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:*, @types/react@npm:>=16.9.11":
   version: 17.0.3
   resolution: "@types/react@npm:17.0.3"
@@ -6957,6 +6985,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"debugtools@workspace:debugtools":
+  version: 0.0.0-use.local
+  resolution: "debugtools@workspace:debugtools"
+  dependencies:
+    "@types/node": ^15.0.2
+    "@typescript-eslint/eslint-plugin": ^4.3.0
+    "@typescript-eslint/parser": ^4.3.0
+    axios: ^0.21.1
+    eslint: 6.6.0
+    eslint-config-prettier: ^6.12.0
+    eslint-plugin-prettier: ^3.1.4
+    luxon: ^2.0.2
+    prettier: ^2.1.2
+    ts-node: ^9.1.1
+    typescript: ^3.9.7
+  languageName: unknown
+  linkType: soft
+
 "decamelize@npm:^1.1.2, decamelize@npm:^1.2.0":
   version: 1.2.0
   resolution: "decamelize@npm:1.2.0"
@@ -9221,6 +9267,9 @@ __metadata:
     "@types/react-big-calendar": ^0.24.7
     "@types/react-dom": ^16.9.0
     "@types/react-i18next": ^8.1.0
+    "@types/react-virtualized-auto-sizer": ^1.0.1
+    "@types/react-window": ^1.8.5
+    "@types/react-window-infinite-loader": ^1.0.4
     "@typescript-eslint/eslint-plugin": ^4.3.0
     "@typescript-eslint/parser": ^4.3.0
     autobind-decorator: ^2.4.0
@@ -9250,6 +9299,9 @@ __metadata:
     react-dom: ^16.13.1
     react-i18next: ^11.8.15
     react-scripts: 3.4.1
+    react-virtualized-auto-sizer: ^1.0.5
+    react-window: ^1.8.6
+    react-window-infinite-loader: ^1.0.7
     ts-adt: ^1.0.1
     typescript: ^3.9.7
     wait-on: ^5.3.0
@@ -12832,6 +12884,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"luxon@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "luxon@npm:2.0.2"
+  checksum: ea82fa2034e9d2e3b508f26bcf648771cacb8c988f6f9ff09f542efc6d6883251caab30e867019882cfb073a57da8d707ea515c7a3cd62ef50b25787a91d8697
+  languageName: node
+  linkType: hard
+
 "lz-string@npm:^1.4.4":
   version: 1.4.4
   resolution: "lz-string@npm:1.4.4"
@@ -13009,6 +13068,13 @@ fsevents@~2.3.1:
     mimic-fn: ^2.0.0
     p-is-promise: ^2.0.0
   checksum: 3af1ac31ef775c5b23bbc0e078d22324c083822fb6ee1a183595359fc23ef638cf90e8c1e044e5f17c871c6e50dc11db11f1aee112d85dc936e3aa2093acd038
+  languageName: node
+  linkType: hard
+
+"memoize-one@npm:>=3.1.1 <6":
+  version: 5.2.1
+  resolution: "memoize-one@npm:5.2.1"
+  checksum: 6b7dab7d8d9dca696d500dbc7f6b1445cbc4168d8208ee2746dd1a7f75378445d9bc6a2def7868afee81c87e630294456310f33f3f1eb738f69d748c797d87d5
   languageName: node
   linkType: hard
 
@@ -16449,6 +16515,39 @@ fsevents@~2.3.1:
     react: ">=16.6.0"
     react-dom: ">=16.6.0"
   checksum: e14446123f820e804335c64be5270333c29e8cfaa43dfc33387e132c5d521cf4a0a7c2408058a147b254ae82a6569f373394d83e977ef340d6937bc2f4ff7d6c
+  languageName: node
+  linkType: hard
+
+"react-virtualized-auto-sizer@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "react-virtualized-auto-sizer@npm:1.0.5"
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+  checksum: 25053dae316fa965cc8bb65864d8dd3a195d2b22cf3aad1f7dbc9e6d7b2251f2b273e0ce4bc9a3f57cb253f46cb526b6a256939572c3ebb5c5e4b15cb1c9a0ba
+  languageName: node
+  linkType: hard
+
+"react-window-infinite-loader@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "react-window-infinite-loader@npm:1.0.7"
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+  checksum: 5460b4fd84ce9a068572d25a6a25a83377f5cf7f0302dc365961db8ebae82e32f1caa83fe2a01caf2b5e4d6abc33c867d2d20cd962c654e8602168043fe38768
+  languageName: node
+  linkType: hard
+
+"react-window@npm:^1.8.6":
+  version: 1.8.6
+  resolution: "react-window@npm:1.8.6"
+  dependencies:
+    "@babel/runtime": ^7.0.0
+    memoize-one: ">=3.1.1 <6"
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0 || ^17.0.0
+    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: e2bfdfbe39f165c8ca4005b36837288546db5701fc6b53da0acb352317f5dad14cd7abbdff3b13644a8615074fa9841996249b2776f8f94e7efa4e37236b06a4
   languageName: node
   linkType: hard
 

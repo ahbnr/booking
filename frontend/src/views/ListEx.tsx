@@ -13,7 +13,7 @@ import MoodBadIcon from '@material-ui/icons/MoodBad';
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      marginTop: theme.spacing(8),
+      paddingTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -53,7 +53,7 @@ class UnstyledInfoMessage extends React.Component<InfoMessageProperties, {}> {
     );
   }
 }
-const InfoMessage = withStyles(styles)(UnstyledInfoMessage);
+export const InfoMessage = withStyles(styles)(UnstyledInfoMessage);
 
 /**
  * Same as <List> but displays a message if the list is empty.

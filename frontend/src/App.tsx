@@ -37,18 +37,22 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       display: 'flex',
+      flexFlow: 'column',
+      height: '100vh',
       paddingLeft: '0',
       paddingRight: '0',
     },
     appBarSpacer: theme.mixins.toolbar,
     content: {
       flexGrow: 1,
-      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
       overflow: 'auto',
       paddingLeft: '0',
       paddingRight: '0',
     },
     container: {
+      flexGrow: 1,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
       paddingLeft: '0',
@@ -152,12 +156,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      viewingTimeslots: ({ weekday, bookingDay }) => (
+      viewingTimeslots: ({ weekdayId, bookingDay }) => (
         <TimeslotsView
           isAuthenticated={this.state.isAuthenticated}
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          weekday={weekday}
+          weekdayId={weekdayId}
           bookingDay={bookingDay}
         />
       ),
@@ -199,13 +203,14 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       lookingUpBookings: ({ lookupToken }) => (
         <BookingsLookupView client={this.client} lookupToken={lookupToken} />
       ),
-      overviewingDay: ({ dayInterval }) => {
+      overviewingDay: ({ weekdayId, bookingDay }) => {
         return (
           <DayOverviewView
             isAuthenticated={this.state.isAuthenticated}
             client={this.client}
             changeInteractionState={this.changeInteractionState}
-            dateInterval={dayInterval}
+            weekdayId={weekdayId}
+            bookingDay={bookingDay}
           />
         );
       },
@@ -216,11 +221,11 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           mode={construct('editMode', { timeslot })}
         />
       ),
-      creatingTimeslot: ({ weekday }) => (
+      creatingTimeslot: ({ weekdayId }) => (
         <TimeslotEditDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          mode={construct('createMode', { weekday })}
+          mode={construct('createMode', { weekdayId })}
         />
       ),
       addingWeekday: ({ existingWeekdays, resource }) => (

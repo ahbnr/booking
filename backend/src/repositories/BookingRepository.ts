@@ -20,7 +20,7 @@ import { Conflict, UnprocessableEntity } from '../controllers/errors';
 import TimeslotRepository from './TimeslotRepository';
 import { NoElementToUpdate } from './errors';
 import '../utils/array_extensions';
-import isValidBookingDate from '../date_math/isValidBookingDate';
+import getBookingInterval from '../date_math/getBookingInterval';
 import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
 import assertNever from '../utils/assertNever';
@@ -53,35 +53,27 @@ export default class BookingRepository {
     const settings = await this.settingsRepository.get();
     const bookingDay = DateTime.fromISO(bookingPostData.bookingDay);
 
-    const bookingDateValidation = isValidBookingDate(
+    const bookingValidation = getBookingInterval(
       bookingDay,
       weekday.data.name,
+      timeslot.data,
       settings,
       ignoreDeadlines
     );
 
-    switch (bookingDateValidation.kind) {
+    switch (bookingValidation.kind) {
       case 'error':
         throw new UnprocessableEntity(
-          `Invalid booking date: ${bookingDateValidation.message}`
+          `Invalid booking date: ${bookingValidation.error}`
         );
       case 'success': {
         const bookings = await timeslot.getBookings(bookingDay);
 
         if (bookings.length < timeslot.data.capacity) {
-          const startDate = setTimeslotStartDate(
-            bookingDay,
-            timeslot.data
-          ).toJSDate();
-          const endDate = setTimeslotEndDate(
-            bookingDay,
-            timeslot.data
-          ).toJSDate();
-
           const booking = await Booking.create<Booking>({
             ...bookingPostData,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: bookingValidation.result.start.toJSDate(),
+            endDate: bookingValidation.result.end.toJSDate(),
             timeslotId: timeslot.id,
           });
 

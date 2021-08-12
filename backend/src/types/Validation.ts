@@ -1,17 +1,22 @@
-type ValidationErrorT = {
+type ValidationErrorT<ErrorT> = {
   kind: 'error';
-  message: string;
+  error: ErrorT;
 };
 
-type ValidationSuccessT = {
-  kind: 'success';
-};
+type ValidationSuccessT<SuccessT> = { kind: 'success'; result: SuccessT };
 
-export type Validation = ValidationSuccessT | ValidationErrorT;
+export type Validation<SuccessT, ErrorT> =
+  | ValidationSuccessT<SuccessT>
+  | ValidationErrorT<ErrorT>;
 
-export function ValidationSuccess(): ValidationSuccessT {
-  return { kind: 'success' };
+export function ValidationSuccess<SuccessT>(
+  result: SuccessT
+): ValidationSuccessT<SuccessT> {
+  return { kind: 'success', result };
 }
-export function ValidationError(message: string): ValidationErrorT {
-  return { kind: 'error', message: message };
+
+export function ValidationError<ErrorT>(
+  error: ErrorT
+): ValidationErrorT<ErrorT> {
+  return { kind: 'error', error };
 }

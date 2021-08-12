@@ -166,13 +166,25 @@ export class Routes {
         authHandler,
         Routes.asyncHandler(this.timeslotsController.delete)
       );
+
+    app
+      .route('/timeslots/:id/bookings')
+      .post(
+        optionalAuthHandler,
+        Routes.asyncHandler(this.bookingsController.createBooking)
+      );
     app
       .route('/timeslots/:id/bookings/:dayDate')
       .get(
         authHandler,
         Routes.asyncHandler(this.timeslotsController.getBookingsForTimeslot)
-      )
-      .post(Routes.asyncHandler(this.bookingsController.createBooking));
+      );
+
+    app
+      .route('/timeslots/:id/bookings/:dayDate/count')
+      .get(
+        Routes.asyncHandler(this.timeslotsController.countBookingsForTimeslot)
+      );
 
     app
       .route('/bookings')

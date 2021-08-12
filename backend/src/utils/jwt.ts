@@ -1,6 +1,7 @@
 import jwt, { SignOptions, VerifyErrors, VerifyOptions } from 'jsonwebtoken';
 import { jwtSecret } from '../config/passport';
 import { DateTime } from 'luxon';
+import { Unauthenticated } from '../controllers/errors';
 
 export function asyncJwtVerify(
   token: string,
@@ -17,11 +18,11 @@ export function asyncJwtVerify(
       // eslint-disable-next-line @typescript-eslint/ban-types
       (err: VerifyErrors | null, decoded?: object) => {
         if (err != null) {
-          reject(err);
+          reject(new Unauthenticated(err.message));
         } else if (decoded != null) {
           resolve(decoded);
         } else {
-          reject('Token could not be verified.');
+          reject(new Unauthenticated('Token could not be verified.'));
         }
       }
     )

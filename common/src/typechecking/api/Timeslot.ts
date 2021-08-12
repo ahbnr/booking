@@ -17,7 +17,6 @@ export const TimeslotGetInterface = t.type({
   ...TimeslotData.props,
   id: t.number,
   weekdayId: t.number,
-  bookingIds: t.readonlyArray(t.number),
 });
 
 export type TimeslotGetInterface = t.TypeOf<typeof TimeslotGetInterface>;

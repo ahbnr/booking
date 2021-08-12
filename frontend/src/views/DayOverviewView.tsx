@@ -21,7 +21,7 @@ import {
 } from 'common/dist';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { DateTime, Interval } from 'luxon';
+import { DateTime } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import _ from 'lodash';
 import { changeInteractionStateT } from '../App';
@@ -80,8 +80,8 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
   async fetchData(): Promise<DownloadedData> {
     const bookings = await this.props.client.getBookingsInInterval(
       noRefinementChecks<BookingIntervalIndexRequestData>({
-        start: this.props.dateInterval.start.toISO(),
-        end: this.props.dateInterval.end.toISO(),
+        start: this.props.bookingDay.startOf('day').toISO(),
+        end: this.props.bookingDay.endOf('day').toISO(),
       })
     );
 
@@ -122,10 +122,8 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
             gridColumnSize = 6;
           }
 
-          const weekdayLocaleTitle = t(
-            this.props.dateInterval.start.weekdayLong
-          );
-          const dateLocaleTitle = this.props.dateInterval.start.toLocaleString({
+          const weekdayLocaleTitle = t(this.props.bookingDay.weekdayLong);
+          const dateLocaleTitle = this.props.bookingDay.toLocaleString({
             ...DateTime.DATE_SHORT,
             locale: 'de-DE',
           });
@@ -160,7 +158,7 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                       <ResourceBookingsOverview
                         resourceName={group.resourceName}
                         bookings={group.bookings}
-                        day={this.props.dateInterval.start} // TODO: Rewrite all of this to work in day intervals
+                        day={this.props.bookingDay} // TODO: Rewrite all of this to work in day intervals
                         changeInteractionState={
                           this.props.changeInteractionState
                         }
@@ -174,7 +172,7 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                     dateLocaleTitle,
                     resourceGroupedBookings
                   )}
-                  fileName={`${weekdayLocaleTitle}-${this.props.dateInterval.start.toISODate()}.pdf`}
+                  fileName={`${weekdayLocaleTitle}-${this.props.bookingDay.toISODate()}.pdf`}
                 >
                   {({ loading }) =>
                     loading ? (
@@ -204,7 +202,8 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   isAuthenticated: boolean;
   changeInteractionState: changeInteractionStateT;
-  dateInterval: Interval;
+  weekdayId: number;
+  bookingDay: DateTime;
 }
 
 interface State {

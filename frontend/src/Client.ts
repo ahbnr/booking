@@ -73,6 +73,31 @@ export class Client {
     return this._jwtStore;
   }
 
+  private _isLoggedIn?: boolean;
+  private get isLoggedIn(): boolean {
+    if (this._isLoggedIn != null) {
+      return this._isLoggedIn;
+    }
+
+    if (window.localStorage.getItem('isLoggedIn') === 'true') {
+      this._isLoggedIn = true;
+    } else {
+      this._isLoggedIn = false;
+    }
+
+    return this._isLoggedIn;
+  }
+
+  private set isLoggedIn(value: boolean) {
+    if (value) {
+      window.localStorage.setItem('isLoggedIn', 'true');
+    } else {
+      window.localStorage.removeItem('isLoggedIn');
+    }
+
+    this._isLoggedIn = value;
+  }
+
   public onAuthenticationChanged?: (isAuthenticated: boolean) => unknown;
 
   public isAuthenticated(): boolean {
@@ -81,7 +106,7 @@ export class Client {
 
   public async logout() {
     try {
-      await this.request('POST', 'auth/logout', {}, true);
+      await this.request('POST', 'auth/logout', {}, true, true);
     } catch (e) {
       console.log(
         `Could not log out at server (${JSON.stringify(
@@ -93,6 +118,7 @@ export class Client {
       // Delete refresh token activation cookie
       document.cookie =
         'refreshTokenActivation=;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Strict;';
+      this.isLoggedIn = false;
     }
   }
 
@@ -115,11 +141,12 @@ export class Client {
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any,
-    dontAutoAuth?: boolean
+    dontAutoAuth?: boolean,
+    dontAutoLogout?: boolean
   ): Promise<Response> {
     const headers: HeadersInit = {};
 
-    if (!dontAutoAuth && !this.isAuthenticated()) {
+    if (!dontAutoAuth) {
       await this.tryAutoAuth();
     }
 
@@ -155,7 +182,9 @@ export class Client {
     // If authentication failed
     if (response.status === 401) {
       try {
-        await this.logout();
+        if (this.isLoggedIn) {
+          await this.logout();
+        }
       } catch (e) {
         console.error(
           'Authentication failed, so we attempted logout. However, that failed too :/'
@@ -203,22 +232,28 @@ export class Client {
 
     await this.request('POST', 'auth/signup', data);
 
-    await this.authenticate(username, password);
+    await this.login(username, password);
   }
 
-  public async tryAutoAuth() {
+  public async tryAutoAuth(): Promise<boolean> {
+    if (!this.isLoggedIn) {
+      return false;
+    }
+
     if (!this.isAuthenticated()) {
       // Try getting a new auth token using a refresh token (might be set as HttpOnly cookie)
       try {
         await this.getAuthTokenWithRefreshToken();
+        console.log(`Authenticated until: ${this.jsonWebToken?.expiresAt}`);
       } catch (e) {
         console.log(
           `Could not automatically authenticate with refresh token. New refresh token via login is required.`
         );
+        return false;
       }
-    } else {
-      console.log(`Authenticated until: ${this.jsonWebToken?.expiresAt}`);
     }
+
+    return true;
   }
 
   private async getAuthTokenWithRefreshToken() {
@@ -243,7 +278,7 @@ export class Client {
     );
   }
 
-  public async authenticate(username: string, password: string) {
+  public async login(username: string, password: string) {
     // TODO: Maybe only allow authentication when connection is secure (SSL) so that data is never leaked?`
     // Likewise, all requests requiring sending an auth token should also enforce SSL
     this.jsonWebToken = undefined;
@@ -254,6 +289,7 @@ export class Client {
     };
 
     await this.request('POST', 'auth/login', data, true);
+    this.isLoggedIn = true;
 
     await this.tryAutoAuth();
   }
@@ -377,6 +413,17 @@ export class Client {
       t.array(BookingGetInterface),
       'GET',
       `timeslots/${timeslotId}/bookings/${day.toISODate()}`
+    );
+  }
+
+  public async countBookings(
+    timeslotId: number,
+    day: DateTime
+  ): Promise<number> {
+    return await this.typedRequest(
+      t.number,
+      'GET',
+      `timeslots/${timeslotId}/bookings/${day.toISODate()}/count`
     );
   }
 

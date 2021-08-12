@@ -3,7 +3,8 @@
   "workspaces": [
     "common",
     "frontend",
-    "backend"
+    "backend",
+    "debugtools"
   ],
   "scripts": {
     "build": "yarn workspaces foreach run build",

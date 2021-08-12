@@ -34,3 +34,9 @@ export class Conflict extends ControllerError {
     super(problemDescription, 409);
   }
 }
+
+export class Unauthenticated extends ControllerError {
+  constructor(message: string) {
+    super(`Authentication error: ${message}`, 401);
+  }
+}

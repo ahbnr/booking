@@ -1,12 +1,11 @@
 import React from 'react';
 import '../App.css';
-import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { WeekdayName, getWeekdayIntervals } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
+  Button,
   createStyles,
   ListItem,
   ListItemText,
@@ -18,9 +17,13 @@ import { fabStyle } from '../styles/fab';
 import { Client } from '../Client';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
-import ListEx from './ListEx';
 import LoadingBackdrop from './LoadingBackdrop';
-import { Interval } from 'luxon';
+import { DateTime } from 'luxon';
+import {
+  getValidBookingDays,
+  WeekdayWithBookingDay,
+} from '../complex_queries/getValidBookingDays';
+import InfiniteWeekdaysList from './InfiniteWeekdaysList';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -38,6 +41,12 @@ const styles = (theme: Theme) =>
     },
     dialogActionsRoot: {
       overflowY: 'visible',
+    },
+    listButton: {
+      width: '90%',
+    },
+    listItemText: {
+      textAlign: 'center',
     },
   });
 
@@ -59,32 +68,23 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
   }
 
   refreshRelevantWeekdays() {
-    const weekdaysPromise = this.fetchRelevantWeekdayIntervals();
+    const bookingDays = this.fetchBookingDays();
 
     this.setState({
-      relevantWeekdays: weekdaysPromise,
+      bookingDays,
     });
   }
 
-  async fetchRelevantWeekdayIntervals(): Promise<[WeekdayName, Interval][]> {
+  async fetchBookingDays(): Promise<WeekdayWithBookingDay[]> {
     const weekdays = await this.props.client.getWeekdays();
 
-    return _.chain(weekdays)
-      .map((weekday) => weekday.name)
-      .uniq()
-      .flatMap((weekdayName) =>
-        getWeekdayIntervals(weekdayName).map(
-          (interval) => [weekdayName, interval] as [WeekdayName, Interval]
-        )
-      )
-      .sortBy(([_, interval]) => interval)
-      .value();
+    return getValidBookingDays(weekdays, true, this.props.client);
   }
 
-  overviewWeekday(weekdayName: WeekdayName, dayInterval: Interval) {
+  overviewWeekday(weekdayId: number, bookingDay: DateTime) {
     this.props.changeInteractionState('overviewingDay', {
-      weekdayName,
-      dayInterval,
+      weekdayId,
+      bookingDay,
     });
   }
 
@@ -93,32 +93,49 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
 
     return (
       <Suspense
-        asyncAction={this.state.relevantWeekdays}
+        asyncAction={this.state.bookingDays}
         fallback={<LoadingScreen />}
-        content={(relevantWeekdays) => (
-          <>
-            <ListEx
-              notEmptyTitle="Zu welchem Tag möchten Sie eine Übersicht der Buchungen?"
-              emptyTitle="Keine Tage angelegt"
-              emptyMessage="Im System wurden keine Wochentage angelegt."
-            >
-              {relevantWeekdays.map(([weekdayName, dayInterval], index) => (
-                <ListItem
-                  button
-                  key={index}
-                  onClick={() => this.overviewWeekday(weekdayName, dayInterval)}
-                >
-                  <ListItemText>
-                    {t(weekdayName)}{' '}
-                    {dayInterval.start
-                      .setLocale('de-DE') // TODO: Make this dynamic
-                      .toLocaleString()}
-                  </ListItemText>
-                </ListItem>
-              ))}
-            </ListEx>
+        content={(bookingDays) => (
+          <div style={{ width: '100%', height: '100%' }}>
+            <div style={{ width: '100%', height: '100%' }}>
+              <InfiniteWeekdaysList
+                weekdays={bookingDays}
+                notEmptyTitle="Zu welchem Tag möchten Sie eine Übersicht der Buchungen?"
+                emptyTitle="Keine Tage angelegt"
+                emptyMessage="Im System wurden keine Wochentage angelegt."
+              >
+                {(bookingOption, style) => (
+                  <ListItem
+                    button
+                    key={`${
+                      bookingOption.weekdayId
+                    }-${bookingOption.bookingDay.toISODate()}`}
+                    style={style}
+                  >
+                    <ListItemText className={this.props.classes.listItemText}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() =>
+                          this.overviewWeekday(
+                            bookingOption.weekdayId,
+                            bookingOption.bookingDay
+                          )
+                        }
+                        className={this.props.classes.listButton}
+                      >
+                        {t(bookingOption.weekdayName)}{' '}
+                        {bookingOption.bookingDay
+                          .setLocale('de-DE') // TODO: Make this dynamic
+                          .toLocaleString()}
+                      </Button>
+                    </ListItemText>
+                  </ListItem>
+                )}
+              </InfiniteWeekdaysList>
+            </div>
             <LoadingBackdrop open={this.state.backdropOpen} />
-          </>
+          </div>
         )}
       />
     );
@@ -137,6 +154,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 }
 
 interface State {
-  relevantWeekdays?: Promise<[WeekdayName, Interval][]>;
+  bookingDays?: Promise<WeekdayWithBookingDay[]>;
   backdropOpen: boolean;
 }

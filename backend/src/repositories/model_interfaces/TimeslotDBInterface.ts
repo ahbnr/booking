@@ -43,15 +43,12 @@ export default class TimeslotDBInterface {
   }
 
   public async toGetInterface(): Promise<TimeslotGetInterface> {
-    const bookings = await this.timeslot.lazyBookings;
-
     return noRefinementChecks<TimeslotGetInterface>({
       ...this.data,
 
       id: this.timeslot.id,
 
       weekdayId: this.timeslot.weekdayId,
-      bookingIds: bookings.map((booking) => booking.id),
     });
   }
 }
