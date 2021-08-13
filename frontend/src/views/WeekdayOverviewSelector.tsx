@@ -5,7 +5,6 @@ import { boundClass } from 'autobind-decorator';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
-  Button,
   createStyles,
   ListItem,
   ListItemText,
@@ -25,6 +24,7 @@ import {
 } from '../complex_queries/getValidBookingDays';
 import InfiniteWeekdaysList from './InfiniteWeekdaysList';
 import _ from 'lodash';
+import WeekdayButton from './WeekdayButton';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -116,9 +116,9 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
                     style={style}
                   >
                     <ListItemText className={this.props.classes.listItemText}>
-                      <Button
-                        variant="contained"
-                        color="primary"
+                      <WeekdayButton
+                        weekdayName={t(bookingOption.weekdayName)}
+                        bookingDay={bookingOption.bookingDay}
                         onClick={() =>
                           this.overviewWeekday(
                             bookingOption.weekdayId,
@@ -126,12 +126,7 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
                           )
                         }
                         className={this.props.classes.listButton}
-                      >
-                        {t(bookingOption.weekdayName)}{' '}
-                        {bookingOption.bookingDay
-                          .setLocale('de-DE') // TODO: Make this dynamic
-                          .toLocaleString()}
-                      </Button>
+                      />
                     </ListItemText>
                   </ListItem>
                 )}

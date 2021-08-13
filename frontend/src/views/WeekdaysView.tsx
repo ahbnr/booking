@@ -8,7 +8,6 @@ import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
-  Button,
   createStyles,
   Fab,
   IconButton,
@@ -35,6 +34,7 @@ import {
 } from '../complex_queries/getValidBookingDays';
 import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
 import { WeekdayName } from 'common';
+import WeekdayButton from './WeekdayButton';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -192,20 +192,14 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                         <ListItemText
                           className={this.props.classes.listItemText}
                         >
-                          <Button
-                            variant="contained"
-                            color="primary"
+                          <WeekdayButton
+                            weekdayName={weekdayName}
+                            bookingDay={bookingDay}
                             onClick={() =>
                               this.viewTimeslots(weekdayId, bookingDay)
                             }
                             className={this.props.classes.listButton}
-                          >
-                            {t(weekdayName)}
-                            {' - '}
-                            {bookingDay
-                              .setLocale('de-DE') // TODO: Make this dynamic
-                              .toLocaleString()}
-                          </Button>
+                          />
                         </ListItemText>
                         {this.props.isAuthenticated && (
                           <ListItemSecondaryAction>
