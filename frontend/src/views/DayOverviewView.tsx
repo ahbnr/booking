@@ -32,7 +32,8 @@ import Suspense from './Suspense';
 import { NonEmptyString } from 'common';
 import ResourceBookingsOverview from './ResourceBookingsOverview';
 import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { BlobProvider } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -88,6 +89,38 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
     return {
       bookings: bookings,
     };
+  }
+
+  async sharePdf(blob: Blob, weekdayName: string, date: DateTime) {
+    const fileName = `${weekdayName}-${date.toISODate()}.pdf`;
+    const file = new File([blob], fileName);
+
+    const untypedNavigator = navigator as any;
+
+    if (
+      navigator.share != null &&
+      untypedNavigator.canShare != null &&
+      untypedNavigator.canShare({ files: [file] })
+    ) {
+      const title = 'Tagesübersicht Buchungen';
+      const text = `Buchungen von ${weekdayName} ${date.toLocaleString({
+        ...DateTime.DATE_SHORT,
+        locale: 'de-DE',
+      })} als PDF`;
+
+      untypedNavigator
+        .share({
+          files: [file],
+          title,
+          text,
+        })
+        .catch((error: any) => {
+          console.error(error);
+          saveAs(file, fileName);
+        });
+    } else {
+      saveAs(file, fileName);
+    }
   }
 
   render() {
@@ -166,24 +199,31 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                     </Grid>
                   ))}
                 </Grid>
-                <PDFDownloadLink
+                <BlobProvider
                   document={renderDayOverviewPDF(
                     weekdayLocaleTitle,
                     dateLocaleTitle,
                     resourceGroupedBookings
                   )}
-                  fileName={`${weekdayLocaleTitle}-${this.props.bookingDay.toISODate()}.pdf`}
                 >
-                  {({ loading }) =>
-                    loading ? (
-                      <CircularProgress />
-                    ) : (
-                      <Fab className={this.props.classes.fab}>
-                        <ShareIcon />
-                      </Fab>
-                    )
-                  }
-                </PDFDownloadLink>
+                  {({ blob, loading }) => (
+                    <Fab
+                      className={this.props.classes.fab}
+                      onClick={
+                        loading
+                          ? undefined
+                          : () =>
+                              this.sharePdf(
+                                blob!,
+                                weekdayLocaleTitle,
+                                this.props.bookingDay
+                              )
+                      }
+                    >
+                      {loading ? <CircularProgress /> : <ShareIcon />}
+                    </Fab>
+                  )}
+                </BlobProvider>
               </div>
             </Container>
           );

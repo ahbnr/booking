@@ -2815,6 +2815,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/file-saver@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@types/file-saver@npm:2.0.3"
+  checksum: ece7f9d86853bf24119486541edd43d03894f62ef22b91eff0b3a74387db3ef9e77745fdbb5bff7b27f1a9886ea3c4d244830726e9bdcdd7e8eee27b9e0394d0
+  languageName: node
+  linkType: hard
+
 "@types/geojson@npm:^7946.0.7":
   version: 7946.0.7
   resolution: "@types/geojson@npm:7946.0.7"
@@ -8903,6 +8910,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-saver@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "file-saver@npm:2.0.5"
+  checksum: 0f835236534377c9b7591b995d94ae5061166452fb1f784548b706ff48984930e45a7947cfe393ce86b84ef2ec89064120c5d5ab5186146c508bb022c71ced3d
+  languageName: node
+  linkType: hard
+
 "file-type@npm:^3.8.0":
   version: 3.9.0
   resolution: "file-type@npm:3.9.0"
@@ -9258,6 +9272,7 @@ __metadata:
     "@types/color-hash": ^1.0.1
     "@types/date-fns": ^2.6.0
     "@types/express": ^4.17.13
+    "@types/file-saver": ^2.0.3
     "@types/i18next": ^13.0.0
     "@types/jest": ^24.0.0
     "@types/lodash": ^4.14.159
@@ -9287,6 +9302,7 @@ __metadata:
     eslint-plugin-prettier: ^3.1.4
     eslint-plugin-react: ^7.21.3
     express: ^4.17.1
+    file-saver: ^2.0.5
     http-proxy-middleware: ^2.0.0
     i18next: ^20.2.4
     io-ts: ^2.2.11
