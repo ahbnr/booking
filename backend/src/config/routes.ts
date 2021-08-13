@@ -14,49 +14,38 @@ import { ResourcesController } from '../controllers/resources.controller';
 import DatabaseController from '../models';
 import { AuthController } from '../controllers/auth.controller';
 import { SettingsController } from '../controllers/settings.controller';
+import { delay, inject, singleton } from 'tsyringe';
+import BookingRepository from '../repositories/BookingRepository';
 
 const { DEV_MODE } = process.env;
 
+@singleton()
 export class Routes {
-  private readonly db: DatabaseController;
+  constructor(
+    @inject(DatabaseController)
+    private readonly db: DatabaseController,
 
-  private readonly usersController: UsersController;
-  private readonly weekdaysController: WeekdaysController;
-  private readonly resourcesController: ResourcesController;
-  private readonly timeslotsController: TimeslotsController;
-  private readonly bookingsController: BookingsController;
-  private readonly authController: AuthController;
-  private readonly settingsController: SettingsController;
+    @inject(delay(() => UsersController))
+    private readonly usersController: UsersController,
 
-  constructor(db: DatabaseController) {
-    this.db = db;
+    @inject(delay(() => WeekdaysController))
+    private readonly weekdaysController: WeekdaysController,
 
-    this.usersController = new UsersController(db.repositories.userRepository);
-    this.weekdaysController = new WeekdaysController(
-      db.repositories.weekdayRepository,
-      db.repositories.timeslotRepository,
-      db.repositories.settingsRepository
-    );
-    this.resourcesController = new ResourcesController(
-      db.repositories.resourceRepository,
-      db.repositories.weekdayRepository
-    );
-    this.timeslotsController = new TimeslotsController(
-      db.repositories.timeslotRepository
-    );
-    this.bookingsController = new BookingsController(
-      db.repositories.bookingRepository,
-      db.repositories.settingsRepository,
-      this.timeslotsController
-    );
-    this.authController = new AuthController(
-      db.repositories.userRepository,
-      db.repositories.refreshTokenRepository
-    );
-    this.settingsController = new SettingsController(
-      db.repositories.settingsRepository
-    );
-  }
+    @inject(delay(() => ResourcesController))
+    private readonly resourcesController: ResourcesController,
+
+    @inject(delay(() => TimeslotsController))
+    private readonly timeslotsController: TimeslotsController,
+
+    @inject(delay(() => BookingsController))
+    private readonly bookingsController: BookingsController,
+
+    @inject(delay(() => AuthController))
+    private readonly authController: AuthController,
+
+    @inject(delay(() => SettingsController))
+    private readonly settingsController: SettingsController
+  ) {}
 
   private static asyncHandler<T>(
     handler: (req: Request, res: Response, next?: NextFunction) => Promise<T>

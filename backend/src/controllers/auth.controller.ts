@@ -25,10 +25,11 @@ import UserRepository from '../repositories/UserRepository';
 
 import { SignupTokenData } from '../types/token-types/SignupTokenData';
 import InviteForSignupResponse from '../types/response-types/InviteForSignupResponse';
-import { sendMail } from '../utils/email';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 import { ControllerError } from './errors';
 import asyncRandomBytes from '../utils/cryptoRandomBytes';
+import { delay, inject, singleton } from 'tsyringe';
+import { MailTransporter } from '../mail/MailTransporter';
 
 class RefreshTokenGenerationResult {
   public readonly signedJWT: TokenGenerationResult;
@@ -53,6 +54,7 @@ class RefreshTokenCookieOptions {
   }
 }
 
+@singleton()
 @boundClass
 export class AuthController {
   // FIXME: Put this into some global configuration
@@ -60,16 +62,16 @@ export class AuthController {
   private static readonly authTokenTimeout: number = 900; // 15 minutes in seconds
   private static readonly signupTokenTimeout: number = 259200; // 3 days in seconds
 
-  private readonly userRepository: UserRepository;
-  private readonly refreshTokenRepository: RefreshTokensRepository;
-
   constructor(
-    userRepository: UserRepository,
-    refreshTokenRepository: RefreshTokensRepository
-  ) {
-    this.userRepository = userRepository;
-    this.refreshTokenRepository = refreshTokenRepository;
-  }
+    @inject(delay(() => UserRepository))
+    private readonly userRepository: UserRepository,
+
+    @inject(delay(() => RefreshTokensRepository))
+    private readonly refreshTokenRepository: RefreshTokensRepository,
+
+    @inject('MailTransporter')
+    private readonly mailTransporter: MailTransporter
+  ) {}
 
   public async login(req: TypesafeRequest, res: Response) {
     const authData = checkType(req.body, AuthRequestData);
@@ -242,7 +244,7 @@ export class AuthController {
       invitationData.email
     );
 
-    await AuthController.sendSignupMail(
+    await this.sendSignupMail(
       signupToken.token,
       invitationData.targetUrl,
       invitationData.email
@@ -289,12 +291,12 @@ export class AuthController {
     }
   }
 
-  private static async sendSignupMail(
+  private async sendSignupMail(
     signupToken: string,
     targetUrl: string,
     email: EMailString
   ) {
-    await sendMail(
+    await this.mailTransporter.send(
       email,
       'Signup',
       '', // TODO text represenation

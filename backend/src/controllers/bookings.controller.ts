@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { VerificationTimeout } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
-import { sendMail } from '../utils/email';
 import { i18nextInstance } from '../utils/i18n';
 import { TimeslotsController } from './timeslots.controller';
 import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
@@ -22,22 +21,25 @@ import { extractNumericIdFromRequest } from './utils';
 import humanizeDuration from 'humanize-duration';
 import BackendConfig from '../booking-backend.config';
 import SettingsRepository from '../repositories/SettingsRepository';
+import { delay, inject, singleton } from 'tsyringe';
+import { MailTransporter } from '../mail/MailTransporter';
 
+@singleton()
 @boundClass
 export class BookingsController {
-  private readonly bookingRepository: BookingRepository;
-  private readonly settingsRepository: SettingsRepository;
-  private readonly timeslotController: TimeslotsController;
-
   constructor(
-    bookingRepository: BookingRepository,
-    settingsRepository: SettingsRepository,
-    timeslotController: TimeslotsController
-  ) {
-    this.bookingRepository = bookingRepository;
-    this.timeslotController = timeslotController;
-    this.settingsRepository = settingsRepository;
-  }
+    @inject(delay(() => BookingRepository))
+    private readonly bookingRepository: BookingRepository,
+
+    @inject(delay(() => SettingsRepository))
+    private readonly settingsRepository: SettingsRepository,
+
+    @inject(delay(() => TimeslotsController))
+    private readonly timeslotController: TimeslotsController,
+
+    @inject('MailTransporter')
+    private readonly mailTransporter: MailTransporter
+  ) {}
 
   private static bookingsAsGetInterfaces(
     bookings: BookingDBInterface[]
@@ -126,10 +128,7 @@ export class BookingsController {
     );
 
     if (BackendConfig.sendConfirmationMail) {
-      await BookingsController.sendBookingLookupMail(
-        bookingPostData.lookupUrl,
-        booking
-      );
+      await this.sendBookingLookupMail(bookingPostData.lookupUrl, booking);
     } else {
       await booking.markAsVerified();
     }
@@ -158,7 +157,7 @@ export class BookingsController {
     return tokenResult.token;
   }
 
-  private static async sendBookingLookupMail(
+  private async sendBookingLookupMail(
     lookupUrl: string,
     booking: BookingDBInterface
   ) {
@@ -170,7 +169,7 @@ export class BookingsController {
     const weekday = await timeslot.getWeekday();
     const resourceName = weekday.resourceName;
 
-    await sendMail(
+    await this.mailTransporter.send(
       booking.data.email,
       `Ihre Buchung - ${booking.toGetInterface().name}`,
       '', // TODO text representation
@@ -247,10 +246,7 @@ export class BookingsController {
       bookingPostData
     );
 
-    await BookingsController.sendBookingLookupMail(
-      bookingPostData.lookupUrl,
-      updatedBooking
-    );
+    await this.sendBookingLookupMail(bookingPostData.lookupUrl, updatedBooking);
 
     res.status(202).json({ data: 'success' });
   }

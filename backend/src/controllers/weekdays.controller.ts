@@ -1,9 +1,8 @@
-import { Request, Response } from 'express';
-import { ControllerError, UnprocessableEntity } from './errors';
+import { Response } from 'express';
+import { ControllerError } from './errors';
 import { boundClass } from 'autobind-decorator';
 import {
   checkType,
-  NonEmptyString,
   TimeslotGetInterface,
   TimeslotPostInterface,
   WeekdayGetInterface,
@@ -16,23 +15,22 @@ import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
 import SettingsRepository from '../repositories/SettingsRepository';
 import computeBookingConditions from '../date_math/computeBookingConditions';
+import { delay, inject, singleton } from 'tsyringe';
 
 // FIXME: Implement in terms of weekday repository
+@singleton()
 @boundClass
 export class WeekdaysController {
-  private readonly weekdayRepository: WeekdayRepository;
-  private readonly timeslotRepository: TimeslotRepository;
-  private readonly settingsRepository: SettingsRepository;
-
   constructor(
-    weekdayRepository: WeekdayRepository,
-    timeslotRepository: TimeslotRepository,
-    settingsRepository: SettingsRepository
-  ) {
-    this.weekdayRepository = weekdayRepository;
-    this.timeslotRepository = timeslotRepository;
-    this.settingsRepository = settingsRepository;
-  }
+    @inject(delay(() => WeekdayRepository))
+    private readonly weekdayRepository: WeekdayRepository,
+
+    @inject(delay(() => TimeslotRepository))
+    private readonly timeslotRepository: TimeslotRepository,
+
+    @inject(delay(() => SettingsRepository))
+    private readonly settingsRepository: SettingsRepository
+  ) {}
 
   private async toGetInterface(
     weekdays: WeekdayDBInterface[]

@@ -3,9 +3,9 @@ import RefreshTokenDBInterface from './model_interfaces/RefreshTokenDBInterface'
 import UserDBInterface from './model_interfaces/UserDBInterface';
 import { RefreshToken } from '../models/refreshtoken.model';
 import { NoElementToDestroy } from './errors';
-import { injectable } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class RefreshTokensRepository {
   private toInterface(refreshToken: RefreshToken): RefreshTokenDBInterface {

@@ -14,20 +14,18 @@ import ResourceRepository from '../repositories/ResourceRepository';
 import TypesafeRequest from './TypesafeRequest';
 import WeekdayRepository from '../repositories/WeekdayRepository';
 import ResourceDBInterface from '../repositories/model_interfaces/ResourceDBInterface';
-import { WeekdayName } from 'common';
+import { delay, inject, singleton } from 'tsyringe';
 
+@singleton()
 @boundClass
 export class ResourcesController {
-  private readonly resourceRepository: ResourceRepository;
-  private readonly weekdayRepository: WeekdayRepository;
-
   constructor(
-    resourceRepository: ResourceRepository,
-    weekdayRepository: WeekdayRepository
-  ) {
-    this.resourceRepository = resourceRepository;
-    this.weekdayRepository = weekdayRepository;
-  }
+    @inject(delay(() => ResourceRepository))
+    private readonly resourceRepository: ResourceRepository,
+
+    @inject(delay(() => WeekdayRepository))
+    private readonly weekdayRepository: WeekdayRepository
+  ) {}
 
   public async index(
     req: TypesafeRequest,

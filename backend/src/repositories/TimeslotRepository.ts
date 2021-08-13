@@ -9,9 +9,9 @@ import BookingRepository from './BookingRepository';
 import WeekdayRepository from './WeekdayRepository';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
 import { DateTime } from 'luxon';
-import { delay, inject, injectable } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class TimeslotRepository {
   constructor(

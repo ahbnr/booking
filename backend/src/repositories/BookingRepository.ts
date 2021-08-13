@@ -24,9 +24,9 @@ import getBookingInterval from '../date_math/getBookingInterval';
 import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
 import assertNever from '../utils/assertNever';
-import { delay, inject, injectable } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class BookingRepository {
   constructor(

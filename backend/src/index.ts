@@ -11,6 +11,8 @@ import DatabaseController from './models';
 import { init as i18nextInit } from './utils/i18n';
 import * as http from 'http';
 import { Settings as LuxonSettings, DateTime } from 'luxon';
+import { initMailTransporter } from './mail/MailTransporter';
+import { container } from 'tsyringe';
 
 const { DEV_MODE, DEBUG_TIME_NOW } = process.env;
 
@@ -21,11 +23,13 @@ async function init() {
     LuxonSettings.now = () => DateTime.fromISO(DEBUG_TIME_NOW).toMillis();
   }
 
+  initMailTransporter();
+
   // setup i18n translations
   await i18nextInit();
 
   // setup database
-  const db = new DatabaseController();
+  const db = container.resolve(DatabaseController);
   await db.init();
 
   const app = express();
@@ -38,7 +42,7 @@ async function init() {
 
   app.use(cookieParser());
 
-  const routes = new Routes(db);
+  const routes = container.resolve(Routes);
   routes.routes(app);
 
   // custom error handler

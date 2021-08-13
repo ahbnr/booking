@@ -5,7 +5,6 @@ import {
   BookingGetInterface,
   checkType,
   hasProperty,
-  NonEmptyString,
   TimeslotGetInterface,
   TimeslotPostInterface,
 } from 'common/dist';
@@ -15,14 +14,15 @@ import TimeslotDBInterface from '../repositories/model_interfaces/TimeslotDBInte
 import { extractNumericIdFromRequest } from './utils';
 import { DateTime } from 'luxon';
 import { ISO8601 } from 'common/dist/typechecking/ISO8601';
+import { delay, inject, singleton } from 'tsyringe';
 
+@singleton()
 @boundClass
 export class TimeslotsController {
-  private readonly timeslotRepository: TimeslotRepository;
-
-  constructor(timeslotRepository: TimeslotRepository) {
-    this.timeslotRepository = timeslotRepository;
-  }
+  constructor(
+    @inject(delay(() => TimeslotRepository))
+    private readonly timeslotRepository: TimeslotRepository
+  ) {}
 
   public async index(
     req: TypesafeRequest,

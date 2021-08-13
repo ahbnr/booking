@@ -10,9 +10,9 @@ import ResourceDBInterface from './model_interfaces/ResourceDBInterface';
 import { boundClass } from 'autobind-decorator';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';
 import WeekdayRepository from './WeekdayRepository';
-import { delay, inject, injectable } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class ResourceRepository {
   constructor(

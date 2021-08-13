@@ -1,34 +1,20 @@
 import { Response } from 'express';
-import { jwtSecret } from '../config/passport';
-//import password from 'secure-random-password';
 import { boundClass } from 'autobind-decorator';
-import { sendMail } from '../utils/email';
-import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
-import {
-  checkType,
-  DataValidationError,
-  EMailString,
-  hasProperty,
-  InviteForSignupData,
-  NonEmptyString,
-  noRefinementChecks,
-} from 'common/dist';
-import { SignupTokenData } from '../types/token-types/SignupTokenData';
+import { checkType, hasProperty, NonEmptyString } from 'common/dist';
 import { SignupRequestData, UserGetInterface } from 'common';
 import TypesafeRequest from './TypesafeRequest';
 import UserRepository from '../repositories/UserRepository';
 import UserDBInterface from '../repositories/model_interfaces/UserDBInterface';
-import InviteForSignupResponse from '../types/response-types/InviteForSignupResponse';
-import { AuthResponseData } from 'common/dist/typechecking/api/responses/AuthResponseData';
 import { MissingPathParameter } from './errors';
+import { delay, inject, singleton } from 'tsyringe';
 
+@singleton()
 @boundClass
 export class UsersController {
-  private readonly userRepository: UserRepository;
-
-  constructor(userRepository: UserRepository) {
-    this.userRepository = userRepository;
-  }
+  constructor(
+    @inject(delay(() => UserRepository))
+    private readonly userRepository: UserRepository
+  ) {}
 
   private static usersAsGetInterfaces(
     users: UserDBInterface[]

@@ -4,9 +4,9 @@ import { boundClass } from 'autobind-decorator';
 import SettingsDBInterface from './model_interfaces/SettingsDBInterface';
 import { Settings } from '../models/settings.model';
 import { SettingsPostInterface } from 'common/dist/typechecking/api/Settings';
-import { injectable } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class SettingsRepository {
   private toInterface(settings: Settings): SettingsDBInterface {

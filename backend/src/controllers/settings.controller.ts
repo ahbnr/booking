@@ -1,32 +1,21 @@
 import { Response } from 'express';
-import { ElementNotFound, MissingPathParameter } from './errors';
 import { boundClass } from 'autobind-decorator';
-import {
-  checkType,
-  hasProperty,
-  NonEmptyString,
-  ResourceGetInterface,
-  ResourcePostInterface,
-  WeekdayGetInterface,
-  WeekdayPostInterface,
-} from 'common/dist';
-import ResourceRepository from '../repositories/ResourceRepository';
+import { checkType } from 'common/dist';
 import TypesafeRequest from './TypesafeRequest';
-import WeekdayRepository from '../repositories/WeekdayRepository';
-import ResourceDBInterface from '../repositories/model_interfaces/ResourceDBInterface';
 import SettingsRepository from '../repositories/SettingsRepository';
 import {
   SettingsGetInterface,
   SettingsPostInterface,
 } from 'common/dist/typechecking/api/Settings';
+import { delay, inject, singleton } from 'tsyringe';
 
+@singleton()
 @boundClass
 export class SettingsController {
-  private readonly settingsRepository: SettingsRepository;
-
-  constructor(settingsRepository: SettingsRepository) {
-    this.settingsRepository = settingsRepository;
-  }
+  constructor(
+    @inject(delay(() => SettingsRepository))
+    private readonly settingsRepository: SettingsRepository
+  ) {}
 
   public async show(req: TypesafeRequest, res: Response<SettingsGetInterface>) {
     const settings = await this.settingsRepository.get();

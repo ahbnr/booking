@@ -8,9 +8,9 @@ import { boundClass } from 'autobind-decorator';
 import { Timeslot } from '../models/timeslot.model';
 import TimeslotDBInterface from './model_interfaces/TimeslotDBInterface';
 import TimeslotRepository from './TimeslotRepository';
-import { delay, inject, injectable } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
-@injectable()
+@singleton()
 @boundClass
 export default class WeekdayRepository {
   constructor(
