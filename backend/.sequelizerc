@@ -1,0 +1,12 @@
+// .sequelizerc
+
+const path = require('path');
+
+const dataDir = 'sequelize-cli-data'
+
+module.exports = {
+  'config': path.resolve(dataDir, 'config', 'config.json'),
+  'models-path': path.resolve(dataDir, 'models'),
+  'seeders-path': path.resolve(dataDir, 'seeders'),
+  'migrations-path': path.resolve(dataDir, 'migrations')
+};

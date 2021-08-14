@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "booking_backend",
+    "password": "password",
+    "database": "bookingdb",
+    "host": "127.0.0.1",
+    "dialect": "sqlite",
+    "storage": "memory"
+  },
+  "test": {
+    "username": "booking_backend",
+    "password": "password",
+    "database": "bookingdb",
+    "host": "127.0.0.1",
+    "dialect": "sqlite",
+    "storage": "memory"
+  },
+  "production": {
+    "username": "booking_backend",
+    "password": "password",
+    "database": "bookingdb",
+    "host": "127.0.0.1",
+    "dialect": "sqlite",
+    "storage": "memory"
+  }
+}

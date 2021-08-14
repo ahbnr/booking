@@ -20,7 +20,6 @@ export class Weekday extends BaseModel<Weekday> {
   @IsIn([WeekdayNameValues])
   @Column({
     type: DataType.STRING(10),
-    onDelete: 'CASCADE',
     allowNull: false,
   })
   public name!: WeekdayName;
