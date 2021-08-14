@@ -3,25 +3,30 @@ import nodemailer, { SentMessageInfo } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { singleton } from 'tsyringe';
 import { boundClass } from 'autobind-decorator';
-import BackendConfig from '../booking-backend.config';
+import BackendConfig, { SMTPConfig } from '../booking-backend.config';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @singleton()
 @boundClass
-export default class EtheralTransporter implements MailTransporter {
+export default class SMTPTransporter implements MailTransporter {
+  constructor(private smtpConfig: SMTPConfig) {}
+
   private _mailer?: Mail;
   private async getMailer(): Promise<Mail> {
     if (this._mailer == null) {
-      const testAccount = await nodemailer.createTestAccount();
-
-      this._mailer = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+      const transportOptions: SMTPTransport.Options = {
+        host: this.smtpConfig.host,
+        port: this.smtpConfig.port,
+        requireTLS: this.smtpConfig.requireTLS,
+        secure: this.smtpConfig.secure,
+        tls: this.smtpConfig.tlsOptions,
         auth: {
-          user: testAccount.user, // generated ethereal user
-          pass: testAccount.pass, // generated ethereal password
+          user: this.smtpConfig.user,
+          pass: this.smtpConfig.password,
         },
-      });
+      };
+
+      this._mailer = nodemailer.createTransport(transportOptions);
     }
 
     return this._mailer;
@@ -36,15 +41,12 @@ export default class EtheralTransporter implements MailTransporter {
     const mailer = await this.getMailer();
 
     const sendInfo = await mailer.sendMail({
-      from: `"Buchungsservice ${BackendConfig.organization}" <booking@example.com>`,
+      from: `"Buchungsservice ${BackendConfig.organization}" <${this.smtpConfig.address}>`,
       to: receiverMail,
       subject: subject,
       html: htmlContent,
       text: textContent,
     });
-
-    // Mail preview:
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(sendInfo));
 
     return sendInfo;
   }

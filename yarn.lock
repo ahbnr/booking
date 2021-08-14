@@ -4704,7 +4704,7 @@ __metadata:
     mariadb: ^2.4.2
     moment: ^2.27.0
     mysql2: ^2.1.0
-    nodemailer: ^6.4.13
+    nodemailer: ^6.6.3
     npm-run-all: ^4.1.5
     passport: ^0.4.1
     passport-jwt: ^4.0.0
@@ -13874,10 +13874,10 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^6.4.13":
-  version: 6.5.0
-  resolution: "nodemailer@npm:6.5.0"
-  checksum: 9611c14a6f52475a0bea626fa342cf263a67d324c30b6349da099164ab66c6d63bc3d67453fe5d41ae7ab13d9a42cfb45cb5623f1a2e91135a929bada7f9bf83
+"nodemailer@npm:^6.6.3":
+  version: 6.6.3
+  resolution: "nodemailer@npm:6.6.3"
+  checksum: abcdcbc80279d6200ded778765046ce64210d901953d3ec7caaaa45ae44401d8c41cf3651b6d6cfaadf945a492e815f4c8a062bdf31214bd98417a090f530830
   languageName: node
   linkType: hard
 

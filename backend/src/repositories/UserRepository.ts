@@ -26,14 +26,10 @@ export default class UserRepository {
         password: generatedPassword,
       });
 
-      fs.writeFile(
-        'root-password.txt',
-        `Created "root" user with password ${generatedPassword}. Remember this password and erase this log!\n\n`,
-        (err) => {
-          if (err != null) {
-            console.log(err.message);
-          }
-        }
+      const rootPasswordPath = 'root-password.txt';
+      fs.writeFileSync(
+        rootPasswordPath,
+        `Created "root" user with password. The password was saved to ${rootPasswordPath}.\n\n`
       );
     }
   }

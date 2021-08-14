@@ -7,8 +7,24 @@ import {
 import { User } from '../models/user.model';
 import { Request, Response, NextFunction } from 'express';
 import { randomString } from 'secure-random-password';
+import * as fs from 'fs';
 
-export const jwtSecret = randomString({ length: 64 });
+function getJwtSecret(): string {
+  const jwtSecretPath = 'jwt-secret';
+  let jwtSecret: string;
+  if (!fs.existsSync(jwtSecretPath)) {
+    jwtSecret = randomString({ length: 64 });
+    fs.writeFileSync(jwtSecretPath, jwtSecret, 'utf8');
+    console.log('Saved new jwt secret to disk.');
+  } else {
+    jwtSecret = fs.readFileSync(jwtSecretPath, 'utf8').toString();
+    console.log('Retrieved jwt secret from disk.');
+  }
+
+  return jwtSecret;
+}
+
+export const jwtSecret = getJwtSecret();
 
 const opts: StrategyOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
