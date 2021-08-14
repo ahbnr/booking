@@ -117,7 +117,7 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
                   >
                     <ListItemText className={this.props.classes.listItemText}>
                       <WeekdayButton
-                        weekdayName={t(bookingOption.weekdayName)}
+                        weekdayName={bookingOption.weekdayName}
                         bookingDay={bookingOption.bookingDay}
                         onClick={() =>
                           this.overviewWeekday(

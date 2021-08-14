@@ -16,6 +16,7 @@ import Fab from '@material-ui/core/Fab';
 import { fabStyle } from '../styles/fab';
 import { saveAs } from 'file-saver';
 import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
+import { detect } from 'detect-browser';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,10 +42,25 @@ class UnstyledFileSpeedDial extends React.PureComponent<Properties, State> {
   canShare(file: File): boolean {
     const untypedNavigator = navigator as any;
 
+    let chromeVersion: number | null = null;
+    {
+      const browser = detect();
+      if (browser != null && browser.version != null) {
+        const split = browser.version.split('.');
+        if (split.length > 0) {
+          const maybeChromeVersion = parseInt(split[0]);
+          if (!isNaN(maybeChromeVersion)) {
+            chromeVersion = maybeChromeVersion;
+          }
+        }
+      }
+    }
+
     return (
       navigator.share != null &&
       untypedNavigator.canShare != null &&
-      untypedNavigator.canShare({ files: [file] })
+      untypedNavigator.canShare({ files: [file] }) &&
+      (chromeVersion == null || chromeVersion >= 93) // chrome 92 contains a bug which makes web share fail for pdf files
     );
   }
 
