@@ -106,7 +106,7 @@ export class Client {
 
   public async logout() {
     try {
-      await this.request('POST', 'auth/logout', {}, true, true);
+      await this.request('POST', 'auth/logout', {}, true);
     } catch (e) {
       console.log(
         `Could not log out at server (${JSON.stringify(
@@ -141,8 +141,7 @@ export class Client {
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any,
-    dontAutoAuth?: boolean,
-    dontAutoLogout?: boolean
+    dontAutoAuth?: boolean
   ): Promise<Response> {
     const headers: HeadersInit = {};
 

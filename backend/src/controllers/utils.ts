@@ -4,6 +4,7 @@ import { MissingPathParameter, UnprocessableEntity } from './errors';
 
 export function extractNumericIdFromRequest(req: TypesafeRequest): number {
   if (hasProperty(req.params, 'id')) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const maybeId = parseInt(req.params.id as any);
 
     if (isNaN(maybeId)) {

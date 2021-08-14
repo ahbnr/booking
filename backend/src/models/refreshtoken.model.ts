@@ -1,23 +1,8 @@
-import {
-  BeforeBulkCreate,
-  BeforeBulkUpdate,
-  BeforeCreate,
-  BeforeUpdate,
-  BelongsTo,
-  CreatedAt,
-  ForeignKey,
-  IsEmail,
-  NotEmpty,
-} from 'sequelize-typescript';
+import { BelongsTo, ForeignKey, NotEmpty } from 'sequelize-typescript';
 import { Column, PrimaryKey, Table } from 'sequelize-typescript';
-import { CreateOptions } from 'ts-node';
-import bcrypt from 'bcrypt';
 import { BaseModel } from './BaseModel';
-import { Resource } from './resource.model';
 import { User } from './user.model';
-import { Weekday } from './weekday.model';
 import { LazyGetter } from '../utils/LazyGetter';
-import { Booking, VerificationTimeout } from './booking.model';
 import { DateTime } from 'luxon';
 
 @Table

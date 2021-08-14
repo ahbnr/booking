@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { User } from '../../models/user.model';
-import { BookingGetInterface, noRefinementChecks, UserData } from 'common/dist';
+import { noRefinementChecks, UserData } from 'common/dist';
 import { LazyGetter } from 'lazy-get-decorator';
 import { UserGetInterface } from 'common';
 

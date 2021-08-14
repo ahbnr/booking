@@ -1,8 +1,9 @@
-import { Branded } from 'io-ts';
-
+/* eslint-disable unused-imports/no-unused-imports */
 /**
  * Forcefully removes refinements recursively from the type of a value.
  */
+import { Branded } from 'io-ts';
+
 export function noRefinementChecks<T>(inputType: Unbranded<T>): T {
   return (inputType as unknown) as T;
 }

@@ -6,7 +6,7 @@ import { ResourceGetInterface } from './Resource';
 
 export const BookingData = t.type({
   name: NonEmptyString,
-  email: EMailString,
+  email: t.union([EMailString, t.undefined, t.null]),
 });
 
 export type BookingData = t.TypeOf<typeof BookingData>;

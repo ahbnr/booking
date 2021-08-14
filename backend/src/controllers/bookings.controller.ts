@@ -1,28 +1,24 @@
 import { Response } from 'express';
-import { VerificationTimeout } from '../models/booking.model';
 import '../utils/array_extensions';
 import { boundClass } from 'autobind-decorator';
-import { i18nextInstance } from '../utils/i18n';
 import { TimeslotsController } from './timeslots.controller';
-import { asyncJwtSign, asyncJwtVerify } from '../utils/jwt';
+import { asyncJwtVerify } from '../utils/jwt';
 import {
   BookingGetInterface,
   BookingPostInterface,
   checkType,
-  EMailString,
   BookingWithContextGetInterface,
 } from 'common';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 import { BookingIntervalIndexRequestData } from 'common/dist';
-import BookingRepository from '../repositories/BookingRepository';
+import BookingRepository, {
+  BookingModificationOptions,
+} from '../repositories/BookingRepository';
 import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterface';
 import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
-import humanizeDuration from 'humanize-duration';
-import BackendConfig from '../booking-backend.config';
 import SettingsRepository from '../repositories/SettingsRepository';
 import { delay, inject, singleton } from 'tsyringe';
-import { MailTransporter } from '../mail/MailTransporter';
 
 @singleton()
 @boundClass
@@ -35,10 +31,7 @@ export class BookingsController {
     private readonly settingsRepository: SettingsRepository,
 
     @inject(delay(() => TimeslotsController))
-    private readonly timeslotController: TimeslotsController,
-
-    @inject('MailTransporter')
-    private readonly mailTransporter: MailTransporter
+    private readonly timeslotController: TimeslotsController
   ) {}
 
   private static bookingsAsGetInterfaces(
@@ -113,6 +106,18 @@ export class BookingsController {
     }
   }
 
+  private genBookingModificationOptions(
+    req: TypesafeRequest
+  ): BookingModificationOptions {
+    const isAuthenticated = req.isAuthenticated();
+    return {
+      ignoreMaxWeekDistance: isAuthenticated,
+      ignoreDeadlines: isAuthenticated,
+      requireMail: !isAuthenticated,
+      autoVerify: isAuthenticated,
+    };
+  }
+
   public async createBooking(
     req: TypesafeRequest,
     res: Response<BookingGetInterface | string>
@@ -123,89 +128,10 @@ export class BookingsController {
     const booking = await this.bookingRepository.create(
       timeslot,
       bookingPostData,
-      req.isAuthenticated(),
-      req.isAuthenticated()
+      this.genBookingModificationOptions(req)
     );
-
-    if (BackendConfig.sendConfirmationMail) {
-      await this.sendBookingLookupMail(bookingPostData.lookupUrl, booking);
-    } else {
-      await booking.markAsVerified();
-    }
 
     res.status(201).json(booking.toGetInterface());
-  }
-
-  private static async createBookingLookupToken(
-    booking: BookingDBInterface
-  ): Promise<string> {
-    const email = checkType(booking.data.email, EMailString);
-    const validDuration = await booking.timeTillDue();
-    const secondsUntilExpiration = Math.floor(
-      validDuration.shiftTo('seconds').seconds
-    );
-
-    const data: BookingLookupTokenData = {
-      type: 'BookingLookupToken',
-      email: email,
-    };
-
-    const tokenResult = await asyncJwtSign(data, {
-      expiresIn: secondsUntilExpiration,
-    });
-
-    return tokenResult.token;
-  }
-
-  private async sendBookingLookupMail(
-    lookupUrl: string,
-    booking: BookingDBInterface
-  ) {
-    const lookupToken = await BookingsController.createBookingLookupToken(
-      booking
-    );
-
-    const timeslot = await booking.getTimeslot();
-    const weekday = await timeslot.getWeekday();
-    const resourceName = weekday.resourceName;
-
-    await this.mailTransporter.send(
-      booking.data.email,
-      `Ihre Buchung - ${booking.toGetInterface().name}`,
-      '', // TODO text representation
-      `
-        <p>
-          Sie haben die Ressource
-          <p>
-            <i style="margin-left: 2em">
-              "${resourceName}"
-              am
-              ${i18nextInstance.t(weekday.data.name)}
-              von
-              ${booking.startDate.toLocaleTimeString('de-DE')}
-              bis
-              ${booking.endDate.toLocaleTimeString('de-DE')}
-            </i>
-          </p>
-          gebucht.<br />
-          
-          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
-        </p>
-        <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
-        <p>
-          <b style="font-size: 1.5em;">
-            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
-            ${humanizeDuration(VerificationTimeout.toMillis(), {
-              language: 'de',
-            }).toUpperCase()}
-            WENN SIE NICHT BESTÄTIGT WIRD.
-          </b>
-        </p>
-        <p>
-          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen.
-        </p>
-      `
-    ); // FIXME: Formatting
   }
 
   private async listBookingsByLookupToken(
@@ -243,12 +169,11 @@ export class BookingsController {
 
     const updatedBooking = await this.bookingRepository.update(
       extractNumericIdFromRequest(req),
-      bookingPostData
+      bookingPostData,
+      this.genBookingModificationOptions(req)
     );
 
-    await this.sendBookingLookupMail(bookingPostData.lookupUrl, updatedBooking);
-
-    res.status(202).json({ data: 'success' });
+    res.status(202).json(updatedBooking.toGetInterface());
   }
 
   public async delete(req: TypesafeRequest, res: Response) {

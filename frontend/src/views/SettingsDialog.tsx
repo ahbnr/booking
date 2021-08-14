@@ -68,6 +68,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     if (value === '' || intValue >= 0) {
       this.setState({
         updateSettings: {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ...this.state.updateSettings!,
           bookingDeadlineHours: value,
         },
@@ -87,6 +88,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     if (value === '' || intValue >= 0) {
       this.setState({
         updateSettings: {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ...this.state.updateSettings!,
           maxBookingWeekDistance: intValue,
         },
@@ -101,6 +103,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     if (checked) {
       this.setState({
         updateSettings: {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ...this.state.updateSettings!,
           maxBookingWeekDistance: -1,
         },
@@ -108,6 +111,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     } else {
       this.setState({
         updateSettings: {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           ...this.state.updateSettings!,
           maxBookingWeekDistance: 0,
         },

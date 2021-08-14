@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import { Hours } from '../Hours';
 import { Minutes } from '../Minutes';
+// eslint-disable-next-line unused-imports/no-unused-imports
 import { DateTime } from 'luxon';
 
 export const TimeslotData = t.type({

@@ -1,7 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
-const resource_actions = require('../../support/resource_actions');
-// eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
-const weekday_actions = require('../../support/weekday_actions');
+//// eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
+//const resource_actions = require('../../support/resource_actions');
+//// eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
+//const weekday_actions = require('../../support/weekday_actions');
 
 //describe('Add and remove timeslots as an admin', () => {
 //  it('Add and remove some timeslots', () => {

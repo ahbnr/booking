@@ -2,7 +2,13 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['cypress', '@typescript-eslint', 'react', 'prettier'],
+  plugins: [
+    'cypress',
+    '@typescript-eslint',
+    'react',
+    'prettier',
+    'unused-imports',
+  ],
   extends: [
     'plugin:cypress/recommended',
     'eslint:recommended',
@@ -26,14 +32,20 @@ module.exports = {
       files: ['*.ts', '*.tsx'],
       rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
-        '@typescript-eslint/no-unused-vars': [
-          'warn',
-          {
-            argsIgnorePattern: '^_.*',
-          },
-        ],
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'unused-imports/no-unused-imports': 'error',
+        'unused-imports/no-unused-vars': [
+          'warn',
+          {
+            vars: 'all',
+            varsIgnorePattern: '^_',
+            args: 'after-used',
+            argsIgnorePattern: '^_',
+          },
+        ],
       },
     },
   ],

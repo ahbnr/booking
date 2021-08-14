@@ -179,6 +179,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
           timeslotId={timeslotId}
           bookingDay={bookingDay}
+          isAuthenticated={this.state.isAuthenticated}
         />
       ),
       authenticating: () => (

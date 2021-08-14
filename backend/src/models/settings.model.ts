@@ -1,8 +1,6 @@
 import { DataType, NotEmpty } from 'sequelize-typescript';
-import { Column, HasMany, PrimaryKey, Table } from 'sequelize-typescript';
-import { Weekday } from './weekday.model';
+import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { BaseModel } from './BaseModel';
-import { LazyGetter } from '../utils/LazyGetter';
 
 @Table
 export class Settings extends BaseModel<Settings> {

@@ -5,7 +5,6 @@ import { Resource } from './resource.model';
 import { WeekdayName, WeekdayNameValues } from 'common/dist';
 import { BaseModel } from './BaseModel';
 import { LazyGetter } from '../utils/LazyGetter';
-import { Booking } from './booking.model';
 
 @Table
 export class Weekday extends BaseModel<Weekday> {

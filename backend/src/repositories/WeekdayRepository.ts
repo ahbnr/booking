@@ -1,5 +1,5 @@
 import { WeekdayPostInterface } from 'common/dist';
-import { DestroyOptions, UniqueConstraintError, Op } from 'sequelize';
+import { DestroyOptions, Op } from 'sequelize';
 import { DataIdAlreadyExists, NoElementToUpdate } from './errors';
 import { Weekday } from '../models/weekday.model';
 import WeekdayDBInterface from './model_interfaces/WeekdayDBInterface';

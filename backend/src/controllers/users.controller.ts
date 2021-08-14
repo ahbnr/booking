@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { boundClass } from 'autobind-decorator';
 import { checkType, hasProperty, NonEmptyString } from 'common/dist';
-import { SignupRequestData, UserGetInterface } from 'common';
+import { UserGetInterface } from 'common';
 import TypesafeRequest from './TypesafeRequest';
 import UserRepository from '../repositories/UserRepository';
 import UserDBInterface from '../repositories/model_interfaces/UserDBInterface';

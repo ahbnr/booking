@@ -39,8 +39,8 @@ export class Booking extends BaseModel<Booking> {
   public name!: string;
 
   @IsEmail
-  @Column({ allowNull: false })
-  public email!: string;
+  @Column({ allowNull: true })
+  public email?: string;
 
   @IsDate
   @Column({ allowNull: false })

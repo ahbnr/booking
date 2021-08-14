@@ -1,3 +1,4 @@
+// eslint-disable-next-line unused-imports/no-unused-imports
 import { Errors, Type } from 'io-ts';
 import { getOrElse } from 'fp-ts/Either';
 import { DataValidationError } from './DataValidationError';

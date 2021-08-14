@@ -19,7 +19,7 @@ import { Skeleton } from '@material-ui/lab';
 import { InfoMessage } from './ListEx';
 import { WeekdayBookingConstraint } from '../complex_queries/getValidBookingDays';
 
-const styles = (theme: Theme) =>
+const styles = (_theme: Theme) =>
   createStyles({
     listItemText: {
       textAlign: 'center',

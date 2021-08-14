@@ -19,7 +19,6 @@ export interface SMTPConfig {
 interface BackendConfigI {
   mailService: EtheralConfig | SMTPConfig;
   organization: string;
-  sendConfirmationMail: boolean;
 }
 
 const BackendConfig: BackendConfigI = {
@@ -27,9 +26,6 @@ const BackendConfig: BackendConfigI = {
     kind: 'etheral',
   },
   organization: 'Your Organization',
-  // DEBUG OPTION: Do not send mails that prompt users to confirm their bookings if false.
-  // Also, bookings will be verified automatically if set to false
-  sendConfirmationMail: true,
 };
 
 export default BackendConfig;

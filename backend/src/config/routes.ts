@@ -15,7 +15,6 @@ import DatabaseController from '../models';
 import { AuthController } from '../controllers/auth.controller';
 import { SettingsController } from '../controllers/settings.controller';
 import { delay, inject, singleton } from 'tsyringe';
-import BookingRepository from '../repositories/BookingRepository';
 
 const { DEV_MODE } = process.env;
 

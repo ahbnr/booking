@@ -1,4 +1,4 @@
-import { Booking } from '../models/booking.model';
+import { Booking, VerificationTimeout } from '../models/booking.model';
 import { Timeslot } from '../models/timeslot.model';
 import { ISO8601 } from 'common/dist/typechecking/ISO8601';
 import { DestroyOptions, Op, WhereOptions } from 'sequelize';
@@ -8,9 +8,8 @@ import BookingDBInterface from './model_interfaces/BookingDBInterface';
 import { boundClass } from 'autobind-decorator';
 import {
   BookingPostInterface,
+  checkType,
   EMailString,
-  setTimeslotEndDate,
-  setTimeslotStartDate,
   throwExpr,
 } from 'common';
 import ResourceRepository from './ResourceRepository';
@@ -25,6 +24,11 @@ import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
 import assertNever from '../utils/assertNever';
 import { delay, inject, singleton } from 'tsyringe';
+import { i18nextInstance } from '../utils/i18n';
+import humanizeDuration from 'humanize-duration';
+import { MailTransporter } from '../mail/MailTransporter';
+import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
+import { asyncJwtSign } from '../utils/jwt';
 
 @singleton()
 @boundClass
@@ -37,58 +41,124 @@ export default class BookingRepository {
     private readonly timeslotRepository: TimeslotRepository,
 
     @inject(delay(() => SettingsRepository))
-    private readonly settingsRepository: SettingsRepository
+    private readonly settingsRepository: SettingsRepository,
+
+    @inject('MailTransporter')
+    private readonly mailTransporter: MailTransporter
   ) {}
 
   public toInterface(booking: Booking): BookingDBInterface {
     return new BookingDBInterface(booking, this);
   }
 
-  public async create(
-    timeslot: TimeslotDBInterface,
+  private async createOrModifyBooking(
+    mode: BookingModificationMode,
     bookingPostData: BookingPostInterface,
-    ignoreDeadlines: boolean,
-    ignoreMaxWeekDistance: boolean
+    options: BookingModificationOptions
   ): Promise<BookingDBInterface> {
+    let timeslot: TimeslotDBInterface;
+    switch (mode.kind) {
+      case 'modify':
+        timeslot = this.timeslotRepository.toInterface(
+          await mode.toModify.lazyTimeslot
+        );
+        break;
+      case 'create':
+        timeslot = mode.timeslot;
+        break;
+      default:
+        assertNever();
+    }
+
     const weekday = await timeslot.getWeekday();
     const settings = await this.settingsRepository.get();
     const bookingDay = DateTime.fromISO(bookingPostData.bookingDay);
+
+    if (options.requireMail && bookingPostData.email == null) {
+      throw new UnprocessableEntity('The E-Mail field may not be empty.');
+    }
 
     const bookingValidation = getBookingInterval(
       bookingDay,
       weekday.data.name,
       timeslot.data,
       settings,
-      ignoreDeadlines,
-      ignoreMaxWeekDistance
+      options.ignoreDeadlines,
+      options.ignoreMaxWeekDistance
     );
 
+    // noinspection UnreachableCodeJS
     switch (bookingValidation.kind) {
       case 'error':
         throw new UnprocessableEntity(
           `Invalid booking date: ${bookingValidation.error}`
         );
-      case 'success': {
-        const bookings = await timeslot.getBookings(bookingDay);
+      case 'success':
+        {
+          const bookings = await timeslot.getBookings(bookingDay);
 
-        if (bookings.length < timeslot.data.capacity) {
-          const booking = await Booking.create<Booking>({
+          const newDbData = {
             ...bookingPostData,
             startDate: bookingValidation.result.start.toJSDate(),
             endDate: bookingValidation.result.end.toJSDate(),
             timeslotId: timeslot.id,
-          });
+          };
 
-          return this.toInterface(booking);
-        } else {
-          throw new Conflict(
-            'The timeslot has reached max. capacity. No more bookings can be created.'
-          );
+          if (
+            bookings.length < timeslot.data.capacity ||
+            mode.kind === 'modify'
+          ) {
+            let booking: Booking;
+            switch (mode.kind) {
+              case 'create':
+                booking = await Booking.create<Booking>(newDbData);
+                break;
+
+              case 'modify':
+                booking = await mode.toModify.update(newDbData);
+                break;
+
+              default:
+                assertNever();
+            }
+
+            if (booking.email != null) {
+              await this.sendBookingLookupMail(
+                bookingPostData.lookupUrl,
+                booking
+              );
+            }
+
+            if (options.autoVerify) {
+              await booking.update({
+                isVerified: true,
+              });
+            }
+
+            return this.toInterface(booking);
+          } else {
+            throw new Conflict(
+              'The timeslot has reached max. capacity. No more bookings can be created.'
+            );
+          }
         }
-      }
+        // noinspection UnreachableCodeJS
+        break;
       default:
         return assertNever();
     }
+  }
+
+  public async create(
+    timeslot: TimeslotDBInterface,
+    bookingPostData: BookingPostInterface,
+    options: BookingModificationOptions
+  ): Promise<BookingDBInterface> {
+    return this.createOrModifyBooking(
+      { kind: 'create', timeslot },
+      bookingPostData,
+      options
+    );
   }
 
   public async findAll(
@@ -190,14 +260,17 @@ export default class BookingRepository {
 
   public async update(
     id: number,
-    data: BookingPostInterface
+    data: BookingPostInterface,
+    options: BookingModificationOptions
   ): Promise<BookingDBInterface> {
     const maybeBooking = await this.findByIdInternal(id);
 
     if (maybeBooking != null) {
-      const updatedBooking = await maybeBooking.update(data);
-
-      return this.toInterface(updatedBooking);
+      return this.createOrModifyBooking(
+        { kind: 'modify', toModify: maybeBooking },
+        data,
+        options
+      );
     } else {
       throw new NoElementToUpdate('booking');
     }
@@ -248,4 +321,90 @@ export default class BookingRepository {
 
     return valid_bookings;
   }
+
+  private static async createBookingLookupToken(
+    booking: Booking
+  ): Promise<string> {
+    const email = checkType(booking.email, EMailString);
+    const validDuration = await booking.timeTillDue();
+    const secondsUntilExpiration = Math.floor(
+      validDuration.shiftTo('seconds').seconds
+    );
+
+    const data: BookingLookupTokenData = {
+      type: 'BookingLookupToken',
+      email: email,
+    };
+
+    const tokenResult = await asyncJwtSign(data, {
+      expiresIn: secondsUntilExpiration,
+    });
+
+    return tokenResult.token;
+  }
+
+  private async sendBookingLookupMail(lookupUrl: string, booking: Booking) {
+    if (booking.email == null) {
+      throw Error(
+        'This booking has no email. This is a programming error and should never happen.'
+      );
+    }
+
+    const lookupToken = await BookingRepository.createBookingLookupToken(
+      booking
+    );
+
+    const timeslot = await this.getTimeslotOfBooking(booking);
+    const weekday = await timeslot.getWeekday();
+    const resourceName = weekday.resourceName;
+
+    await this.mailTransporter.send(
+      booking.email,
+      `Ihre Buchung - ${booking.name}`,
+      '', // TODO text representation
+      `
+        <p>
+          Sie haben die Ressource
+          <p>
+            <i style="margin-left: 2em">
+              "${resourceName}"
+              am
+              ${i18nextInstance.t(weekday.data.name)}
+              von
+              ${booking.startDate.toLocaleTimeString('de-DE')}
+              bis
+              ${booking.endDate.toLocaleTimeString('de-DE')}
+            </i>
+          </p>
+          gebucht.<br />
+          
+          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
+        </p>
+        <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
+        <p>
+          <b style="font-size: 1.5em;">
+            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
+            ${humanizeDuration(VerificationTimeout.toMillis(), {
+              language: 'de',
+            }).toUpperCase()}
+            WENN SIE NICHT BESTÄTIGT WIRD.
+          </b>
+        </p>
+        <p>
+          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen.
+        </p>
+      `
+    ); // FIXME: Formatting
+  }
+}
+
+type BookingModificationMode =
+  | { kind: 'create'; timeslot: TimeslotDBInterface }
+  | { kind: 'modify'; toModify: Booking };
+
+export interface BookingModificationOptions {
+  ignoreDeadlines: boolean;
+  ignoreMaxWeekDistance: boolean;
+  requireMail: boolean;
+  autoVerify: boolean;
 }

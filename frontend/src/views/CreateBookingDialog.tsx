@@ -14,13 +14,12 @@ import {
 import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
-import { EMailString, NonEmptyString } from 'common/dist';
+import { NonEmptyString } from 'common/dist';
 import getBaseUrl from '../utils/getBaseUrl';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
-import FrontendConfig from '../booking-frontend.config';
 import { DateTime } from 'luxon';
-import { noRefinementChecks } from 'common';
+import { BookingData, noRefinementChecks } from 'common';
 import { ISO8601 } from 'common/dist/typechecking/ISO8601';
 
 const styles = (theme: Theme) =>
@@ -56,7 +55,7 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
       firstNameError: undefined,
       lastName: '',
       lastNameError: undefined,
-      email: FrontendConfig.fixedBookingMailTarget || '',
+      email: '',
       emailError: undefined,
       backdropOpen: false,
     };
@@ -92,7 +91,9 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
     this.setState({
       email: value,
       emailError:
-        value.length > 0 ? undefined : 'Bitte gültige E-Mail eintragen',
+        value.length > 0 || this.props.isAuthenticated
+          ? undefined
+          : 'Bitte gültige E-Mail eintragen',
     });
   }
 
@@ -102,7 +103,7 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
       this.state.firstNameError == null &&
       this.state.lastName.length > 0 &&
       this.state.lastNameError == null &&
-      this.state.email.length > 0 &&
+      (this.state.email.length > 0 || this.props.isAuthenticated) &&
       this.state.emailError == null
     );
   }
@@ -111,12 +112,17 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
     this.setState({
       backdropOpen: true,
     });
+
+    const email = noRefinementChecks<BookingData['email']>(
+      this.state.email.length === 0 ? undefined : this.state.email
+    );
+
     await this.props.client.createBooking(this.props.timeslotId, {
       bookingDay: noRefinementChecks<ISO8601>(
         this.props.bookingDay.toISODate()
       ),
       name: `${this.state.firstName} ${this.state.lastName}` as NonEmptyString,
-      email: this.state.email as EMailString,
+      email,
       lookupUrl: `${getBaseUrl()}/`,
     });
 
@@ -198,6 +204,7 @@ interface Properties extends WithStyles<typeof styles> {
   timeslotId: number;
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
+  isAuthenticated: boolean;
 }
 
 interface State {
