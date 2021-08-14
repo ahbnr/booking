@@ -240,7 +240,9 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       viewingMainPage: () => (
         <MainView changeInteractionState={this.changeInteractionState} />
       ),
-      confirmingBookingDialog: () => <ConfirmBookingDialog />,
+      confirmingBookingDialog: () => (
+        <ConfirmBookingDialog isAuthenticated={this.state.isAuthenticated} />
+      ),
       selectingWeekdayOverview: () => (
         <WeekdayOverviewSelector
           client={this.client}

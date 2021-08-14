@@ -115,6 +115,7 @@ export class BookingsController {
       ignoreDeadlines: isAuthenticated,
       requireMail: !isAuthenticated,
       autoVerify: isAuthenticated,
+      allowToExceedCapacity: isAuthenticated,
     };
   }
 

@@ -106,7 +106,8 @@ export default class BookingRepository {
 
           if (
             bookings.length < timeslot.data.capacity ||
-            mode.kind === 'modify'
+            mode.kind === 'modify' ||
+            options.allowToExceedCapacity
           ) {
             let booking: Booking;
             switch (mode.kind) {
@@ -407,4 +408,5 @@ export interface BookingModificationOptions {
   ignoreMaxWeekDistance: boolean;
   requireMail: boolean;
   autoVerify: boolean;
+  allowToExceedCapacity: boolean;
 }
