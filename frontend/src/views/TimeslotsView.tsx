@@ -1,6 +1,5 @@
 import React from 'react';
 import '../App.css';
-import _ from '../utils/lodash-mixins';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
@@ -68,8 +67,7 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
         fallback={<LoadingScreen />}
         asyncAction={this.state.timeslots}
         content={(timeslots) => {
-          const sortedTimeslots: TimeslotGetInterface[] = _.sortWith(
-            timeslots,
+          const sortedTimeslots: TimeslotGetInterface[] = timeslots.sort(
             timeslotCompare
           );
 

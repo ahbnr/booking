@@ -23,7 +23,7 @@ import {
   WeekdayBookingConstraint,
 } from '../complex_queries/getValidBookingDays';
 import InfiniteWeekdaysList from './InfiniteWeekdaysList';
-import _ from 'lodash';
+import uniqBy from 'lodash/fp/uniqBy';
 import WeekdayButton from './WeekdayButton';
 
 const styles = (theme: Theme) =>
@@ -78,7 +78,7 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
 
   async fetchWeekdayConstraints(): Promise<WeekdayBookingConstraint[]> {
     const weekdays = await this.props.client.getWeekdays();
-    const deduplicatedWeekdays = _.uniqBy(weekdays, (weekday) => weekday.name);
+    const deduplicatedWeekdays = uniqBy((weekday) => weekday.name, weekdays);
 
     return getValidBookingDays(deduplicatedWeekdays, true, this.props.client);
   }

@@ -1,12 +1,12 @@
 import React from 'react';
 import '../App.css';
 import { weekdayNames } from '../models/WeekdayUtils';
-import _ from 'lodash';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { ResourceGetInterface } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
+import isEqual from 'lodash/fp/isEqual';
 import {
   createStyles,
   Fab,
@@ -102,7 +102,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
   }
 
   haveAllWeekdaysBeenCreated(createdWeekdayNames: Set<WeekdayName>) {
-    return _.isEqual(weekdayNames, createdWeekdayNames);
+    return isEqual(weekdayNames, createdWeekdayNames);
   }
 
   async deleteWeekday(weekdayId: number) {
@@ -140,9 +140,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
         fallback={<LoadingScreen />}
         content={({ weekdayConstraints, settings }) => {
           const createdWeekdayNames = new Set<WeekdayName>(
-            _.chain(weekdayConstraints)
-              .map(({ weekdayName }) => weekdayName)
-              .value()
+            weekdayConstraints.map(({ weekdayName }) => weekdayName)
           );
 
           return (

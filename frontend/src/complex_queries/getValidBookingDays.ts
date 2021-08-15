@@ -1,7 +1,7 @@
 import { getNextWeekdayDate, WeekdayName } from 'common';
 import { Client } from '../Client';
 import { DateTime } from 'luxon';
-import _ from 'lodash';
+import sortBy from 'lodash/fp/sortBy';
 
 export async function getValidBookingDays(
   weekdays: { name: WeekdayName; id: number }[],
@@ -29,9 +29,9 @@ export async function getValidBookingDays(
     })
   );
 
-  return _.sortBy(
-    bookableWeekdays,
-    (bookableWeekday) => bookableWeekday.earliestDate
+  return sortBy(
+    (bookableWeekday) => bookableWeekday.earliestDate,
+    bookableWeekdays
   );
 }
 

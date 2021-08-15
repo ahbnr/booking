@@ -22,7 +22,10 @@ import {
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { DateTime } from 'luxon';
 import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
-import _ from 'lodash';
+import flow from 'lodash/fp/flow';
+import groupBy from 'lodash/fp/groupBy';
+import map from 'lodash/fp/map';
+import orderBy from 'lodash/fp/orderBy';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
@@ -97,20 +100,22 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
         asyncAction={this.state.downloadedData}
         fallback={<CircularProgress size="6vw" />}
         content={(downloadedData) => {
-          const resourceGroupedBookings: ResourceGroupedBookings[] = _.chain(
-            downloadedData.bookings
-          )
-            .groupBy((booking) => booking.resource.name)
-            .map((bookingList) => {
+          const resourceGroupedBookings: ResourceGroupedBookings[] = flow(
+            groupBy(
+              (booking: BookingWithContextGetInterface) => booking.resource.name
+            ),
+            map((bookingList) => {
               const booking = bookingList[0];
 
               return {
                 resourceName: booking.resource.name,
                 bookings: bookingList,
               };
-            })
-            .orderBy((group) => group.bookings.length, ['desc'])
-            .value();
+            }),
+            orderBy((group: ResourceGroupedBookings) => group.bookings.length, [
+              'desc',
+            ])
+          )(downloadedData.bookings);
 
           let gridColumnSize: GridSize = 12;
           if (resourceGroupedBookings.length >= 4) {

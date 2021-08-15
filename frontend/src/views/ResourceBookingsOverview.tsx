@@ -12,7 +12,11 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { BookingWithContextGetInterface, NonEmptyString } from 'common';
-import _ from 'lodash';
+import flow from 'lodash/fp/flow';
+import groupBy from 'lodash/fp/groupBy';
+import map from 'lodash/fp/map';
+import sortBy from 'lodash/fp/sortBy';
+import uniq from 'lodash/fp/uniq';
 import { DateTime } from 'luxon';
 import ColorHash from 'color-hash';
 import { changeInteractionStateT } from '../App';
@@ -40,23 +44,28 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
   private groupBookings(
     bookings: BookingWithContextGetInterface[]
   ): BookingsGroup[] {
-    const groupedBookings: BookingsGroup[] = _.chain(bookings)
-      .groupBy((booking) => [booking.startDate, booking.endDate])
-      .map((bookingList) => {
+    const groupedBookings = flow(
+      groupBy((booking: BookingWithContextGetInterface) => [
+        booking.startDate,
+        booking.endDate,
+      ]),
+      map((bookingList: BookingWithContextGetInterface[]) => {
         const sampleBooking = bookingList[0];
 
         return {
           names: bookingList.map((booking) => booking.name),
           startDate: DateTime.fromISO(sampleBooking.startDate),
           endDate: DateTime.fromISO(sampleBooking.endDate),
-          timeslotIds: _.chain(bookingList)
-            .map((booking) => booking.timeslotId)
-            .uniq()
-            .value(),
+          timeslotIds: flow(
+            map(
+              (booking: BookingWithContextGetInterface) => booking.timeslotId
+            ),
+            uniq
+          )(bookingList),
         };
-      })
-      .sortBy((bookingGroup) => bookingGroup.startDate)
-      .value();
+      }),
+      sortBy((bookingGroup) => bookingGroup.startDate)
+    )(bookings);
 
     return groupedBookings;
   }
