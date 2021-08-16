@@ -2405,6 +2405,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sendgrid/client@npm:^7.4.6":
+  version: 7.4.6
+  resolution: "@sendgrid/client@npm:7.4.6"
+  dependencies:
+    "@sendgrid/helpers": ^7.4.6
+    axios: ^0.21.1
+  checksum: 1ea95a779c2a789c8c7e0d9aee105f53bf6037159abc37ff819c78fe25a2aa1614625135b80c34a748a05dacdfab9b28d85367949dbee93638c0d27ecc4ad865
+  languageName: node
+  linkType: hard
+
+"@sendgrid/helpers@npm:^7.4.6":
+  version: 7.4.6
+  resolution: "@sendgrid/helpers@npm:7.4.6"
+  dependencies:
+    deepmerge: ^4.2.2
+  checksum: ec0e8ee01f796f9bde3b6519a063f6cbc226fcd0d64b5d14e7587a6ebd1e93cd011d74f5ddcadee7e65bb43ce6b1b3714fb7bb44a52c66df2d95d30ab34d41e2
+  languageName: node
+  linkType: hard
+
+"@sendgrid/mail@npm:^7.4.6":
+  version: 7.4.6
+  resolution: "@sendgrid/mail@npm:7.4.6"
+  dependencies:
+    "@sendgrid/client": ^7.4.6
+    "@sendgrid/helpers": ^7.4.6
+  checksum: 7cacd44844be34d9f2137e8eae32a392a8907bd1319089eacaf60fee17fa3286bd504bd0ae32560d335cdf2d3e3602c96da9c3c74a49840424d3541889327c3f
+  languageName: node
+  linkType: hard
+
 "@sheerun/mutationobserver-shim@npm:^0.3.2":
   version: 0.3.3
   resolution: "@sheerun/mutationobserver-shim@npm:0.3.3"
@@ -4674,6 +4703,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:backend"
   dependencies:
+    "@sendgrid/mail": ^7.4.6
     "@types/bcrypt": ^3.0.0
     "@types/bluebird": ^3.5.32
     "@types/body-parser": ^1.19.0
@@ -7186,6 +7216,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deepmerge@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "deepmerge@npm:4.2.2"
+  checksum: 85abf8e0045ee280996e7d2396979c877ef0741e413b716e42441110e0a83ac08098b2a49cea035510060bf667c0eae3189b2a52349f5fa4b000c211041637b1
+  languageName: node
+  linkType: hard
+
 "default-gateway@npm:^4.2.0":
   version: 4.2.0
   resolution: "default-gateway@npm:4.2.0"
@@ -9425,6 +9462,7 @@ __metadata:
     react: ^16.13.1
     react-big-calendar: ^0.28.1
     react-dom: ^16.13.1
+    react-hook-form: ^7.12.2
     react-i18next: ^11.8.15
     react-scripts: 3.4.1
     react-virtualized-auto-sizer: ^1.0.5
@@ -16604,6 +16642,15 @@ fsevents@^1.2.7:
   version: 6.0.9
   resolution: "react-error-overlay@npm:6.0.9"
   checksum: 5e971284cc76af684940d78a91c8eac639f16b3b9500a03423ae177392cdaf320788b9c9112f58a2dde4f5a80688acdbc89334827354e95493244968af94830f
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.12.2":
+  version: 7.12.2
+  resolution: "react-hook-form@npm:7.12.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17
+  checksum: 23cc1d5c6c718faa01c2fc950a4a4e944f971708051bc072f6ffbe9738bedbefa7755d0d1d691fca72271628eb127f736e3b7b181554f0479f9ed0e53bc725e7
   languageName: node
   linkType: hard
 

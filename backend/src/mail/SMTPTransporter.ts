@@ -1,5 +1,5 @@
 import { MailTransporter } from './MailTransporter';
-import nodemailer, { SentMessageInfo } from 'nodemailer';
+import nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { singleton } from 'tsyringe';
 import { boundClass } from 'autobind-decorator';
@@ -37,7 +37,7 @@ export default class SMTPTransporter implements MailTransporter {
     subject: string,
     textContent: string,
     htmlContent?: string
-  ): Promise<SentMessageInfo> {
+  ): Promise<unknown> {
     const mailer = await this.getMailer();
 
     const sendInfo = await mailer.sendMail({

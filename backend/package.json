@@ -23,6 +23,7 @@
   "author": "",
   "license": "AGPL-3.0-only",
   "dependencies": {
+    "@sendgrid/mail": "^7.4.6",
     "autobind-decorator": "^2.4.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",

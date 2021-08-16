@@ -24,12 +24,20 @@ import { RefreshTokenData } from '../types/token-types/RefreshTokenData';
 import UserRepository from '../repositories/UserRepository';
 
 import { SignupTokenData } from '../types/token-types/SignupTokenData';
-import InviteForSignupResponse from '../types/response-types/InviteForSignupResponse';
 import { DateTime } from 'luxon';
 import { ControllerError } from './errors';
 import asyncRandomBytes from '../utils/cryptoRandomBytes';
 import { delay, inject, singleton } from 'tsyringe';
 import { MailTransporter } from '../mail/MailTransporter';
+import BackendConfig from '../booking-backend.config';
+import {
+  InviteForSignupFailureData,
+  InviteForSignupResponseData,
+  InviteForSignupSuccessData,
+  SignupFailureData,
+  SignupResponseData,
+  SignupSuccessData,
+} from 'common';
 
 class RefreshTokenGenerationResult {
   public readonly signedJWT: TokenGenerationResult;
@@ -236,38 +244,80 @@ export class AuthController {
 
   public async inviteForSignup(
     req: TypesafeRequest,
-    res: Response<InviteForSignupResponse>
+    res: Response<InviteForSignupResponseData>
   ) {
     const invitationData = checkType(req.body, InviteForSignupData);
 
-    const signupToken = await AuthController.generateSignupToken(
+    const existingUserWithEMail = await this.userRepository.findUserByEMail(
       invitationData.email
     );
 
-    await this.sendSignupMail(
-      signupToken.token,
-      invitationData.targetUrl,
-      invitationData.email
-    );
+    if (existingUserWithEMail == null) {
+      const signupToken = await AuthController.generateSignupToken(
+        invitationData.email
+      );
 
-    res.status(200).json({
-      signupToken: signupToken.token,
-    });
+      await this.sendSignupMail(
+        signupToken.token,
+        invitationData.targetUrl,
+        invitationData.email
+      );
+
+      res.status(200).json(
+        noRefinementChecks<InviteForSignupSuccessData>({
+          kind: 'success',
+          signupToken: signupToken.token,
+        })
+      );
+    } else {
+      res.status(409).json(
+        noRefinementChecks<InviteForSignupFailureData>({
+          kind: 'failure',
+        })
+      );
+    }
   }
 
-  public async signup(
-    req: TypesafeRequest,
-    res: Response<AuthResponseData | string>
-  ) {
+  public async signup(req: TypesafeRequest, res: Response<SignupResponseData>) {
     const data = checkType(req.body, SignupRequestData);
 
     const signupTokenData = await AuthController.decodeSignupToken(
       data.signupToken
     );
 
-    await this.userRepository.create(data.userData, signupTokenData.email);
+    const existingUserWithName = await this.userRepository.findUserByName(
+      data.userData.name
+    );
 
-    res.status(201).json();
+    if (existingUserWithName == null) {
+      const existingUserWithEmail = await this.userRepository.findUserByEMail(
+        signupTokenData.email
+      );
+
+      if (existingUserWithEmail == null) {
+        await this.userRepository.create(data.userData, signupTokenData.email);
+
+        res.status(201).json(
+          noRefinementChecks<SignupSuccessData>({
+            kind: 'success',
+          })
+        );
+      } else {
+        res.status(409).json(
+          noRefinementChecks<SignupFailureData>({
+            kind: 'failure',
+            reason: 'existing_mail',
+          })
+        );
+      }
+    } else {
+      res.status(409).json(
+        noRefinementChecks<SignupFailureData>({
+          kind: 'failure',
+          reason: 'existing_name',
+        })
+      );
+    }
   }
 
   public async isSignupTokenOk(req: TypesafeRequest, res: Response<boolean>) {
@@ -278,9 +328,18 @@ export class AuthController {
     ) {
       try {
         const signupToken = req.body.signupToken;
-        await AuthController.decodeSignupToken(signupToken);
+        const decoded = await AuthController.decodeSignupToken(signupToken);
 
-        res.json(true);
+        const maybeUserWithSameMail = await this.userRepository.findUserByEMail(
+          decoded.email
+        );
+
+        // you can not register if a user with that mail is already registered
+        if (maybeUserWithSameMail == null) {
+          res.json(true);
+        } else {
+          res.json(false);
+        }
       } catch (e) {
         res.json(false);
       }
@@ -298,9 +357,31 @@ export class AuthController {
   ) {
     await this.mailTransporter.send(
       email,
-      'Signup',
-      '', // TODO text represenation
-      `<a href="${targetUrl}?signupToken=${signupToken}">Signup</a>`
+      'Admin Registrierung',
+      `
+        Hallo!
+        
+        Sie wurden als Administrator eingeladen für den Buchungsdienst der ${BackendConfig.organization}.
+        Bitte klicken Sie auf den folgenden Link um einen Benutzernamen und ein Passwort zu registrieren:
+        
+        ${targetUrl}?signupToken=${signupToken}
+          
+        Vielen Dank!
+      `,
+      `
+        <p>Hallo!</p>
+        
+        <p>
+        Sie wurden als Administrator eingeladen für den Buchungsdienst der ${BackendConfig.organization}.
+        Bitte klicken Sie auf den folgenden Link um einen Benutzernamen und ein Passwort zu registrieren:
+        </p>
+        <center>
+          <a href="${targetUrl}?signupToken=${signupToken}">Registrieren</a>
+        </center>
+        <p>
+            Vielen Dank!
+        </p>
+      `
     );
   }
 

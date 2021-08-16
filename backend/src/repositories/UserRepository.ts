@@ -48,6 +48,16 @@ export default class UserRepository {
     return null;
   }
 
+  public async findUserByEMail(email: string): Promise<UserDBInterface | null> {
+    const user = await User.findOne<User>({ where: { email: email } });
+
+    if (user != null) {
+      return this.toInterface(user);
+    }
+
+    return null;
+  }
+
   public async findAll(): Promise<UserDBInterface[]> {
     const users = await User.findAll({});
 

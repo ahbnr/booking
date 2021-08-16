@@ -18,6 +18,8 @@ import { NonEmptyString, noRefinementChecks } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import LoadingScreen from './LoadingScreen';
 import LoadingBackdrop from './LoadingBackdrop';
+import { Alert, AlertTitle } from '@material-ui/lab';
+import { assertNever } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -100,13 +102,41 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
       this.setState({
         backdropOpen: true,
       });
-      await this.props.client.signup(
+
+      const username = this.state.userName;
+      const password = this.state.password;
+      const response = await this.props.client.signup(
         noRefinementChecks<NonEmptyString>(this.props.signupToken),
-        noRefinementChecks<NonEmptyString>(this.state.userName),
-        noRefinementChecks<NonEmptyString>(this.state.password)
+        noRefinementChecks<NonEmptyString>(username),
+        noRefinementChecks<NonEmptyString>(password)
       );
 
-      window.history.back();
+      switch (response.kind) {
+        case 'success':
+          await this.props.client.login(username, password);
+          window.history.back();
+          break;
+        case 'failure':
+          {
+            let errorMessage: string;
+            switch (response.reason) {
+              case 'existing_mail':
+                errorMessage =
+                  'Es ist bereits ein Administrator mit dieser E-Mail Adresse registriert.';
+                break;
+              case 'existing_name':
+                errorMessage =
+                  'Es ist bereits ein Administrator mit diesem Namen registriert. Bitte wählen Sie einen anderen Nutzernamen.';
+                break;
+              default:
+                assertNever();
+            }
+            this.setState({ requestError: errorMessage, backdropOpen: false });
+          }
+          break;
+        default:
+          assertNever();
+      }
     }
   }
 
@@ -149,6 +179,12 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
                   helperText={this.state.passwordError}
                   onChange={this.onPasswordChanged}
                 />
+                {this.state.requestError != null && (
+                  <Alert severity="error">
+                    <AlertTitle>Registrierung Fehlgeschlagen</AlertTitle>
+                    {this.state.requestError}
+                  </Alert>
+                )}
                 <Button
                   fullWidth
                   variant="contained"
@@ -167,10 +203,11 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
       );
     } else if (this.state.isSignupTokenOk === false) {
       return (
-        <Typography variant="body1">
-          Der Einladungslink ist leider abgelaufen. Bitte beantragen sie einen
-          neuen.
-        </Typography>
+        <Alert severity="error">
+          <AlertTitle>Einladungslink abgelaufen</AlertTitle>
+          Der Einladungslink ist leider abgelaufen oder wurde bereits für eine
+          Registrierung benutzt. Bitte beantragen sie einen neuen.
+        </Alert>
       );
     } else {
       return <LoadingScreen />;
@@ -193,5 +230,6 @@ interface State {
   userNameError?: string;
   password: string;
   passwordError?: string;
+  requestError?: string;
   backdropOpen: boolean;
 }

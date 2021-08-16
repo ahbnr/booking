@@ -38,6 +38,7 @@
     "react": "^16.13.1",
     "react-big-calendar": "^0.28.1",
     "react-dom": "^16.13.1",
+    "react-hook-form": "^7.12.2",
     "react-i18next": "^11.8.15",
     "react-scripts": "3.4.1",
     "react-virtualized-auto-sizer": "^1.0.5",

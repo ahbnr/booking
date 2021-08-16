@@ -7,6 +7,7 @@ import { Resource } from '../models/resource.model';
 import BookingDBInterface from './model_interfaces/BookingDBInterface';
 import { boundClass } from 'autobind-decorator';
 import {
+  assertNever,
   BookingPostInterface,
   checkType,
   EMailString,
@@ -22,7 +23,6 @@ import '../utils/array_extensions';
 import getBookingInterval from '../date_math/getBookingInterval';
 import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
-import assertNever from '../utils/assertNever';
 import { delay, inject, singleton } from 'tsyringe';
 import { i18nextInstance } from '../utils/i18n';
 import humanizeDuration from 'humanize-duration';
@@ -362,7 +362,31 @@ export default class BookingRepository {
     await this.mailTransporter.send(
       booking.email,
       `Ihre Buchung - ${booking.name}`,
-      '', // TODO text representation
+      `
+          Sie haben die Ressource
+          
+              "${resourceName}"
+              am
+              ${i18nextInstance.t(weekday.data.name)}
+              von
+              ${booking.startDate.toLocaleTimeString('de-DE')}
+              bis
+              ${booking.endDate.toLocaleTimeString('de-DE')}
+          
+          gebucht.
+          
+          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
+          
+          ${lookupUrl}?lookupToken=${lookupToken}
+        
+            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
+            ${humanizeDuration(VerificationTimeout.toMillis(), {
+              language: 'de',
+            }).toUpperCase()}
+            WENN SIE NICHT BESTÄTIGT WIRD.
+            
+          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen
+      `,
       `
         <p>
           Sie haben die Ressource
@@ -392,7 +416,7 @@ export default class BookingRepository {
           </b>
         </p>
         <p>
-          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen.
+          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen.
         </p>
       `
     ); // FIXME: Formatting

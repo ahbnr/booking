@@ -27,6 +27,8 @@ import {
   SettingsPostInterface,
 } from 'common/dist/typechecking/api/Settings';
 import { BookingConditionsGetInterface } from 'common/dist/typechecking/api/BookingConditions';
+import { InviteForSignupResponseData, SignupResponseData } from 'common';
+import includes from 'lodash/fp/includes';
 
 const baseUrl = `${process.env.PUBLIC_URL}/api`;
 
@@ -106,7 +108,7 @@ export class Client {
 
   public async logout() {
     try {
-      await this.request('POST', 'auth/logout', {}, true);
+      await this.request('POST', 'auth/logout', {}, { dontAutoAuth: true });
     } catch (e) {
       console.log(
         `Could not log out at server (${JSON.stringify(
@@ -128,9 +130,9 @@ export class Client {
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any,
-    dontAutoAuth?: boolean
+    requestOptions?: RequestOptions
   ): Promise<A> {
-    const response = await this.request(method, subUrl, body, dontAutoAuth);
+    const response = await this.request(method, subUrl, body, requestOptions);
     const parsed = await response.json();
 
     return checkType(parsed, type);
@@ -141,11 +143,21 @@ export class Client {
     subUrl: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any,
-    dontAutoAuth?: boolean
+    requestOptions?: RequestOptions
   ): Promise<Response> {
     const headers: HeadersInit = {};
 
-    if (!dontAutoAuth) {
+    if (requestOptions == null) {
+      requestOptions = {};
+    }
+    if (requestOptions.dontAutoAuth == null) {
+      requestOptions.dontAutoAuth = false;
+    }
+    if (requestOptions.dontThrowErrorCodes == null) {
+      requestOptions.dontThrowErrorCodes = [];
+    }
+
+    if (!requestOptions.dontAutoAuth) {
       await this.tryAutoAuth();
     }
 
@@ -191,7 +203,10 @@ export class Client {
       }
     }
 
-    if (!response.ok) {
+    if (
+      !response.ok &&
+      !includes(response.status, requestOptions.dontThrowErrorCodes)
+    ) {
       throw new RequestError(response);
     }
 
@@ -218,7 +233,7 @@ export class Client {
     signupToken: NonEmptyString,
     username: NonEmptyString,
     password: NonEmptyString
-  ) {
+  ): Promise<SignupResponseData> {
     this.jsonWebToken = undefined;
 
     const data: SignupRequestData = {
@@ -229,9 +244,13 @@ export class Client {
       },
     };
 
-    await this.request('POST', 'auth/signup', data);
-
-    await this.login(username, password);
+    return await this.typedRequest(
+      SignupResponseData,
+      'POST',
+      'auth/signup',
+      data,
+      { dontThrowErrorCodes: [409] }
+    );
   }
 
   public async tryAutoAuth(): Promise<boolean> {
@@ -264,7 +283,7 @@ export class Client {
       'GET',
       'auth/auth_token',
       undefined,
-      true
+      { dontAutoAuth: true }
     );
 
     const authToken = response.authToken;
@@ -287,19 +306,28 @@ export class Client {
       password: password,
     };
 
-    await this.request('POST', 'auth/login', data, true);
+    await this.request('POST', 'auth/login', data, { dontAutoAuth: true });
     this.isLoggedIn = true;
 
     await this.tryAutoAuth();
   }
 
-  public async inviteForSignup(email: EMailString, signupPath: string) {
+  public async inviteForSignup(
+    email: EMailString,
+    signupPath: string
+  ): Promise<InviteForSignupResponseData> {
     const data: InviteForSignupData = {
       email: email,
       targetUrl: signupPath,
     };
 
-    await this.request('POST', 'auth/invite', data);
+    return this.typedRequest(
+      InviteForSignupResponseData,
+      'POST',
+      'auth/invite',
+      data,
+      { dontThrowErrorCodes: [409] }
+    );
   }
 
   public async getTimeslot(timeslotId: number): Promise<TimeslotGetInterface> {
@@ -469,4 +497,9 @@ export class Client {
       data
     );
   }
+}
+
+interface RequestOptions {
+  dontAutoAuth?: boolean;
+  dontThrowErrorCodes?: number[];
 }

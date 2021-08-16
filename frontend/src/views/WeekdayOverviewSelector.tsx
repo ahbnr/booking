@@ -91,8 +91,6 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
   }
 
   render() {
-    const { t } = this.props;
-
     return (
       <Suspense
         asyncAction={this.state.weekdayConstraints}

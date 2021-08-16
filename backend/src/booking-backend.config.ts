@@ -16,8 +16,14 @@ export interface SMTPConfig {
   password: string;
 }
 
+export interface SendGridConfig {
+  kind: 'sendgrid';
+  address: string;
+  apikey: string;
+}
+
 interface BackendConfigI {
-  mailService: EtheralConfig | SMTPConfig;
+  mailService: EtheralConfig | SMTPConfig | SendGridConfig;
   organization: string;
 }
 

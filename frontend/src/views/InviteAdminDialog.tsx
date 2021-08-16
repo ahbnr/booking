@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   Avatar,
@@ -18,6 +18,9 @@ import getBaseUrl from '../utils/getBaseUrl';
 import { EMailString } from 'common/dist';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
+import { Alert, AlertTitle } from '@material-ui/lab';
+import { withForm, WithForm } from '../utils/WithReactHookForm';
+import { Controller } from 'react-hook-form';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,31 +55,31 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
     };
   }
 
-  onEmailChanged(
-    changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
-    const value = changeEvent.target.value;
-
-    this.setState({
-      email: value,
-      emailError: value.length > 0 ? undefined : 'Bitte ausfüllen',
-    });
-  }
-
   canBeSubmitted(): boolean {
     return this.state.email.length > 0 && this.state.emailError == null;
   }
 
-  async onSubmit() {
+  async onSubmit(formInput: IFormInput) {
+    console.log(formInput);
     this.setState({
       backdropOpen: true,
     });
-    await this.props.client.inviteForSignup(
-      this.state.email as EMailString,
+    const response = await this.props.client.inviteForSignup(
+      formInput.email as EMailString,
       `${getBaseUrl()}/`
     );
 
-    window.history.back();
+    switch (response.kind) {
+      case 'success':
+        window.history.back();
+        break;
+      case 'failure':
+        this.setState({
+          backdropOpen: false,
+          requestError:
+            'Die Einladung konnte nicht verschickt werden. Eventuell ist bereits ein Administrator mit dieser E-Mail registriert?',
+        });
+    }
   }
 
   render() {
@@ -91,27 +94,54 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
             <Typography component="h1" variant="h5">
               Admin Hinzufügen
             </Typography>
-            <form className={this.props.classes.form} noValidate>
-              <TextField
-                required
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                label={'E-Mail'}
-                autoComplete="email"
-                autoFocus
-                value={this.state.email}
-                error={this.state.email != null}
-                helperText={this.state.emailError}
-                onChange={this.onEmailChanged}
+            <form
+              className={this.props.classes.form}
+              onSubmit={this.props.handleSubmit(this.onSubmit)}
+            >
+              <Controller
+                name="email"
+                control={this.props.control}
+                defaultValue=""
+                rules={{
+                  required: true,
+                  pattern: {
+                    // eslint-disable-next-line no-useless-escape
+                    value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    message: 'Dies ist keine gültige E-Mail',
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    required
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    label={'E-Mail'}
+                    autoComplete="email"
+                    autoFocus
+                    error={!!fieldState.error}
+                    helperText={
+                      fieldState.error ? fieldState.error.message : null
+                    }
+                    {...field}
+                  />
+                )}
               />
+              {this.state.requestError != null && (
+                <Alert severity="error">
+                  <AlertTitle>Einladung fehlgeschlagen</AlertTitle>
+                  {this.state.requestError}
+                </Alert>
+              )}
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 className={this.props.classes.submit}
-                disabled={!this.canBeSubmitted()}
-                onClick={this.onSubmit}
+                type="submit"
+                disabled={
+                  !this.props.formState.isValid || !this.props.formState.isDirty
+                }
               >
                 Einladen
               </Button>
@@ -124,10 +154,16 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
   }
 }
 
-const InviteAdminDialog = withStyles(styles)(UnstyledInviteAdminDialog);
+const InviteAdminDialog = withForm({ mode: 'onChange' })(
+  withStyles(styles)(UnstyledInviteAdminDialog)
+);
 export default InviteAdminDialog;
 
-interface Properties extends WithStyles<typeof styles> {
+interface IFormInput {
+  email: string;
+}
+
+interface Properties extends WithStyles<typeof styles>, WithForm<IFormInput> {
   client: Client;
   changeInteractionState: changeInteractionStateT;
 }
@@ -135,5 +171,6 @@ interface Properties extends WithStyles<typeof styles> {
 interface State {
   email: string;
   emailError?: string;
+  requestError?: string;
   backdropOpen: boolean;
 }
