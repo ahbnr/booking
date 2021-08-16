@@ -226,6 +226,7 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
               ),
             }}
             open={this.state.drawerOpen}
+            onClose={this.handleDrawerClose}
           >
             <div className={this.props.classes.toolbarIcon}>
               <IconButton onClick={this.handleDrawerClose}>
