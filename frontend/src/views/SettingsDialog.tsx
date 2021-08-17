@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   Avatar,
@@ -20,6 +20,9 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
+import { WithForm } from '../utils/WithReactHookForm';
+import { Controller, useForm } from 'react-hook-form';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,13 +36,6 @@ const styles = (theme: Theme) =>
       margin: theme.spacing(1),
       backgroundColor: theme.palette.secondary.main,
     },
-    form: {
-      width: '100%', // Fix IE 11 issue.
-      marginTop: theme.spacing(1),
-    },
-    submit: {
-      margin: theme.spacing(3, 0, 2),
-    },
   });
 
 @boundClass
@@ -49,7 +45,6 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
 
     this.state = {
       getSettings: undefined,
-      updateSettings: undefined,
     };
   }
 
@@ -59,91 +54,19 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     });
   }
 
-  onDeadlineChanged(
-    changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
-    const value = changeEvent.target.value;
-    const intValue = parseInt(value);
+  async onSubmit(formInput: IFormInput) {
+    const deadlineMillis = formInput.bookingDeadlineHours * 3600000;
 
-    if (value === '' || intValue >= 0) {
-      this.setState({
-        updateSettings: {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ...this.state.updateSettings!,
-          bookingDeadlineHours: value,
-        },
-      });
-    }
-  }
+    const request = this.props.client.updateSettings({
+      bookingDeadlineMillis: deadlineMillis,
+      maxBookingWeekDistance: formInput.maxBookingWeekDistanceDisabled
+        ? -1
+        : formInput.maxBookingWeekDistance,
+    });
 
-  onChangeMaxBookingWeekDistance(
-    changeEvent: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) {
-    const value = changeEvent.target.value;
-    let intValue = parseInt(value);
-    if (intValue < 0) {
-      intValue = 0;
-    }
-
-    if (value === '' || intValue >= 0) {
-      this.setState({
-        updateSettings: {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ...this.state.updateSettings!,
-          maxBookingWeekDistance: intValue,
-        },
-      });
-    }
-  }
-
-  onChangeLimitWeekDistance(
-    changeEvent: ChangeEvent<HTMLInputElement>,
-    checked: boolean
-  ) {
-    if (checked) {
-      this.setState({
-        updateSettings: {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ...this.state.updateSettings!,
-          maxBookingWeekDistance: -1,
-        },
-      });
-    } else {
-      this.setState({
-        updateSettings: {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          ...this.state.updateSettings!,
-          maxBookingWeekDistance: 0,
-        },
-      });
-    }
-  }
-
-  canBeSubmitted(): boolean {
-    return this.state.updateSettings != null;
-  }
-
-  async onSubmit() {
-    if (this.state.updateSettings != null) {
-      let deadlineMillis =
-        parseInt(this.state.updateSettings.bookingDeadlineHours) * 3600000;
-      if (this.state.updateSettings.bookingDeadlineHours === '') {
-        deadlineMillis = 0;
-      }
-
-      const request = this.props.client.updateSettings({
-        bookingDeadlineMillis: deadlineMillis,
-        maxBookingWeekDistance: this.state.updateSettings
-          .maxBookingWeekDistance,
-      });
-
-      this.setState({
-        getSettings: request,
-        updateSettings: undefined,
-      });
-    } else {
-      console.error('Dont call submit if you have no data to submit');
-    }
+    this.setState({
+      getSettings: request,
+    });
   }
 
   render() {
@@ -151,21 +74,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
       <Suspense
         asyncAction={this.state.getSettings}
         fallback={<LoadingScreen />}
-        onLoaded={(settings) =>
-          this.setState({
-            updateSettings: {
-              bookingDeadlineHours: Math.ceil(
-                settings.bookingDeadlineMillis / 3600000
-              ).toString(),
-              maxBookingWeekDistance: settings.maxBookingWeekDistance,
-            },
-          })
-        }
-        content={(_) => {
-          if (this.state.updateSettings == null) {
-            return <LoadingScreen />;
-          }
-
+        content={(remoteSettings) => {
           return (
             <Container component="main" maxWidth="xs">
               <CssBaseline />
@@ -176,54 +85,10 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
                 <Typography component="h1" variant="h5">
                   Einstellungen
                 </Typography>
-                <div className={this.props.classes.form}>
-                  <TextField
-                    required
-                    variant="outlined"
-                    type="number"
-                    margin="normal"
-                    fullWidth
-                    label={'Stunden bevor Anmeldeschluss'}
-                    autoFocus
-                    value={this.state.updateSettings.bookingDeadlineHours}
-                    onChange={this.onDeadlineChanged}
-                  />
-                  <FormGroup row>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          onChange={this.onChangeLimitWeekDistance}
-                          checked={
-                            this.state.updateSettings.maxBookingWeekDistance < 0
-                          }
-                        />
-                      }
-                      label="Unbegrenzte Vorausbuchungen"
-                    />
-                  </FormGroup>
-                  {this.state.updateSettings.maxBookingWeekDistance >= 0 && (
-                    <TextField
-                      required
-                      variant="outlined"
-                      type="number"
-                      margin="normal"
-                      fullWidth
-                      label={'Maximale Anzahl Wochen zur Vorausbuchung'}
-                      value={this.state.updateSettings.maxBookingWeekDistance}
-                      onChange={this.onChangeMaxBookingWeekDistance}
-                    />
-                  )}
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    className={this.props.classes.submit}
-                    disabled={!this.canBeSubmitted()}
-                    onClick={this.onSubmit}
-                  >
-                    Bestätigen
-                  </Button>
-                </div>
+                <SettingsForm
+                  onSubmit={this.onSubmit}
+                  remoteSettings={remoteSettings}
+                />
               </div>
             </Container>
           );
@@ -233,16 +98,136 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
   }
 }
 
+interface IFormInput {
+  bookingDeadlineHours: number;
+  maxBookingWeekDistanceDisabled: boolean;
+  maxBookingWeekDistance: number;
+}
+
+interface SettingsFormProps {
+  onSubmit: (formInput: IFormInput) => unknown;
+  remoteSettings: SettingsGetInterface;
+}
+
+const useFormStyles = makeStyles((theme) => ({
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+function SettingsForm(props: SettingsFormProps) {
+  const bookingDeadlineHours = Math.ceil(
+    props.remoteSettings.bookingDeadlineMillis / 3600000
+  );
+  const maxBookingWeekDistanceDisabled =
+    props.remoteSettings.maxBookingWeekDistance < 0;
+
+  const maxBookingWeekDistance = Math.max(
+    0,
+    props.remoteSettings.maxBookingWeekDistance
+  );
+
+  const { watch, formState, handleSubmit, control } = useForm<IFormInput>({
+    mode: 'onChange',
+    defaultValues: {
+      bookingDeadlineHours,
+      maxBookingWeekDistanceDisabled,
+      maxBookingWeekDistance,
+    },
+  });
+  const classes = useFormStyles();
+
+  const watchMaxBookingWeekDistanceDisabled = watch(
+    'maxBookingWeekDistanceDisabled',
+    maxBookingWeekDistanceDisabled
+  );
+
+  return (
+    <>
+      <form className={classes.form} onSubmit={handleSubmit(props.onSubmit)}>
+        <Controller
+          name="bookingDeadlineHours"
+          control={control}
+          rules={{ required: true, min: 0 }}
+          render={({ field }) => (
+            <TextField
+              required
+              variant="outlined"
+              type="number"
+              margin="normal"
+              fullWidth
+              min={0}
+              label={'Stunden bevor Anmeldeschluss'}
+              autoFocus
+              {...field}
+              onChange={(e) =>
+                field.onChange(Math.max(0, parseInt(e.target.value)))
+              }
+              value={Math.max(0, field.value)}
+            />
+          )}
+        />
+        <FormGroup row>
+          <Controller
+            control={control}
+            name="maxBookingWeekDistanceDisabled"
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Unbegrenzte Vorausbuchungen"
+              />
+            )}
+          />
+        </FormGroup>
+        {!watchMaxBookingWeekDistanceDisabled && (
+          <Controller
+            name="maxBookingWeekDistance"
+            control={control}
+            rules={{ min: 0 }}
+            render={({ field }) => (
+              <TextField
+                required
+                variant="outlined"
+                type="number"
+                margin="normal"
+                fullWidth
+                min={0}
+                label={'Maximale Anzahl Wochen zur Vorausbuchung'}
+                {...field}
+                onChange={(e) =>
+                  field.onChange(Math.max(0, parseInt(e.target.value)))
+                }
+                value={Math.max(0, field.value)}
+              />
+            )}
+          />
+        )}
+        <Button
+          fullWidth
+          variant="contained"
+          color="primary"
+          className={classes.submit}
+          disabled={!formState.isValid || !formState.isDirty}
+          type="submit"
+        >
+          Bestätigen
+        </Button>
+      </form>
+    </>
+  );
+}
+
 const SettingsDialog = withStyles(styles)(UnstyledSettingsDialog);
 export default SettingsDialog;
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithForm<IFormInput> {
   client: Client;
 }
 
 interface State {
   getSettings: Promise<SettingsGetInterface> | undefined;
-  updateSettings:
-    | { bookingDeadlineHours: string; maxBookingWeekDistance: number }
-    | undefined;
 }
