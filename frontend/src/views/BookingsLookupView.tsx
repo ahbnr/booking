@@ -5,6 +5,7 @@ import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
+  Avatar,
   createStyles,
   IconButton,
   List,
@@ -27,6 +28,7 @@ import { nameSorter } from '../models/WeekdayUtils';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import LoadingBackdrop from './LoadingBackdrop';
+import MoodBadIcon from '@material-ui/icons/MoodBad';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,6 +43,23 @@ const styles = (theme: Theme) =>
     mainText: {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
+    },
+    paper: {
+      paddingTop: theme.spacing(8),
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    avatar: {
+      margin: theme.spacing(1),
+      backgroundColor: theme.palette.secondary.main,
+      width: theme.spacing(9),
+      height: theme.spacing(9),
+      marginBottom: theme.spacing(3),
+    },
+    avatarIcon: {
+      width: theme.spacing(7),
+      height: theme.spacing(7),
     },
   });
 
@@ -127,6 +146,20 @@ class UnstyledBookingsLookupView extends React.PureComponent<
           asyncAction={this.state.remoteData}
           fallback={<LoadingScreen />}
           content={(remoteData) => {
+            if (remoteData.bookings.length === 0) {
+              return (
+                <div className={this.props.classes.paper}>
+                  <Avatar className={this.props.classes.avatar}>
+                    <MoodBadIcon className={this.props.classes.avatarIcon} />
+                  </Avatar>
+                  <Typography variant="h5">Keine Buchungen</Typography>
+                  <Typography variant="body1">
+                    Für Sie liegen keine Buchungen vor.
+                  </Typography>
+                </div>
+              );
+            }
+
             const renderData = new Map<
               number,
               Map<number, BookingGetInterface[]>
