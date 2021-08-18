@@ -14,6 +14,7 @@ import { Settings as LuxonSettings, DateTime } from 'luxon';
 import { initMailTransporter } from './mail/MailTransporter';
 import { container } from 'tsyringe';
 import helmet from 'helmet';
+import schedule_clear_outdated_bookings from './task_scheduling/schedule_clear_outdated_bookings';
 
 const { DEV_MODE, DEBUG_TIME_NOW } = process.env;
 
@@ -32,6 +33,8 @@ async function init() {
   // setup database
   const db = container.resolve(DatabaseController);
   await db.init();
+
+  schedule_clear_outdated_bookings();
 
   const app = express();
 

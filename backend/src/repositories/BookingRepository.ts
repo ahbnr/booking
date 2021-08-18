@@ -170,7 +170,9 @@ export default class BookingRepository {
       where: whereOptions,
     });
 
-    const clearedBookings = await BookingRepository.clearPastBookings(bookings);
+    const clearedBookings = await BookingRepository.filterOutdatedBookings(
+      bookings
+    );
 
     return clearedBookings.map(this.toInterface);
   }
@@ -207,7 +209,7 @@ export default class BookingRepository {
       ],
     });
 
-    const clearedBookings = await BookingRepository.clearPastBookings(
+    const clearedBookings = await BookingRepository.filterOutdatedBookings(
       foundBookings
     );
 
@@ -230,7 +232,9 @@ export default class BookingRepository {
       });
     }
 
-    const clearedBookings = await BookingRepository.clearPastBookings(bookings);
+    const clearedBookings = await BookingRepository.filterOutdatedBookings(
+      bookings
+    );
 
     return clearedBookings.map(this.toInterface);
   }
@@ -309,7 +313,37 @@ export default class BookingRepository {
     return new ResourceDBInterface(rawResource, this.resourceRepository);
   }
 
-  private static async clearPastBookings(
+  public async clearAllOutdatedBookings() {
+    const now = DateTime.local();
+
+    const verificationExpired = {
+      [Op.and]: [
+        {
+          isVerified: false,
+        },
+        {
+          createdAt: {
+            [Op.lte]: now.minus(VerificationTimeout).toJSDate(),
+          },
+        },
+      ],
+    };
+
+    const endDateReached = {
+      endDate: {
+        [Op.lte]: now.toJSDate(),
+      },
+    };
+
+    const numDeletedBookings = await Booking.destroy({
+      where: {
+        [Op.or]: [verificationExpired, endDateReached],
+      },
+    });
+    console.log(`Cleared ${numDeletedBookings} outdated/unverified bookings.`);
+  }
+
+  private static async filterOutdatedBookings(
     bookings: Booking[]
   ): Promise<Booking[]> {
     const [old_bookings, valid_bookings] = bookings.partition((booking) =>
