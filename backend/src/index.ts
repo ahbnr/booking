@@ -13,6 +13,7 @@ import * as http from 'http';
 import { Settings as LuxonSettings, DateTime } from 'luxon';
 import { initMailTransporter } from './mail/MailTransporter';
 import { container } from 'tsyringe';
+import helmet from 'helmet';
 
 const { DEV_MODE, DEBUG_TIME_NOW } = process.env;
 
@@ -33,6 +34,9 @@ async function init() {
   await db.init();
 
   const app = express();
+
+  // secure HTTP headers
+  app.use(helmet());
 
   // Allow AJAX requests to skip same-origin policy
   app.use(cors());

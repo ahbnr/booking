@@ -4737,6 +4737,7 @@ __metadata:
     eslint-plugin-unused-imports: ^1.1.3
     express: ^4.17.1
     fp-ts: ^2.8.3
+    helmet: ^4.6.0
     humanize-duration: ^3.27.0
     i18next: ^20.3.5
     io-ts: ^2.2.11
@@ -10209,6 +10210,13 @@ fsevents@^1.2.7:
   bin:
     he: bin/he
   checksum: 212122003c20c8c17ac0c83a419b4c8e835411ff6ab9195d053ea6e4a0597cc005b5b8eabcbd57b0b0c0fe676f0049e09315845fff4e051198845491cbba260e
+  languageName: node
+  linkType: hard
+
+"helmet@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "helmet@npm:4.6.0"
+  checksum: 5018633703ac6933b35c581d878f279b3be642c7ce68dcccbaf31be059aefb723a08ed86831df657b82fd2994b4163404b51c76a0dc3ea9cdd67794bf1b0466d
   languageName: node
   linkType: hard
 
