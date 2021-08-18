@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@material-ui/core';
 import { boundClass } from 'autobind-decorator';
-import { hasProperty } from 'common/dist';
+import { hasProperty } from 'common';
 
 @boundClass
 export default class DeleteConfirmer extends React.PureComponent<

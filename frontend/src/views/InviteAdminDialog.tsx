@@ -15,12 +15,12 @@ import {
 import { Client } from '../Client';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import getBaseUrl from '../utils/getBaseUrl';
-import { EMailString } from 'common/dist';
+import { EMailString } from 'common';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
 import { Alert, AlertTitle } from '@material-ui/lab';
-import { withForm, WithForm } from '../utils/WithReactHookForm';
-import { Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,13 +34,6 @@ const styles = (theme: Theme) =>
       margin: theme.spacing(1),
       backgroundColor: theme.palette.secondary.main,
     },
-    form: {
-      width: '100%', // Fix IE 11 issue.
-      marginTop: theme.spacing(1),
-    },
-    submit: {
-      margin: theme.spacing(3, 0, 2),
-    },
   });
 
 @boundClass
@@ -49,14 +42,8 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
     super(props);
 
     this.state = {
-      email: '',
-      emailError: undefined,
       backdropOpen: false,
     };
-  }
-
-  canBeSubmitted(): boolean {
-    return this.state.email.length > 0 && this.state.emailError == null;
   }
 
   async onSubmit(formInput: IFormInput) {
@@ -93,58 +80,10 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
             <Typography component="h1" variant="h5">
               Admin Hinzufügen
             </Typography>
-            <form
-              className={this.props.classes.form}
-              onSubmit={this.props.handleSubmit(this.onSubmit)}
-            >
-              <Controller
-                name="email"
-                control={this.props.control}
-                defaultValue=""
-                rules={{
-                  required: true,
-                  pattern: {
-                    // eslint-disable-next-line no-useless-escape
-                    value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                    message: 'Dies ist keine gültige E-Mail',
-                  },
-                }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    required
-                    variant="outlined"
-                    margin="normal"
-                    fullWidth
-                    label={'E-Mail'}
-                    autoComplete="email"
-                    autoFocus
-                    error={!!fieldState.error}
-                    helperText={
-                      fieldState.error ? fieldState.error.message : null
-                    }
-                    {...field}
-                  />
-                )}
-              />
-              {this.state.requestError != null && (
-                <Alert severity="error">
-                  <AlertTitle>Einladung fehlgeschlagen</AlertTitle>
-                  {this.state.requestError}
-                </Alert>
-              )}
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={this.props.classes.submit}
-                type="submit"
-                disabled={
-                  !this.props.formState.isValid || !this.props.formState.isDirty
-                }
-              >
-                Einladen
-              </Button>
-            </form>
+            <InviteAdminForm
+              onSubmit={this.onSubmit}
+              requestError={this.state.requestError}
+            />
           </div>
         </Container>
         <LoadingBackdrop open={this.state.backdropOpen} />
@@ -153,23 +92,89 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
   }
 }
 
-const InviteAdminDialog = withForm({ mode: 'onChange' })(
-  withStyles(styles)(UnstyledInviteAdminDialog)
-);
+const InviteAdminDialog = withStyles(styles)(UnstyledInviteAdminDialog);
 export default InviteAdminDialog;
 
 interface IFormInput {
   email: string;
 }
 
-interface Properties extends WithStyles<typeof styles>, WithForm<IFormInput> {
+interface InviteAdminFormProps {
+  onSubmit: (formInput: IFormInput) => unknown;
+  requestError?: string;
+}
+
+const useFormStyles = makeStyles((theme) => ({
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+function InviteAdminForm(props: InviteAdminFormProps) {
+  const { formState, handleSubmit, control } = useForm<IFormInput>({
+    defaultValues: {
+      email: '',
+    },
+  });
+  const classes = useFormStyles();
+
+  return (
+    <form className={classes.form} onSubmit={handleSubmit(props.onSubmit)}>
+      <Controller
+        name="email"
+        control={control}
+        rules={{
+          required: true,
+          pattern: {
+            // eslint-disable-next-line no-useless-escape
+            value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            message: 'Dies ist keine gültige E-Mail',
+          },
+        }}
+        render={({ field, fieldState }) => (
+          <TextField
+            required
+            autoFocus
+            variant="outlined"
+            margin="normal"
+            fullWidth
+            label={'E-Mail'}
+            autoComplete="email"
+            error={!!fieldState.error}
+            helperText={fieldState.error ? fieldState.error.message : null}
+            {...field}
+          />
+        )}
+      />
+      {props.requestError != null && (
+        <Alert severity="error">
+          <AlertTitle>Einladung fehlgeschlagen</AlertTitle>
+          {props.requestError}
+        </Alert>
+      )}
+      <Button
+        fullWidth
+        variant="contained"
+        color="primary"
+        className={classes.submit}
+        type="submit"
+      >
+        Einladen
+      </Button>
+    </form>
+  );
+}
+
+interface Properties extends WithStyles<typeof styles> {
   client: Client;
   changeInteractionState: changeInteractionStateT;
 }
 
 interface State {
-  email: string;
-  emailError?: string;
   requestError?: string;
   backdropOpen: boolean;
 }

@@ -4,7 +4,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
-import { timeslotCompare, TimeslotGetInterface } from 'common/dist';
+import { timeslotCompare, TimeslotGetInterface } from 'common';
 import { changeInteractionStateT } from '../App';
 import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
@@ -85,6 +85,7 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
                     isAuthenticated={this.props.isAuthenticated}
                     client={this.props.client}
                     changeInteractionState={this.props.changeInteractionState}
+                    resourceName={this.props.resourceName}
                     timeslotId={timeslot.id}
                     bookingDay={this.props.bookingDay}
                   />
@@ -117,6 +118,7 @@ export default TimeslotsView;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
+  resourceName: string;
   weekdayId: number;
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;

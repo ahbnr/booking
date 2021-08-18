@@ -20,7 +20,7 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import EditIcon from '@material-ui/icons/Edit';
-import { TimeslotGetInterface } from 'common/dist';
+import { TimeslotGetInterface } from 'common';
 import { changeInteractionStateT } from '../App';
 import noop from '../utils/noop';
 import Suspense from './Suspense';
@@ -91,9 +91,16 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
     };
   }
 
-  createBooking(timeslot: TimeslotGetInterface) {
+  createBooking(
+    timeslot: TimeslotGetInterface,
+    startTime: DateTime,
+    endTime: DateTime
+  ) {
     this.props.changeInteractionState('createBooking', {
+      resourceName: this.props.resourceName,
       timeslotId: timeslot.id,
+      startTime,
+      endTime,
       bookingDay: this.props.bookingDay,
     });
   }
@@ -104,9 +111,17 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
     });
   }
 
-  viewBookings(timeslot: TimeslotGetInterface) {
+  viewBookings(
+    timeslot: TimeslotGetInterface,
+
+    startTime: DateTime,
+    endTime: DateTime
+  ) {
     this.props.changeInteractionState('viewingBookings', {
+      resourceName: this.props.resourceName,
       timeslotId: timeslot.id,
+      startTime,
+      endTime,
       bookingDay: this.props.bookingDay,
     });
   }
@@ -128,9 +143,19 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
             displayData.numBookings < displayData.timeslot.capacity;
 
           const clickAction = this.props.isAuthenticated
-            ? () => this.viewBookings(displayData.timeslot)
+            ? () =>
+                this.viewBookings(
+                  displayData.timeslot,
+                  displayData.startTime,
+                  displayData.endTime
+                )
             : bookingsAvailable
-            ? () => this.createBooking(displayData.timeslot)
+            ? () =>
+                this.createBooking(
+                  displayData.timeslot,
+                  displayData.startTime,
+                  displayData.endTime
+                )
             : undefined;
 
           return (
@@ -213,6 +238,7 @@ interface Properties extends WithStyles<typeof styles> {
   index: number;
   isAuthenticated: boolean;
   client: Client;
+  resourceName: string;
   timeslotId: number;
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;

@@ -3,7 +3,11 @@ import '../App.css';
 import { weekdayNames } from '../models/WeekdayUtils';
 import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
-import { ResourceGetInterface } from 'common/dist';
+import {
+  SettingsGetInterface,
+  WeekdayName,
+  ResourceGetInterface,
+} from 'common';
 import { changeInteractionStateT } from '../App';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import isEqual from 'lodash/fp/isEqual';
@@ -32,8 +36,6 @@ import {
   getValidBookingDays,
   WeekdayBookingConstraint,
 } from '../complex_queries/getValidBookingDays';
-import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
-import { WeekdayName } from 'common';
 import WeekdayButton from './WeekdayButton';
 
 const styles = (theme: Theme) =>
@@ -119,6 +121,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
 
   viewTimeslots(weekdayId: number, bookingDay: DateTime) {
     this.props.changeInteractionState('viewingTimeslots', {
+      resourceName: this.props.resource.name,
       weekdayId,
       bookingDay,
     });

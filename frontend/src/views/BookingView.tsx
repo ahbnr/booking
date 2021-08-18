@@ -15,7 +15,7 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { Client } from '../Client';
-import { BookingGetInterface } from 'common/dist';
+import { BookingGetInterface } from 'common';
 import Suspense from './Suspense';
 import Skeleton from '@material-ui/lab/Skeleton';
 import LoadingBackdrop from './LoadingBackdrop';

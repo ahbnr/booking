@@ -72,6 +72,7 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
             angemeldet sind, ist keine Bestätigung der Buchung notwendig.
           </Typography>
           <Button
+            autoFocus
             variant="contained"
             color="primary"
             className={this.props.classes.okButton}
@@ -99,6 +100,7 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
             bestätigt wird!
           </Alert>
           <Button
+            autoFocus
             variant="contained"
             color="primary"
             className={this.props.classes.okButton}

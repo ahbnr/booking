@@ -14,12 +14,11 @@ import {
 } from '@material-ui/core';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { Client } from '../Client';
-import { NonEmptyString, noRefinementChecks } from 'common/dist';
+import { assertNever, NonEmptyString, noRefinementChecks } from 'common';
 import { changeInteractionStateT } from '../App';
 import LoadingScreen from './LoadingScreen';
 import LoadingBackdrop from './LoadingBackdrop';
 import { Alert, AlertTitle } from '@material-ui/lab';
-import { assertNever } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({

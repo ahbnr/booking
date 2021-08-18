@@ -18,7 +18,7 @@ import {
 } from '@material-ui/core';
 import TodayIcon from '@material-ui/icons/Today';
 import { Client } from '../Client';
-import { ResourceGetInterface, WeekdayName } from 'common/dist';
+import { ResourceGetInterface, WeekdayName } from 'common';
 import { changeInteractionStateT } from '../App';
 import { nameSorter, weekdayNames } from '../models/WeekdayUtils';
 import LoadingBackdrop from './LoadingBackdrop';

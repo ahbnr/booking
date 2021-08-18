@@ -4,7 +4,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import BookingView from './BookingView';
-import { BookingGetInterface } from 'common/dist';
+import { BookingGetInterface } from 'common';
 import ListEx from './ListEx';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
@@ -37,7 +37,10 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
 
   createBooking() {
     this.props.changeInteractionState('createBooking', {
+      resourceName: this.props.resourceName,
       timeslotId: this.props.timeslotId,
+      startTime: this.props.startTime,
+      endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
     });
   }
@@ -95,7 +98,10 @@ export default BookingsView;
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
+  resourceName: string;
   timeslotId: number;
+  startTime: DateTime;
+  endTime: DateTime;
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
 }

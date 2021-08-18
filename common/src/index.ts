@@ -39,6 +39,11 @@ export {
   UserGetInterface,
   UserPostInterface,
 } from './typechecking/api/User';
+export {
+  SettingsGetInterface,
+  SettingsPostInterface,
+} from './typechecking/api/Settings';
+export { BookingConditionsGetInterface } from './typechecking/api/BookingConditions';
 
 export { InviteForSignupData } from './typechecking/api/InviteForSignupData';
 export { AuthRequestData } from './typechecking/api/AuthRequestData';
@@ -56,6 +61,8 @@ export { AuthResponseData } from './typechecking/api/responses/AuthResponseData'
 export { IsSignupTokenOkRequestData } from './typechecking/api/IsSignupTokenOkRequestData';
 export { SignupRequestData } from './typechecking/api/SignupRequestData';
 export { BookingIntervalIndexRequestData } from './typechecking/api/BookingIntervalIndexRequestData';
+
+export { ISO8601 } from './typechecking/ISO8601';
 
 export {
   noRefinementChecks,

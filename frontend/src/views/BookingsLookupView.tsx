@@ -21,7 +21,7 @@ import {
   timeslotCompare,
   TimeslotGetInterface,
   WeekdayGetInterface,
-} from 'common/dist';
+} from 'common';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { nameSorter } from '../models/WeekdayUtils';
 import Suspense from './Suspense';

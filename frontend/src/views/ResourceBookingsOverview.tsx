@@ -108,7 +108,10 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
                 bookingGroup.timeslotIds.length === 1
                   ? () => {
                       this.props.changeInteractionState('viewingBookings', {
+                        resourceName: this.props.resourceName,
                         timeslotId: bookingGroup.timeslotIds[0],
+                        startTime: bookingGroup.startDate,
+                        endTime: bookingGroup.endDate,
                         bookingDay: this.props.day,
                       });
                     }

@@ -1,5 +1,8 @@
-import { ResourceGetInterface, WeekdayName } from 'common';
-import { TimeslotGetInterface } from 'common/dist';
+import {
+  TimeslotGetInterface,
+  ResourceGetInterface,
+  WeekdayName,
+} from 'common';
 import { DateTime } from 'luxon';
 
 import { ADT } from 'ts-adt';
@@ -11,17 +14,24 @@ export interface ViewingWeekdays {
 }
 
 export interface ViewingTimeslots {
+  resourceName: string;
   weekdayId: number;
   bookingDay: DateTime;
 }
 
 export interface ViewingBookings {
+  resourceName: string;
   timeslotId: number;
+  startTime: DateTime;
+  endTime: DateTime;
   bookingDay: DateTime;
 }
 
 export interface CreateBooking {
+  resourceName: string;
   timeslotId: number;
+  startTime: DateTime;
+  endTime: DateTime;
   bookingDay: DateTime;
 }
 

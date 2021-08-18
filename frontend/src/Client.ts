@@ -19,15 +19,14 @@ import {
   BookingWithContextGetInterface,
   AuthResponseData,
   BookingIntervalIndexRequestData,
-} from 'common/dist';
-import DisplayableError from './errors/DisplayableError';
-import { DateTime } from 'luxon';
-import {
   SettingsGetInterface,
   SettingsPostInterface,
-} from 'common/dist/typechecking/api/Settings';
-import { BookingConditionsGetInterface } from 'common/dist/typechecking/api/BookingConditions';
-import { InviteForSignupResponseData, SignupResponseData } from 'common';
+  BookingConditionsGetInterface,
+  InviteForSignupResponseData,
+  SignupResponseData,
+} from 'common';
+import DisplayableError from './errors/DisplayableError';
+import { DateTime } from 'luxon';
 import includes from 'lodash/fp/includes';
 
 const baseUrl = `${process.env.PUBLIC_URL}/api`;

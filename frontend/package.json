@@ -49,6 +49,7 @@
   },
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
+    "typecheck": "tsc -p tsconfig.json --noEmit --skipLibCheck",
     "start": "PORT=8000 HTTPS=true SSL_CRT_FILE=../dev-certificate/generated/server.crt SSL_KEY_FILE=../dev-certificate/generated/server.key REACT_APP_DEV_MODE=1 react-scripts start",
     "start-no-browser": "BROWSER=none run-s start",
     "start-prod": "node static-server/static-server.js",

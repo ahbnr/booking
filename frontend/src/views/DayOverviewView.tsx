@@ -15,13 +15,14 @@ import {
 import { Client } from '../Client';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import {
+  NonEmptyString,
   BookingWithContextGetInterface,
   noRefinementChecks,
-} from 'common/dist';
+  BookingIntervalIndexRequestData,
+} from 'common';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { DateTime } from 'luxon';
-import { BookingIntervalIndexRequestData } from 'common/dist/typechecking/api/BookingIntervalIndexRequestData';
 import flow from 'lodash/fp/flow';
 import groupBy from 'lodash/fp/groupBy';
 import map from 'lodash/fp/map';
@@ -30,7 +31,6 @@ import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
 
-import { NonEmptyString } from 'common';
 import ResourceBookingsOverview from './ResourceBookingsOverview';
 import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
 import { BlobProvider } from '@react-pdf/renderer';

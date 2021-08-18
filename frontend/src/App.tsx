@@ -156,28 +156,47 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      viewingTimeslots: ({ weekdayId, bookingDay }) => (
+      viewingTimeslots: ({ resourceName, weekdayId, bookingDay }) => (
         <TimeslotsView
           isAuthenticated={this.state.isAuthenticated}
           client={this.client}
           changeInteractionState={this.changeInteractionState}
+          resourceName={resourceName}
           weekdayId={weekdayId}
           bookingDay={bookingDay}
         />
       ),
-      viewingBookings: ({ timeslotId, bookingDay }) => (
+      viewingBookings: ({
+        resourceName,
+        timeslotId,
+        startTime,
+        endTime,
+        bookingDay,
+      }) => (
         <BookingsView
           client={this.client}
+          resourceName={resourceName}
           timeslotId={timeslotId}
+          startTime={startTime}
+          endTime={endTime}
           bookingDay={bookingDay}
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      createBooking: ({ timeslotId, bookingDay }) => (
+      createBooking: ({
+        resourceName,
+        timeslotId,
+        startTime,
+        endTime,
+        bookingDay,
+      }) => (
         <CreateBookingDialog
           client={this.client}
           changeInteractionState={this.changeInteractionState}
+          resourceName={resourceName}
           timeslotId={timeslotId}
+          startTime={startTime}
+          endTime={endTime}
           bookingDay={bookingDay}
           isAuthenticated={this.state.isAuthenticated}
         />

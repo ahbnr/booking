@@ -17,10 +17,9 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import SettingsIcon from '@material-ui/icons/Settings';
-import { SettingsGetInterface } from 'common/dist/typechecking/api/Settings';
+import { SettingsGetInterface } from 'common';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
-import { WithForm } from '../utils/WithReactHookForm';
 import { Controller, useForm } from 'react-hook-form';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 
@@ -132,7 +131,6 @@ function SettingsForm(props: SettingsFormProps) {
   );
 
   const { watch, formState, handleSubmit, control } = useForm<IFormInput>({
-    mode: 'onChange',
     defaultValues: {
       bookingDeadlineHours,
       maxBookingWeekDistanceDisabled,
@@ -160,7 +158,6 @@ function SettingsForm(props: SettingsFormProps) {
               type="number"
               margin="normal"
               fullWidth
-              min={0}
               label={'Stunden bevor Anmeldeschluss'}
               autoFocus
               {...field}
@@ -195,7 +192,6 @@ function SettingsForm(props: SettingsFormProps) {
                 type="number"
                 margin="normal"
                 fullWidth
-                min={0}
                 label={'Maximale Anzahl Wochen zur Vorausbuchung'}
                 {...field}
                 onChange={(e) =>
@@ -211,7 +207,6 @@ function SettingsForm(props: SettingsFormProps) {
           variant="contained"
           color="primary"
           className={classes.submit}
-          disabled={!formState.isValid || !formState.isDirty}
           type="submit"
         >
           Bestätigen
@@ -224,7 +219,7 @@ function SettingsForm(props: SettingsFormProps) {
 const SettingsDialog = withStyles(styles)(UnstyledSettingsDialog);
 export default SettingsDialog;
 
-interface Properties extends WithStyles<typeof styles>, WithForm<IFormInput> {
+interface Properties extends WithStyles<typeof styles> {
   client: Client;
 }
 

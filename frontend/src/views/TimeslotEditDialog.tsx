@@ -18,7 +18,7 @@ import {
   noRefinementChecks,
   TimeslotGetInterface,
   TimeslotPostInterface,
-} from 'common/dist';
+} from 'common';
 import { changeInteractionStateT } from '../App';
 import { MuiPickersUtilsProvider, TimePicker } from '@material-ui/pickers';
 import LuxonUtils from '@date-io/luxon';
