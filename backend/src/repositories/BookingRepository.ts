@@ -369,9 +369,15 @@ export default class BookingRepository {
               am
               ${i18nextInstance.t(weekday.data.name)}
               von
-              ${booking.startDate.toLocaleTimeString('de-DE')}
+              ${booking.startDate.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
               bis
-              ${booking.endDate.toLocaleTimeString('de-DE')}
+              ${booking.endDate.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
           
           gebucht.
           
@@ -396,9 +402,15 @@ export default class BookingRepository {
               am
               ${i18nextInstance.t(weekday.data.name)}
               von
-              ${booking.startDate.toLocaleTimeString('de-DE')}
+              ${booking.startDate.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
               bis
-              ${booking.endDate.toLocaleTimeString('de-DE')}
+              ${booking.endDate.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </i>
           </p>
           gebucht.<br />

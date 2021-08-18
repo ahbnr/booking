@@ -60,7 +60,6 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
   }
 
   async onSubmit(formInput: IFormInput) {
-    console.log(formInput);
     this.setState({
       backdropOpen: true,
     });
