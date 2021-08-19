@@ -4,7 +4,14 @@ const helmet = require('helmet');
 const app = express(); // create express app
 
 app.use(compression());
-app.use(helmet());
+app.use(
+  helmet({
+    // FIXME: Re-enable after moving PDF generator to backend
+    // This is currently only disabled because react-pdf violates some
+    // security policies
+    contentSecurityPolicy: false,
+  })
+);
 
 const servedDirPrefix = process.cwd() + '/build';
 const servedDirPrefixLength = servedDirPrefix.length;

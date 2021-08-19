@@ -130,7 +130,7 @@ function SettingsForm(props: SettingsFormProps) {
     props.remoteSettings.maxBookingWeekDistance
   );
 
-  const { watch, formState, handleSubmit, control } = useForm<IFormInput>({
+  const { watch, handleSubmit, control } = useForm<IFormInput>({
     defaultValues: {
       bookingDeadlineHours,
       maxBookingWeekDistanceDisabled,

@@ -115,7 +115,7 @@ const useFormStyles = makeStyles((theme) => ({
 }));
 
 function InviteAdminForm(props: InviteAdminFormProps) {
-  const { formState, handleSubmit, control } = useForm<IFormInput>({
+  const { handleSubmit, control } = useForm<IFormInput>({
     defaultValues: {
       email: '',
     },
