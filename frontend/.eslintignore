@@ -3,3 +3,4 @@ build
 dist
 cypress/plugins
 cypress/integration/examples
+static-server
