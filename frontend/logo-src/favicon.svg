@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="2.5mm"
+   height="2.5mm"
+   viewBox="0 0 2.5 2.5"
+   version="1.1"
+   id="svg5571"
+   inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
+   sodipodi:docname="favicon.svg"
+   inkscape:export-filename="/home/anton/Documents/Projects/flieden/website/booking/frontend/logo-src/path3313-1.png"
+   inkscape:export-xdpi="264.16"
+   inkscape:export-ydpi="264.16"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview5573"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="18.233783"
+     inkscape:cx="9.0217156"
+     inkscape:cy="0.4935893"
+     inkscape:window-width="1918"
+     inkscape:window-height="1059"
+     inkscape:window-x="0"
+     inkscape:window-y="19"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs5568" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(2.8495737,-119.83648)">
+    <rect
+       style="fill:none;stroke:#3f51b5;stroke-width:0.264999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       id="rect968-5-02-6"
+       width="2.2350011"
+       height="2.2350011"
+       x="-2.7170742"
+       y="119.96898"
+       inkscape:export-filename="/home/anton/Documents/Projects/flieden/website/booking/frontend/logo-src/rect968-5-02-6.png"
+       inkscape:export-xdpi="264.16"
+       inkscape:export-ydpi="264.16" />
+    <path
+       style="fill:none;stroke:#3f51b5;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -2.183097,121.08698 0.3698101,0.36057 0.7947452,-0.81725"
+       id="path3313-1"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/anton/Documents/Projects/flieden/website/booking/frontend/logo-src/rect968-5-02-6.png"
+       inkscape:export-xdpi="264.16"
+       inkscape:export-ydpi="264.16" />
+  </g>
+</svg>
