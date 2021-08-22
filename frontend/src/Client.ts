@@ -16,14 +16,13 @@ import {
   TimeslotPostInterface,
   WeekdayGetInterface,
   WeekdayPostInterface,
-  BookingWithContextGetInterface,
   AuthResponseData,
-  BookingIntervalIndexRequestData,
   SettingsGetInterface,
   SettingsPostInterface,
   BookingConditionsGetInterface,
   InviteForSignupResponseData,
   SignupResponseData,
+  ResourceGroupedBookingsGetInterface,
 } from 'common';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
@@ -463,15 +462,23 @@ export class Client {
     );
   }
 
-  public async getBookingsInInterval(
-    data: BookingIntervalIndexRequestData
-  ): Promise<BookingWithContextGetInterface[]> {
+  public async getBookingsForDay(
+    dayDate: DateTime
+  ): Promise<ResourceGroupedBookingsGetInterface[]> {
     return await this.typedRequest(
-      t.array(BookingWithContextGetInterface),
-      'POST',
-      'bookings/inInterval',
-      data
+      t.array(ResourceGroupedBookingsGetInterface),
+      'GET',
+      `bookings/forDay/${dayDate.toISODate()}`
     );
+  }
+
+  public async getBookingsForDayPdf(dayDate: DateTime): Promise<Blob> {
+    const response = await this.request(
+      'GET',
+      `bookings/forDay/${dayDate.toISODate()}/pdf`
+    );
+
+    return response.blob();
   }
 
   public async deleteBooking(bookingId: number) {

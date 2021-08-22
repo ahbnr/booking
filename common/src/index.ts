@@ -8,7 +8,6 @@ export {
   BookingData,
   BookingGetInterface,
   compare as bookingCompare,
-  BookingWithContextGetInterface,
   BookingPostInterface,
 } from './typechecking/api/Booking';
 export {
@@ -60,7 +59,11 @@ export {
 export { AuthResponseData } from './typechecking/api/responses/AuthResponseData';
 export { IsSignupTokenOkRequestData } from './typechecking/api/IsSignupTokenOkRequestData';
 export { SignupRequestData } from './typechecking/api/SignupRequestData';
-export { BookingIntervalIndexRequestData } from './typechecking/api/BookingIntervalIndexRequestData';
+export { BookingDayIndexRequestData } from './typechecking/api/requests/BookingDayIndexRequestData';
+export {
+  ResourceGroupedBookings,
+  ResourceGroupedBookingsGetInterface,
+} from './typechecking/api/ResourceGroupedBookings';
 
 export { ISO8601 } from './typechecking/ISO8601';
 

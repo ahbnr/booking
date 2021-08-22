@@ -20,7 +20,7 @@ export default class ResourceRepository {
     private readonly weekdayRepository: WeekdayRepository
   ) {}
 
-  private toInterface(resource: Resource): ResourceDBInterface {
+  public toInterface(resource: Resource): ResourceDBInterface {
     return new ResourceDBInterface(resource, this);
   }
 

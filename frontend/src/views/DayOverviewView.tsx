@@ -14,26 +14,15 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import { withTranslation, WithTranslation } from 'react-i18next';
-import {
-  NonEmptyString,
-  BookingWithContextGetInterface,
-  noRefinementChecks,
-  BookingIntervalIndexRequestData,
-} from 'common';
+import { ResourceGroupedBookingsGetInterface } from 'common';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { DateTime } from 'luxon';
-import flow from 'lodash/fp/flow';
-import groupBy from 'lodash/fp/groupBy';
-import map from 'lodash/fp/map';
-import orderBy from 'lodash/fp/orderBy';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
 import Suspense from './Suspense';
 
 import ResourceBookingsOverview from './ResourceBookingsOverview';
-import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
-import { BlobProvider } from '@react-pdf/renderer';
 import FileSpeedDial from './FileSpeedDial';
 
 const styles = (theme: Theme) =>
@@ -76,19 +65,17 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
   refreshData() {
     this.setState({
       downloadedData: this.fetchData(),
+      pdfBlob: this.props.client.getBookingsForDayPdf(this.props.bookingDay),
     });
   }
 
   async fetchData(): Promise<DownloadedData> {
-    const bookings = await this.props.client.getBookingsInInterval(
-      noRefinementChecks<BookingIntervalIndexRequestData>({
-        start: this.props.bookingDay.startOf('day').toISO(),
-        end: this.props.bookingDay.endOf('day').toISO(),
-      })
+    const resourceGroupedBookings = await this.props.client.getBookingsForDay(
+      this.props.bookingDay
     );
 
     return {
-      bookings: bookings,
+      resourceGroupedBookings,
     };
   }
 
@@ -99,24 +86,7 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
       <Suspense
         asyncAction={this.state.downloadedData}
         fallback={<CircularProgress size="6vw" />}
-        content={(downloadedData) => {
-          const resourceGroupedBookings: ResourceGroupedBookings[] = flow(
-            groupBy(
-              (booking: BookingWithContextGetInterface) => booking.resource.name
-            ),
-            map((bookingList) => {
-              const booking = bookingList[0];
-
-              return {
-                resourceName: booking.resource.name,
-                bookings: bookingList,
-              };
-            }),
-            orderBy((group: ResourceGroupedBookings) => group.bookings.length, [
-              'desc',
-            ])
-          )(downloadedData.bookings);
-
+        content={({ resourceGroupedBookings }) => {
           let gridColumnSize: GridSize = 12;
           if (resourceGroupedBookings.length >= 4) {
             gridColumnSize = 3;
@@ -170,28 +140,17 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
                     </Grid>
                   ))}
                 </Grid>
-                <BlobProvider
-                  document={renderDayOverviewPDF(
-                    weekdayLocaleTitle,
-                    dateLocaleTitle,
-                    resourceGroupedBookings
-                  )}
-                >
-                  {({ blob, loading }) => (
-                    <FileSpeedDial
-                      filename={`${weekdayLocaleTitle}-${this.props.bookingDay.toISODate()}.pdf`}
-                      title={'Tagesübersicht Buchungen'}
-                      text={`Buchungen von ${weekdayLocaleTitle} ${this.props.bookingDay.toLocaleString(
-                        {
-                          ...DateTime.DATE_SHORT,
-                          locale: 'de-DE',
-                        }
-                      )} als PDF`}
-                      blob={blob}
-                      loading={loading}
-                    />
-                  )}
-                </BlobProvider>
+                <FileSpeedDial
+                  filename={`${weekdayLocaleTitle}-${this.props.bookingDay.toISODate()}.pdf`}
+                  title={'Tagesübersicht Buchungen'}
+                  text={`Buchungen von ${weekdayLocaleTitle} ${this.props.bookingDay.toLocaleString(
+                    {
+                      ...DateTime.DATE_SHORT,
+                      locale: 'de-DE',
+                    }
+                  )} als PDF`}
+                  blob={this.state.pdfBlob}
+                />
               </div>
             </Container>
           );
@@ -216,13 +175,9 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 
 interface State {
   downloadedData?: Promise<DownloadedData>;
+  pdfBlob?: Promise<Blob>;
 }
 
 interface DownloadedData {
-  bookings: BookingWithContextGetInterface[];
-}
-
-export interface ResourceGroupedBookings {
-  resourceName: NonEmptyString;
-  bookings: BookingWithContextGetInterface[];
+  resourceGroupedBookings: ResourceGroupedBookingsGetInterface[];
 }

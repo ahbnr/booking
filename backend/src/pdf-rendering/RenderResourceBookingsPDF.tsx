@@ -1,15 +1,17 @@
 import { ReactElement } from 'react';
 import { StyleSheet, Text, View } from '@react-pdf/renderer';
-import { ResourceGroupedBookings } from '../views/DayOverviewView';
 import flow from 'lodash/fp/flow';
 import groupBy from 'lodash/fp/groupBy';
 import map from 'lodash/fp/map';
 import sortBy from 'lodash/fp/sortBy';
 import { DateTime } from 'luxon';
-import { BookingsGroup } from '../views/ResourceBookingsOverview';
 import renderHLinePDF from './RenderHLinePDF';
 import React from 'react';
-import { BookingWithContextGetInterface } from 'common';
+import {
+  BookingGetInterface,
+  NonEmptyString,
+  ResourceGroupedBookings,
+} from 'common';
 
 export default function renderResourceBookingsPDF(
   index: number,
@@ -46,11 +48,11 @@ export default function renderResourceBookingsPDF(
   });
 
   const groupedBookings: BookingsGroup[] = flow(
-    groupBy((booking: BookingWithContextGetInterface) => [
+    groupBy((booking: BookingGetInterface) => [
       booking.startDate,
       booking.endDate,
     ]),
-    map((bookingList: BookingWithContextGetInterface[]) => {
+    map((bookingList: BookingGetInterface[]) => {
       const sampleBooking = bookingList[0];
 
       return {
@@ -98,4 +100,11 @@ export default function renderResourceBookingsPDF(
       </View>
     </View>
   );
+}
+
+interface BookingsGroup {
+  names: NonEmptyString[];
+  startDate: DateTime;
+  endDate: DateTime;
+  timeslotIds: number[];
 }

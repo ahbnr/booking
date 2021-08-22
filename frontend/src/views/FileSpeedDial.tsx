@@ -17,6 +17,7 @@ import { fabStyle } from '../styles/fab';
 import { saveAs } from 'file-saver';
 import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 import { detect } from 'detect-browser';
+import Suspense from './Suspense';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -110,53 +111,57 @@ class UnstyledFileSpeedDial extends React.PureComponent<Properties, State> {
   }
 
   render() {
-    if (this.props.loading || this.props.blob == null) {
-      return (
-        <Fab className={this.props.classes.fab}>
-          <CircularProgress />
-        </Fab>
-      );
-    } else {
-      const file = this.buildFile(this.props.blob);
-
-      if (this.canShare(file)) {
-        return (
-          <SpeedDial
-            ariaLabel=""
-            className={this.props.classes.speedDial}
-            icon={<ShareIcon />}
-            onClose={this.handleSpeedDialOpen}
-            onOpen={this.handleSpeedDialClose}
-            onClick={this.handleSpeedDialClick}
-            open={this.state.speedDialOpen}
-          >
-            <SpeedDialAction
-              icon={<ShareIcon />}
-              key={'share'}
-              tooltipTitle={'Teilen'}
-              tooltipOpen
-              onClick={() => this.handleShare(file)}
-            />
-            <SpeedDialAction
-              icon={<GetAppIcon />}
-              key={'download'}
-              tooltipTitle={'Download'}
-              tooltipOpen
-              onClick={() => this.handleDownload(file)}
-            />
-          </SpeedDial>
-        );
-      } else {
-        return (
-          <Fab
-            className={this.props.classes.fab}
-            onClick={() => this.handleDownload(file)}
-          >
-            <GetAppIcon />
+    return (
+      <Suspense
+        asyncAction={this.props.blob}
+        fallback={
+          <Fab className={this.props.classes.fab}>
+            <CircularProgress />
           </Fab>
-        );
-      }
-    }
+        }
+        content={(blob) => {
+          const file = this.buildFile(blob);
+
+          if (this.canShare(file)) {
+            return (
+              <SpeedDial
+                ariaLabel=""
+                className={this.props.classes.speedDial}
+                icon={<ShareIcon />}
+                onClose={this.handleSpeedDialOpen}
+                onOpen={this.handleSpeedDialClose}
+                onClick={this.handleSpeedDialClick}
+                open={this.state.speedDialOpen}
+              >
+                <SpeedDialAction
+                  icon={<ShareIcon />}
+                  key={'share'}
+                  tooltipTitle={'Teilen'}
+                  tooltipOpen
+                  onClick={() => this.handleShare(file)}
+                />
+                <SpeedDialAction
+                  icon={<GetAppIcon />}
+                  key={'download'}
+                  tooltipTitle={'Download'}
+                  tooltipOpen
+                  onClick={() => this.handleDownload(file)}
+                />
+              </SpeedDial>
+            );
+          } else {
+            return (
+              <Fab
+                className={this.props.classes.fab}
+                onClick={() => this.handleDownload(file)}
+              >
+                <GetAppIcon />
+              </Fab>
+            );
+          }
+        }}
+      />
+    );
   }
 }
 
@@ -166,8 +171,7 @@ const FileSpeedDial = withTranslation()(
 export default FileSpeedDial;
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
-  blob?: Blob | null;
-  loading: boolean;
+  blob: Promise<Blob> | undefined;
   title: string;
   text: string;
   filename: string;

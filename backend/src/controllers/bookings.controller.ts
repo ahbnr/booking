@@ -7,10 +7,13 @@ import {
   BookingGetInterface,
   BookingPostInterface,
   checkType,
-  BookingWithContextGetInterface,
+  hasProperty,
+  ISO8601,
+  NonEmptyString,
+  ResourceGroupedBookings,
+  ResourceGroupedBookingsGetInterface,
 } from 'common';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
-import { BookingIntervalIndexRequestData } from 'common/dist';
 import BookingRepository, {
   BookingModificationOptions,
 } from '../repositories/BookingRepository';
@@ -19,6 +22,14 @@ import TypesafeRequest from './TypesafeRequest';
 import { extractNumericIdFromRequest } from './utils';
 import SettingsRepository from '../repositories/SettingsRepository';
 import { delay, inject, singleton } from 'tsyringe';
+import { DateTime } from 'luxon';
+import flow from 'lodash/fp/flow';
+import groupBy from 'lodash/fp/groupBy';
+import map from 'lodash/fp/map';
+import orderBy from 'lodash/fp/orderBy';
+import ReactPDF from '@react-pdf/renderer';
+import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
+import { MissingPathParameter } from './errors';
 
 @singleton()
 @boundClass
@@ -70,29 +81,75 @@ export class BookingsController {
     }
   }
 
-  public async getBookingsForDateInterval(
-    req: TypesafeRequest,
-    res: Response<BookingWithContextGetInterface[]>
-  ) {
-    const reqData = checkType(req.body, BookingIntervalIndexRequestData);
+  private async computeBookingsForDay(date: DateTime) {
+    const start = date.startOf('day');
+    const end = date.endOf('day');
+    const bookings = await this.bookingRepository.findInInterval(start, end);
 
-    const bookings = await this.bookingRepository.findInInterval(
-      reqData.start,
-      reqData.end
-    );
+    type GetInterfaceWithResourceName = {
+      booking: BookingGetInterface;
+      resourceName: NonEmptyString;
+    };
 
-    const bookingsWithContext: Promise<BookingWithContextGetInterface>[] = bookings.map(
-      async (booking): Promise<BookingWithContextGetInterface> => {
-        const resource = await booking.getResource();
+    const resourceGroupedBookings: ResourceGroupedBookings[] = flow(
+      map((booking: BookingDBInterface) => ({
+        booking: booking.toGetInterface(),
+        resourceName: booking.getResource().data.name,
+      })),
+      groupBy((data: GetInterfaceWithResourceName) => data.resourceName),
+      map((dataList: GetInterfaceWithResourceName[]) => {
+        const first = dataList[0];
 
         return {
-          ...booking.toGetInterface(),
-          resource: await resource.toGetInterface(),
+          resourceName: first.resourceName,
+          bookings: dataList.map((data) => data.booking),
         };
-      }
+      }),
+      orderBy((group: ResourceGroupedBookings) => group.bookings.length, [
+        'desc',
+      ])
+    )(bookings);
+
+    return resourceGroupedBookings;
+  }
+
+  private static retrieveDayDate(req: TypesafeRequest): DateTime {
+    if (hasProperty(req.params, 'dayDate')) {
+      const dateString = checkType(req.params.dayDate, ISO8601);
+      const date = DateTime.fromISO(dateString);
+
+      return date.startOf('day');
+    } else {
+      throw new MissingPathParameter('dayDate');
+    }
+  }
+
+  public async getBookingsForDay(
+    req: TypesafeRequest,
+    res: Response<ResourceGroupedBookingsGetInterface[]>
+  ) {
+    const date = BookingsController.retrieveDayDate(req);
+
+    const bookingsForDay = await this.computeBookingsForDay(date);
+
+    res.json(bookingsForDay);
+  }
+
+  public async getDayOverviewPdf(req: TypesafeRequest, res: Response) {
+    const date = BookingsController.retrieveDayDate(req);
+
+    const resourceGroupedBookings = await this.computeBookingsForDay(date);
+
+    const pdfStream = await ReactPDF.renderToStream(
+      renderDayOverviewPDF(date, resourceGroupedBookings)
     );
 
-    res.json(await Promise.all(bookingsWithContext));
+    res.attachment(
+      `Buchungsplan_${date
+        .setLocale('de-DE')
+        .toLocaleString({ ...DateTime.DATE_SHORT })}.pdf`
+    );
+    pdfStream.pipe(res);
   }
 
   public async show(req: TypesafeRequest, res: Response<BookingGetInterface>) {

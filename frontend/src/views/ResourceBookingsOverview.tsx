@@ -11,7 +11,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { BookingWithContextGetInterface, NonEmptyString } from 'common';
+import { BookingGetInterface, NonEmptyString } from 'common';
 import flow from 'lodash/fp/flow';
 import groupBy from 'lodash/fp/groupBy';
 import map from 'lodash/fp/map';
@@ -42,14 +42,14 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
   }
 
   private groupBookings(
-    bookings: BookingWithContextGetInterface[]
+    bookings: readonly BookingGetInterface[]
   ): BookingsGroup[] {
     const groupedBookings = flow(
-      groupBy((booking: BookingWithContextGetInterface) => [
+      groupBy((booking: BookingGetInterface) => [
         booking.startDate,
         booking.endDate,
       ]),
-      map((bookingList: BookingWithContextGetInterface[]) => {
+      map((bookingList: BookingGetInterface[]) => {
         const sampleBooking = bookingList[0];
 
         return {
@@ -57,9 +57,7 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
           startDate: DateTime.fromISO(sampleBooking.startDate),
           endDate: DateTime.fromISO(sampleBooking.endDate),
           timeslotIds: flow(
-            map(
-              (booking: BookingWithContextGetInterface) => booking.timeslotId
-            ),
+            map((booking: BookingGetInterface) => booking.timeslotId),
             uniq
           )(bookingList),
         };
@@ -180,7 +178,7 @@ export default ResourceBookingsOverview;
 
 interface Properties extends WithStyles<typeof styles> {
   resourceName: NonEmptyString;
-  bookings: BookingWithContextGetInterface[];
+  bookings: readonly BookingGetInterface[];
   day: DateTime;
   changeInteractionState: changeInteractionStateT;
 }

@@ -190,10 +190,17 @@ export class Routes {
       );
 
     app
-      .route('/bookings/inInterval')
-      .post(
+      .route('/bookings/forDay/:dayDate')
+      .get(
         authHandler,
-        Routes.asyncHandler(this.bookingsController.getBookingsForDateInterval)
+        Routes.asyncHandler(this.bookingsController.getBookingsForDay)
+      );
+
+    app
+      .route('/bookings/forDay/:dayDate/pdf')
+      .get(
+        authHandler,
+        Routes.asyncHandler(this.bookingsController.getDayOverviewPdf)
       );
 
     app

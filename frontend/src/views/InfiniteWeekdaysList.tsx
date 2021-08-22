@@ -49,9 +49,9 @@ class UnstyledInfiniteWeekdaysList extends React.PureComponent<
         (base) => ({
           weekdayName: base.weekdayName,
           weekdayId: base.weekdayId,
-          bookingDay: base.earliestDate.plus(
-            Duration.fromObject({ weeks: this.state.weekMultiplier })
-          ),
+          bookingDay: base.earliestDate
+            .plus(Duration.fromObject({ weeks: this.state.weekMultiplier }))
+            .startOf('day'),
         })
       );
 

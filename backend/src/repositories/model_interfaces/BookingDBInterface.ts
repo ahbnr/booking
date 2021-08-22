@@ -33,11 +33,7 @@ export default class BookingDBInterface {
     });
   }
 
-  public async getTimeslot() {
-    return this.bookingRepository.getTimeslotOfBooking(this.booking);
-  }
-
-  public async getResource(): Promise<ResourceDBInterface> {
+  public getResource(): ResourceDBInterface {
     return this.bookingRepository.getResourceOfBooking(this.booking);
   }
 

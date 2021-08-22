@@ -1,13 +1,20 @@
 import React, { ReactElement } from 'react';
 import { Text, Page, Document, View, StyleSheet } from '@react-pdf/renderer';
-import { ResourceGroupedBookings } from '../views/DayOverviewView';
 import renderResourceBookingsPDF from './RenderResourceBookingsPDF';
+import { ResourceGroupedBookings } from 'common';
+import { DateTime } from 'luxon';
 
 export default function renderDayOverviewPDF(
-  weekdayName: string,
-  date: string,
+  date: DateTime,
   resourceGroupedBookings: ResourceGroupedBookings[]
 ): ReactElement {
+  const dateString = date
+    .setLocale('de-DE')
+    .toLocaleString({ ...DateTime.DATE_SHORT });
+  const weekdayName = date
+    .setLocale('de-DE')
+    .toLocaleString({ weekday: 'long' });
+
   const styles = StyleSheet.create({
     page: {
       padding: '1cm',
@@ -26,7 +33,7 @@ export default function renderDayOverviewPDF(
       <Page size="A4" style={styles.page}>
         <View>
           <Text style={styles.title}>
-            {weekdayName} - {date}
+            {weekdayName} - {dateString}
           </Text>
         </View>
         {resourceGroupedBookings.map((resourceGroupedBookings, idx) =>

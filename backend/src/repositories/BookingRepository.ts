@@ -1,6 +1,5 @@
 import { Booking, VerificationTimeout } from '../models/booking.model';
 import { Timeslot } from '../models/timeslot.model';
-import { ISO8601 } from 'common/dist/typechecking/ISO8601';
 import { DestroyOptions, Op, WhereOptions } from 'sequelize';
 import { Weekday } from '../models/weekday.model';
 import { Resource } from '../models/resource.model';
@@ -126,7 +125,8 @@ export default class BookingRepository {
             if (booking.email != null) {
               await this.sendBookingLookupMail(
                 bookingPostData.lookupUrl,
-                booking
+                booking,
+                timeslot
               );
             }
 
@@ -178,20 +178,23 @@ export default class BookingRepository {
   }
 
   public async findInInterval(
-    start: ISO8601,
-    end: ISO8601
+    start: DateTime,
+    end: DateTime
   ): Promise<BookingDBInterface[]> {
+    const startDateString = start.toISO();
+    const endDateString = end.toISO();
+
     const foundBookings = await Booking.findAll<Booking>({
       where: {
         [Op.or]: [
           {
             startDate: {
-              [Op.between]: [start, end],
+              [Op.between]: [startDateString, endDateString],
             },
           },
           {
             endDate: {
-              [Op.between]: [start, end],
+              [Op.between]: [startDateString, endDateString],
             },
           },
         ],
@@ -290,27 +293,16 @@ export default class BookingRepository {
     await Booking.destroy(options);
   }
 
-  public async getTimeslotOfBooking(
-    booking: Booking
-  ): Promise<TimeslotDBInterface> {
-    const timeslot = await booking.lazyTimeslot;
-
-    return this.timeslotRepository.toInterface(timeslot);
-  }
-
-  public async getResourceOfBooking(
-    booking: Booking
-  ): Promise<ResourceDBInterface> {
-    const rawResource =
+  public getResourceOfBooking(booking: Booking): ResourceDBInterface {
+    const resourceRaw =
       booking.timeslot?.weekday?.resource ||
       throwExpr<Resource>(
         new Error(
-          'Can not access related db entities, even though they should have already been loaded. This should never happen and is a programming error.'
+          'Can not retrieve resource directly. Make sure this booking interface is retrieved by a findAll request that includes the timeslot, the weekday and the resource.'
         )
       );
 
-    // FIXME: Transfer creation of DB interface to resource repository
-    return new ResourceDBInterface(rawResource, this.resourceRepository);
+    return this.resourceRepository.toInterface(resourceRaw);
   }
 
   public async clearAllOutdatedBookings() {
@@ -378,7 +370,11 @@ export default class BookingRepository {
     return tokenResult.token;
   }
 
-  private async sendBookingLookupMail(lookupUrl: string, booking: Booking) {
+  private async sendBookingLookupMail(
+    lookupUrl: string,
+    booking: Booking,
+    timeslot: TimeslotDBInterface
+  ) {
     if (booking.email == null) {
       throw Error(
         'This booking has no email. This is a programming error and should never happen.'
@@ -389,7 +385,6 @@ export default class BookingRepository {
       booking
     );
 
-    const timeslot = await this.getTimeslotOfBooking(booking);
     const weekday = await timeslot.getWeekday();
     const resourceName = weekday.resourceName;
 
