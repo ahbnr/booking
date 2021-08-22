@@ -11,7 +11,6 @@ import ShareIcon from '@material-ui/icons/Share';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { withTranslation, WithTranslation } from 'react-i18next';
 
-import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Fab from '@material-ui/core/Fab';
 import { fabStyle } from '../styles/fab';
 import { saveAs } from 'file-saver';

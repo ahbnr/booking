@@ -16,7 +16,6 @@ import { Client } from '../Client';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import { ResourceGroupedBookingsGetInterface } from 'common';
 
-import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { DateTime } from 'luxon';
 import { changeInteractionStateT } from '../App';
 import { fabStyle } from '../styles/fab';
