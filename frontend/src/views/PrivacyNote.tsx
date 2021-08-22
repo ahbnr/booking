@@ -88,7 +88,6 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
               )}
             </Typography>
             <Button
-              autoFocus
               variant="contained"
               color="primary"
               className={this.props.classes.okButton}
