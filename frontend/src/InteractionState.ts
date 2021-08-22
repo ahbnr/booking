@@ -7,6 +7,8 @@ import { DateTime } from 'luxon';
 
 import { ADT } from 'ts-adt';
 
+export interface ViewingPrivacyNote {}
+
 export interface ViewingResources {}
 
 export interface ViewingWeekdays {
@@ -74,6 +76,7 @@ export interface SelectingWeekdayOverview {}
 export interface UpdatingSettings {}
 
 export type Activity = ADT<{
+  viewingPrivacyNote: ViewingPrivacyNote;
   viewingResources: ViewingResources;
   viewingWeekdays: ViewingWeekdays;
   viewingTimeslots: ViewingTimeslots;

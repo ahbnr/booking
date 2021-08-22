@@ -15,6 +15,7 @@ import { changeInteractionStateT } from '../App';
 import FrontendConfig from '../booking-frontend.config';
 
 import { withTranslation, WithTranslation } from 'react-i18next';
+import Snackbar from '@material-ui/core/Snackbar';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,36 +54,52 @@ class UnstyledMainView extends React.PureComponent<Properties, State> {
     this.props.changeInteractionState('viewingResources', {});
   }
 
+  viewPrivacyNote() {
+    this.props.changeInteractionState('viewingPrivacyNote', {});
+  }
+
   render() {
     const { t } = this.props;
 
     return (
-      <Grid
-        container
-        spacing={0}
-        direction="column"
-        alignItems="center"
-        justify="center"
-        style={{ minHeight: '70vh' }}
-      >
-        <React.Suspense fallback="Loading...">
-          <Typography variant="h5" align="center">
-            {t('welcome')}
-          </Typography>
-        </React.Suspense>
-        <Typography variant="subtitle1" align="center">
-          {t('welcome-subtitle')} {FrontendConfig.organization}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          className={this.props.classes.startButton}
-          onClick={this.openResources}
-          data-cy={'start-button'}
+      <>
+        <Grid
+          container
+          spacing={0}
+          direction="column"
+          alignItems="center"
+          justify="center"
+          style={{ minHeight: '70vh' }}
         >
-          {t('start-button')}
-        </Button>
-      </Grid>
+          <React.Suspense fallback="Loading...">
+            <Typography variant="h5" align="center">
+              {t('welcome')}
+            </Typography>
+          </React.Suspense>
+          <Typography variant="subtitle1" align="center">
+            {t('welcome-subtitle')} {FrontendConfig.organization}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            className={this.props.classes.startButton}
+            onClick={this.openResources}
+            data-cy={'start-button'}
+          >
+            {t('start-button')}
+          </Button>
+        </Grid>
+        <Snackbar
+          open={true}
+          message="Hinweise zum Datenschutz"
+          action={
+            <Button color="inherit" size="small" onClick={this.viewPrivacyNote}>
+              Öffnen
+            </Button>
+          }
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
+      </>
     );
   }
 }

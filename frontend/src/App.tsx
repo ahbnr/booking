@@ -32,6 +32,7 @@ import MainView from './views/MainView';
 import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
 import SettingsDialog from './views/SettingsDialog';
+import PrivacyNote from './views/PrivacyNote';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -141,6 +142,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
   render() {
     const view = matchI(this.state.interactionState.activity)({
+      viewingPrivacyNote: () => <PrivacyNote />,
       viewingResources: () => (
         <ResourcesView
           isAuthenticated={this.state.isAuthenticated}
