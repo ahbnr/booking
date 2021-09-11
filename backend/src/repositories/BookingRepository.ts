@@ -23,7 +23,6 @@ import getBookingInterval from '../date_math/getBookingInterval';
 import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
 import { delay, inject, singleton } from 'tsyringe';
-import { i18nextInstance } from '../utils/i18n';
 import humanizeDuration from 'humanize-duration';
 import { MailTransporter } from '../mail/MailTransporter';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
@@ -391,25 +390,34 @@ export default class BookingRepository {
     const startDate = DateTime.fromJSDate(booking.startDate).setLocale('de-DE');
     const endDate = DateTime.fromJSDate(booking.endDate).setLocale('de-DE');
 
+    const timeString = `"${resourceName}"
+              am
+              ${startDate.toLocaleString({ ...DateTime.DATE_MED_WITH_WEEKDAY })}
+              von
+              ${startDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
+              bis
+              ${endDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
+    `;
+
+    const lookupLink = `${lookupUrl}?lookupToken=${lookupToken}`;
+
+    const settings = await this.settingsRepository.get();
+
     await this.mailTransporter.send(
       booking.email,
       `Ihre Buchung - ${booking.name}`,
       `
           Sie haben die Ressource
           
-              "${resourceName}"
-              am
-              ${startDate.toLocaleString({ weekday: 'long' })}
-              von
-              ${startDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
-              bis
-              ${endDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
+              ${timeString}
           
           gebucht.
           
-          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
+          ${
+            settings.data.requireMailConfirmation
+              ? `Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
           
-          ${lookupUrl}?lookupToken=${lookupToken}
+          ${lookupLink}
         
             IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
             ${humanizeDuration(VerificationTimeout.toMillis(), {
@@ -418,32 +426,29 @@ export default class BookingRepository {
             WENN SIE NICHT BESTÄTIGT WIRD.
             
           Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen
+          `
+              : `Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:
+          
+          ${lookupLink}
+          `
+          }
       `,
       `
         <p>
           Sie haben die Ressource
           <p>
             <i style="margin-left: 2em">
-              "${resourceName}"
-              am
-              ${i18nextInstance.t(weekday.data.name)}
-              von
-              ${booking.startDate.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-              bis
-              ${booking.endDate.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+                ${timeString}
             </i>
           </p>
-          gebucht.<br />
-          
+          gebucht.<br />  
+        </p>
+        ${
+          settings.data.requireMailConfirmation
+            ? `<p>
           Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
         </p>
-        <a href="${lookupUrl}?lookupToken=${lookupToken}">Bestätigen und Buchungen einsehen</a>
+        <a href="${lookupLink}">Bestätigen und Buchungen einsehen</a>
         <p>
           <b style="font-size: 1.5em;">
             IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
@@ -456,6 +461,11 @@ export default class BookingRepository {
         <p>
           Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen.
         </p>
+          `
+            : `<p>Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:</p>
+        <a href="${lookupLink}">Buchungen einsehen</a>
+        `
+        }
       `
     ); // FIXME: Formatting
   }

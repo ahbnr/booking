@@ -21,6 +21,7 @@ export default class SettingsDBInterface {
     return noRefinementChecks<SettingsData>({
       bookingDeadlineMillis: this.settings.bookingDeadlineMillis,
       maxBookingWeekDistance: this.settings.maxBookingWeekDistance,
+      requireMailConfirmation: this.settings.requireMailConfirmation,
     });
   }
 

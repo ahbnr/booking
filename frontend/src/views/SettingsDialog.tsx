@@ -61,6 +61,7 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
       maxBookingWeekDistance: formInput.maxBookingWeekDistanceDisabled
         ? -1
         : formInput.maxBookingWeekDistance,
+      requireMailConfirmation: formInput.requireMailConfirmation,
     });
 
     this.setState({
@@ -101,6 +102,7 @@ interface IFormInput {
   bookingDeadlineHours: number;
   maxBookingWeekDistanceDisabled: boolean;
   maxBookingWeekDistance: number;
+  requireMailConfirmation: boolean;
 }
 
 interface SettingsFormProps {
@@ -135,6 +137,7 @@ function SettingsForm(props: SettingsFormProps) {
       bookingDeadlineHours,
       maxBookingWeekDistanceDisabled,
       maxBookingWeekDistance,
+      requireMailConfirmation: props.remoteSettings.requireMailConfirmation,
     },
   });
   const classes = useFormStyles();
@@ -202,6 +205,18 @@ function SettingsForm(props: SettingsFormProps) {
             )}
           />
         )}
+        <FormGroup row>
+          <Controller
+            control={control}
+            name="requireMailConfirmation"
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Buchungen müssen über E-Mail bestätigt werden"
+              />
+            )}
+          />
+        </FormGroup>
         <Button
           fullWidth
           variant="contained"

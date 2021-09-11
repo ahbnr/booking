@@ -21,4 +21,9 @@ export class Settings extends BaseModel<Settings> {
   @NotEmpty
   @Column({ defaultValue: -1 })
   public maxBookingWeekDistance!: number;
+
+  // do users need to confirm bookings?
+  @NotEmpty
+  @Column({ defaultValue: false })
+  public requireMailConfirmation!: boolean;
 }

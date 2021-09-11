@@ -30,6 +30,7 @@ import orderBy from 'lodash/fp/orderBy';
 import ReactPDF from '@react-pdf/renderer';
 import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
 import { MissingPathParameter } from './errors';
+import { SettingsData } from 'common/dist/typechecking/api/Settings';
 
 @singleton()
 @boundClass
@@ -164,14 +165,15 @@ export class BookingsController {
   }
 
   private genBookingModificationOptions(
-    req: TypesafeRequest
+    req: TypesafeRequest,
+    settings: SettingsData
   ): BookingModificationOptions {
     const isAuthenticated = req.isAuthenticated();
     return {
       ignoreMaxWeekDistance: isAuthenticated,
       ignoreDeadlines: isAuthenticated,
       requireMail: !isAuthenticated,
-      autoVerify: isAuthenticated,
+      autoVerify: isAuthenticated || !settings.requireMailConfirmation,
       allowToExceedCapacity: isAuthenticated,
     };
   }
@@ -183,10 +185,12 @@ export class BookingsController {
     const timeslot = await this.timeslotController.getTimeslot(req);
     const bookingPostData = checkType(req.body, BookingPostInterface);
 
+    const settings = await this.settingsRepository.get();
+
     const booking = await this.bookingRepository.create(
       timeslot,
       bookingPostData,
-      this.genBookingModificationOptions(req)
+      this.genBookingModificationOptions(req, settings.data)
     );
 
     res.status(201).json(booking.toGetInterface());
@@ -224,11 +228,12 @@ export class BookingsController {
 
   public async update(req: TypesafeRequest, res: Response) {
     const bookingPostData = checkType(req.body, BookingPostInterface);
+    const settings = await this.settingsRepository.get();
 
     const updatedBooking = await this.bookingRepository.update(
       extractNumericIdFromRequest(req),
       bookingPostData,
-      this.genBookingModificationOptions(req)
+      this.genBookingModificationOptions(req, settings.data)
     );
 
     res.status(202).json(updatedBooking.toGetInterface());
