@@ -59,24 +59,25 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
               Datenschutz
             </Typography>
             <Typography variant="body1" className={this.props.classes.mainText}>
-              Welche Daten werden bei einer Anmeldung über Sie gespeichert?
+              <em>Welche Daten</em>t werden bei einer Anmeldung über Sie
+              gespeichert?
               <ul>
                 <li>Ihr Vorname und Nachname</li>
                 <li>Ihre E-Mail Adresse</li>
                 <li>Der Termin und die angemeldete Resource</li>
               </ul>
-              Warum werden diese Daten gespeichert?
+              <em>Warum</em> werden diese Daten gespeichert?
               <ul>
                 <li>Zur Organisation Ihres Termins</li>
               </ul>
-              Wie lange werden diese Daten gespeichert?
+              <em>Wie lange</em> werden diese Daten gespeichert?
               <ul>
                 <li>Bis zu einem Tag nach dem Termin</li>
                 <li>Danach werden alle Daten automatisch gelöscht</li>
               </ul>
               {FrontendConfig.privacyInfo.entitiesWithDataAccess.length > 0 && (
                 <>
-                  Wer kann diese Daten einsehen?
+                  <em>Wer</em> kann diese Daten einsehen?
                   <ul>
                     {FrontendConfig.privacyInfo.entitiesWithDataAccess.map(
                       (entity) => (

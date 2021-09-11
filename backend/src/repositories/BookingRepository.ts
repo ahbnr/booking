@@ -388,6 +388,9 @@ export default class BookingRepository {
     const weekday = await timeslot.getWeekday();
     const resourceName = weekday.resourceName;
 
+    const startDate = DateTime.fromJSDate(booking.startDate).setLocale('de-DE');
+    const endDate = DateTime.fromJSDate(booking.endDate).setLocale('de-DE');
+
     await this.mailTransporter.send(
       booking.email,
       `Ihre Buchung - ${booking.name}`,
@@ -396,17 +399,11 @@ export default class BookingRepository {
           
               "${resourceName}"
               am
-              ${i18nextInstance.t(weekday.data.name)}
+              ${startDate.toLocaleString({ weekday: 'long' })}
               von
-              ${booking.startDate.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              ${startDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
               bis
-              ${booking.endDate.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              ${endDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
           
           gebucht.
           

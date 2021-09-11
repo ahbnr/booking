@@ -4669,6 +4669,7 @@ __metadata:
     eslint-plugin-unused-imports: ^1.1.3
     express: ^4.17.1
     fp-ts: ^2.8.3
+    full-icu: ^1.3.4
     helmet: ^4.6.0
     humanize-duration: ^3.27.0
     i18next: ^20.3.5
@@ -9558,6 +9559,15 @@ fsevents@^1.2.7:
     mkdirp: ">=0.5 0"
     rimraf: 2
   checksum: 61c76d2c8d702d0233efb1bdaaff49486d2ac523562167f9900151936ce229a6fc96f04236feeb3cb88ce65660c665781ad080d5f06c115f0987c9c27db9fb9d
+  languageName: node
+  linkType: hard
+
+"full-icu@npm:^1.3.4":
+  version: 1.3.4
+  resolution: "full-icu@npm:1.3.4"
+  bin:
+    node-full-icu-path: node-icu-data.js
+  checksum: 275c92900b2aedab4f27bb16a5d5e5762c14a70b067bbba5b3f73daeb0c601a5b24e965462974d4a55b651c262f0b291c6313b388e4cd04b35ddb8beff15ae28
   languageName: node
   linkType: hard
 

@@ -118,7 +118,8 @@
 
 10. Setup your web server to reverse proxy the booking frontend and backend
 
-    For example, if you are using Apache, then you should be able to setup the reverse proxy like this:
+    IF YOU ARE USING APACHE:
+    
     Somewhere in `/etc/apache2/sites-available` there should be the configuration
     file for your web server.
     Inside your `<VirtualHost ...>` declaration, add the following lines:
@@ -158,3 +159,26 @@
 
     This will make the booking frontend available under `/booking` and  the backend
     under `/booking/api`.
+    
+    IF YOU ARE USING NGINX:
+    
+    Add this to your `server` block:
+    ```
+    location /booking/ {
+        proxy_pass 'http://localhost:8000/';
+    }
+
+    location /booking/api/ {
+        proxy_pass 'http://localhost:3000/';
+    }
+    ```
+    
+    if you are using selinux, you might also need to allow nginx to reverse proxy:
+    ```sh
+    setsebool -P httpd_can_network_connect 1
+    ```
+    
+    Then restart your nginx service:
+    ```sh
+    systemctl restart nginx
+    ```
