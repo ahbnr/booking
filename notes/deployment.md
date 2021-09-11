@@ -107,6 +107,21 @@
   WantedBy=default.target
   ```
 
+  On some systems nodejs does not include full internationalization support. In this case you have to install it.
+  Either via a system package, or by installing `full-icu` via yarn (globally).
+
+  Then you need to point `node` to the location of the internationalization support file by setting the `NODE_ICU_DATA`
+  environment variable.
+
+  Example for CentOS 8 / Oracle Linux 8:
+
+  1. `dnf install nodejs-full-i18n`
+  2. Add the following line to the `[Service]` section of `.config/systemd/user/booking-backend.service`:
+
+    ```systemd
+    Environment="NODE_ICU_DATA=/usr/share/nodejs/icudata/icudt64l.dat"
+    ```
+
 9. Enable & start the services
 
   ```sh
