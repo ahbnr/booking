@@ -97,7 +97,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     const signupToken = new URLSearchParams(search).get('signupToken');
     const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
 
-    window.history.replaceState(window.history.state, document.title, '/');
+    // Clear any GET parameters from the URL
+    window.history.replaceState(
+      window.history.state,
+      document.title,
+      process.env.PUBLIC_URL
+    );
 
     (async () => {
       // Try automatic login if we still have a refresh token
