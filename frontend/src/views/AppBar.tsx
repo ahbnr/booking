@@ -28,6 +28,8 @@ import IconButton from '@material-ui/core/IconButton';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import SettingsIcon from '@material-ui/icons/Settings';
 import AccountCircle from '@material-ui/icons/AccountCircle';
+import ExitToApp from '@material-ui/icons/ExitToApp';
+import VpnKey from '@material-ui/icons/VpnKey';
 import clsx from 'clsx';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { changeInteractionStateT } from '../App';
@@ -115,6 +117,7 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
 
   login() {
     this.props.changeInteractionState('authenticating', {});
+    this.handleDrawerClose();
   }
 
   onHomeButton() {
@@ -141,6 +144,7 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
     this.setState({
       logoutDialogOpen: true,
     });
+    this.handleDrawerClose();
   }
 
   handleLogoutDialogClose() {
@@ -166,20 +170,18 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
           )}
         >
           <Toolbar className={this.props.classes.toolbar}>
-            {this.props.isAuthenticated && (
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="open drawer"
-                onClick={this.handleDrawerOpen}
-                className={clsx(
-                  this.props.classes.menuButton,
-                  this.state.drawerOpen && this.props.classes.menuButtonHidden
-                )}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={this.handleDrawerOpen}
+              className={clsx(
+                this.props.classes.menuButton,
+                this.state.drawerOpen && this.props.classes.menuButtonHidden
+              )}
+            >
+              <MenuIcon />
+            </IconButton>
             <Typography
               component="h1"
               variant="h6"
@@ -198,15 +200,6 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
                 {FrontendConfig.appBarTitle}
               </Link>
             </Typography>
-            {!this.props.isAuthenticated && (
-              <Button
-                color="inherit"
-                onClick={this.login}
-                data-cy={'login-button'}
-              >
-                Login
-              </Button>
-            )}
             {this.props.isAuthenticated && (
               <AccountCircle
                 data-cy="account-button"
@@ -215,53 +208,69 @@ class UnstyledAppBar extends React.PureComponent<Properties, State> {
             )}
           </Toolbar>
         </MaterialAppBar>
-        {this.props.isAuthenticated && (
-          <Drawer
-            variant="temporary"
-            className={this.props.classes.drawer}
-            classes={{
-              paper: clsx(
-                this.props.classes.drawerPaper,
-                !this.state.drawerOpen && this.props.classes.drawerPaperClose
-              ),
-            }}
-            open={this.state.drawerOpen}
-            onClose={this.handleDrawerClose}
-          >
-            <div className={this.props.classes.toolbarIcon}>
-              <IconButton onClick={this.handleDrawerClose}>
-                <ChevronLeftIcon />
-              </IconButton>
-            </div>
-            <Divider />
-            <List>
-              <ListItem button onClick={this.onHomeButton}>
+        <Drawer
+          variant="temporary"
+          className={this.props.classes.drawer}
+          classes={{
+            paper: clsx(
+              this.props.classes.drawerPaper,
+              !this.state.drawerOpen && this.props.classes.drawerPaperClose
+            ),
+          }}
+          open={this.state.drawerOpen}
+          onClose={this.handleDrawerClose}
+        >
+          <div className={this.props.classes.toolbarIcon}>
+            <IconButton onClick={this.handleDrawerClose}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </div>
+          <Divider />
+          <List>
+            <ListItem button onClick={this.onHomeButton}>
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText primary="Hauptseite" />
+            </ListItem>
+            {this.props.isAuthenticated && (
+              <>
+                <ListItem button onClick={this.onAddAdminButton}>
+                  <ListItemIcon>
+                    <PersonAddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Admin Hinzufügen" />
+                </ListItem>
+                <ListItem button onClick={this.onOverviewButton}>
+                  <ListItemIcon>
+                    <DateRangeIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Tagesübersichten" />
+                </ListItem>
+                <ListItem button onClick={this.onSettingsButton}>
+                  <ListItemIcon>
+                    <SettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Einstellungen" />
+                </ListItem>
+                <ListItem button onClick={this.openLogoutDialog}>
+                  <ListItemIcon>
+                    <ExitToApp />
+                  </ListItemIcon>
+                  <ListItemText primary="Logout" />
+                </ListItem>
+              </>
+            )}
+            {!this.props.isAuthenticated && (
+              <ListItem button onClick={this.login}>
                 <ListItemIcon>
-                  <HomeIcon />
+                  <VpnKey />
                 </ListItemIcon>
-                <ListItemText primary="Hauptseite" />
+                <ListItemText primary="Admin Login" />
               </ListItem>
-              <ListItem button onClick={this.onAddAdminButton}>
-                <ListItemIcon>
-                  <PersonAddIcon />
-                </ListItemIcon>
-                <ListItemText primary="Admin Hinzufügen" />
-              </ListItem>
-              <ListItem button onClick={this.onOverviewButton}>
-                <ListItemIcon>
-                  <DateRangeIcon />
-                </ListItemIcon>
-                <ListItemText primary="Tagesübersichten" />
-              </ListItem>
-              <ListItem button onClick={this.onSettingsButton}>
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Einstellungen" />
-              </ListItem>
-            </List>
-          </Drawer>
-        )}
+            )}
+          </List>
+        </Drawer>
         <Dialog
           open={this.state.logoutDialogOpen}
           onClose={this.handleLogoutDialogClose}
