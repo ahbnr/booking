@@ -19,16 +19,19 @@ import {
 } from '@material-ui/core';
 import {
   BookingGetInterface,
-  timeslotCompare,
   TimeslotGetInterface,
   WeekdayGetInterface,
 } from 'common';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { nameSorter } from '../models/WeekdayUtils';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
 import LoadingBackdrop from './LoadingBackdrop';
 import MoodBadIcon from '@material-ui/icons/MoodBad';
+import flow from 'lodash/fp/flow';
+import sortBy from 'lodash/fp/sortBy';
+import { DateTime } from 'luxon';
+import map from 'lodash/fp/map';
+import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,6 +52,10 @@ const styles = (theme: Theme) =>
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+    },
+    textSection: {
+      marginLeft: theme.spacing(2),
+      marginRight: theme.spacing(2),
     },
     avatar: {
       margin: theme.spacing(1),
@@ -127,19 +134,7 @@ class UnstyledBookingsLookupView extends React.PureComponent<
     this.refreshData();
   }
 
-  private stringifyTimeslot(timeslot: TimeslotGetInterface) {
-    function zeroPad(n: number): string {
-      return String(n).padStart(2, '0');
-    }
-
-    return `${zeroPad(timeslot.startHours)}:${zeroPad(
-      timeslot.startMinutes
-    )} - ${zeroPad(timeslot.endHours)}:${zeroPad(timeslot.endMinutes)}`;
-  }
-
   render() {
-    const { t } = this.props;
-
     return (
       <>
         <Suspense
@@ -160,140 +155,71 @@ class UnstyledBookingsLookupView extends React.PureComponent<
               );
             }
 
-            const renderData = new Map<
-              number,
-              Map<number, BookingGetInterface[]>
-            >();
-
-            for (const booking of remoteData.bookings) {
-              const timeslot = remoteData.timeslots.get(booking.timeslotId);
-
-              if (timeslot != null) {
-                const timeslotMap = renderData.getOrDefault(
-                  timeslot.weekdayId,
-                  new Map<number, BookingGetInterface[]>()
-                );
-
-                const bookingArray = timeslotMap.getOrDefault(timeslot.id, []);
-
-                bookingArray.push(booking);
-
-                timeslotMap.set(timeslot.id, bookingArray);
-                renderData.set(timeslot.weekdayId, timeslotMap);
-              } else {
-                throw new Error(
-                  `Timeslot data (id: ${booking.timeslotId}) not downloaded even though it should be. This is a programming error.`
-                );
-              }
+            interface DisplayData {
+              booking: BookingGetInterface;
+              startDate: DateTime;
+              endDate: DateTime;
+              resourceName: string;
             }
 
-            const renderList: [
-              WeekdayGetInterface,
-              [TimeslotGetInterface, BookingGetInterface[]][]
-            ][] = Array.from(renderData.entries()).map(
-              (
-                weekdayAndTimeslotMap: [
-                  number,
-                  Map<number, BookingGetInterface[]>
-                ]
-              ) => {
-                const [weekdayId, timeslotMap] = weekdayAndTimeslotMap;
+            const sortedBookings = flow(
+              map((booking: BookingGetInterface) => {
+                const weekdayId =
+                  remoteData.timeslots.get(booking.timeslotId)?.weekdayId || -1;
+                const resourceName =
+                  remoteData.weekdays.get(weekdayId)?.resourceName || '';
 
-                const weekday = remoteData.weekdays.get(weekdayId);
-                if (weekday == null) {
-                  throw new Error(
-                    `Weekday data (id: ${weekdayId}) not downloaded, even though it should be. This should never happen and is a programming error.`
-                  );
-                }
-
-                const timeslotBookingsArray: [
-                  TimeslotGetInterface,
-                  BookingGetInterface[]
-                ][] = Array.from(timeslotMap.entries()).map(
-                  (
-                    timeslotIdAndBookingIds: [number, BookingGetInterface[]]
-                  ): [TimeslotGetInterface, BookingGetInterface[]] => {
-                    const [timeslotId, bookings] = timeslotIdAndBookingIds;
-
-                    const timeslot = remoteData.timeslots.get(timeslotId);
-
-                    if (timeslot == null) {
-                      throw new Error(
-                        `Timeslot data (id: ${timeslotId}) not downloaded, even though it should be. This should never happen and is a programming error.`
-                      );
-                    }
-
-                    return [timeslot, bookings];
-                  }
-                );
-
-                timeslotBookingsArray.sort(
-                  (
-                    left: [TimeslotGetInterface, BookingGetInterface[]],
-                    right: [TimeslotGetInterface, BookingGetInterface[]]
-                  ) => {
-                    const [leftTimeslot] = left;
-                    const [rightTimeslot] = right;
-
-                    return timeslotCompare(leftTimeslot, rightTimeslot);
-                  }
-                );
-
-                return [weekday, timeslotBookingsArray];
-              }
-            );
-
-            renderList.sort((left, right) => {
-              const [leftWeekday] = left;
-              const [rightWeekday] = right;
-
-              return nameSorter(leftWeekday.name, rightWeekday.name);
-            });
+                return {
+                  booking: booking,
+                  startDate: DateTime.fromISO(booking.startDate).setLocale(
+                    'de-DE'
+                  ),
+                  endDate: DateTime.fromISO(booking.endDate).setLocale('de-DE'),
+                  resourceName,
+                };
+              }),
+              sortBy((displayData: DisplayData) => displayData.startDate)
+            )(remoteData.bookings);
 
             return (
               <>
-                <Typography variant="h4">Ihre Buchungen</Typography>
-                <Typography
-                  variant="body1"
-                  className={this.props.classes.mainText}
-                >
-                  Sie können eine Buchung löschen, indem Sie auf das
-                  &quot;Eimer&quot;-Symbol an der rechten Seite einer Buchung
-                  klicken.
-                </Typography>
-                {renderList.map((weekdayEntry) => {
-                  const [weekday, timeslotsAndBookings] = weekdayEntry;
+                <div className={this.props.classes.textSection}>
+                  <Typography variant="h4">Ihre Buchungen</Typography>
+                  <Typography
+                    variant="body1"
+                    className={this.props.classes.mainText}
+                  >
+                    Sie können eine Buchung löschen, indem Sie auf das
+                    &quot;Eimer&quot;-Symbol an der rechten Seite einer Buchung
+                    klicken.
+                  </Typography>
+                </div>
 
-                  return (
-                    <>
-                      <Typography variant="h5">
-                        {weekday.resourceName} - {t(weekday.name)}
-                      </Typography>
-                      <List>
-                        {timeslotsAndBookings.map((timeslotEntry) => {
-                          const [timeslot, bookings] = timeslotEntry;
-
-                          return bookings.map((booking) => (
-                            <ListItem key={booking.id}>
-                              <ListItemText>
-                                {this.stringifyTimeslot(timeslot)}
-                              </ListItemText>
-                              <ListItemSecondaryAction>
-                                <IconButton
-                                  onClick={() => this.deleteBooking(booking.id)}
-                                  edge="end"
-                                  aria-label="delete"
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          ));
-                        })}
-                      </List>
-                    </>
-                  );
-                })}
+                <List>
+                  {sortedBookings.map(
+                    ({ booking, startDate, endDate, resourceName }) => (
+                      <ListItem key={booking.id}>
+                        <ListItemText>
+                          {startDate.toLocaleString(DateTime.DATE_SHORT)},
+                          &ldquo;{resourceName}&rdquo; von{' '}
+                          {startDate.toLocaleString(DateTime.TIME_24_SIMPLE)}{' '}
+                          bis {endDate.toLocaleString(DateTime.TIME_24_SIMPLE)}
+                        </ListItemText>
+                        <ListItemSecondaryAction>
+                          <DeleteConfirmer name="die Buchung">
+                            <IconButton
+                              onClick={() => this.deleteBooking(booking.id)}
+                              edge="end"
+                              aria-label="delete"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </DeleteConfirmer>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    )
+                  )}
+                </List>
               </>
             );
           }}
