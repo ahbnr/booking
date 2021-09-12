@@ -141,7 +141,8 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                     </Typography>
                     <Alert severity="warning">
                       Ihre Buchung verfällt automatisch nach 10 Minuten, wenn
-                      sie nicht bestätigt wird!
+                      sie nicht bestätigt wird! Prüfen Sie auch Ihren Spam
+                      Ordner.
                     </Alert>
                   </>
                 ) : (
@@ -149,7 +150,8 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                     Ihre Buchung wurde erstellt. Wir haben Ihnen eine E-Mail
                     zugesandt mit Informationen zu Ihrem Buchungstermin. Die
                     E-Mail enthält auch Informationen wie Sie Ihre Buchung
-                    wieder absagen können.
+                    wieder absagen können. Sehen Sie auch in Ihrem Spam Ordner
+                    nach.
                   </Alert>
                 )}
                 <Button
