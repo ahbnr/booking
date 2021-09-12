@@ -27,6 +27,7 @@ import humanizeDuration from 'humanize-duration';
 import { MailTransporter } from '../mail/MailTransporter';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 import { asyncJwtSign } from '../utils/jwt';
+import { i18nextInstance } from '../utils/i18n';
 
 @singleton()
 @boundClass
@@ -390,6 +391,7 @@ export default class BookingRepository {
     const startDate = DateTime.fromJSDate(booking.startDate).setLocale('de-DE');
     const endDate = DateTime.fromJSDate(booking.endDate).setLocale('de-DE');
 
+    const intro = i18nextInstance.t('booking-repository-mail-booking-intro');
     const timeString = `"${resourceName}"
               am
               ${startDate.toLocaleString({ ...DateTime.DATE_MED_WITH_WEEKDAY })}
@@ -407,11 +409,9 @@ export default class BookingRepository {
       booking.email,
       `Ihre Buchung - ${booking.name}`,
       `
-          Sie haben die Ressource
+          ${intro}
           
               ${timeString}
-          
-          gebucht.
           
           ${
             settings.data.requireMailConfirmation
@@ -435,13 +435,12 @@ export default class BookingRepository {
       `,
       `
         <p>
-          Sie haben die Ressource
+          ${intro}
           <p>
             <i style="margin-left: 2em">
                 ${timeString}
             </i>
           </p>
-          gebucht.<br />  
         </p>
         ${
           settings.data.requireMailConfirmation

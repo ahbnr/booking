@@ -156,17 +156,9 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                       ? -1
                       : settings.maxBookingWeekDistance
                   }
-                  notEmptyTitle={
-                    this.props.isAuthenticated
-                      ? 'Wählen Sie den Wochentag aus welchen Sie bearbeiten möchten:'
-                      : 'An welchem Wochentag möchten Sie buchen?'
-                  }
-                  emptyTitle={'Keine Wochentage angelegt'}
-                  emptyMessage={
-                    this.props.isAuthenticated
-                      ? 'Es wurden noch keine Wochentage angelegt.'
-                      : 'Es wurden noch keine Wochentage angelegt. Melden Sie sich als Administrator an und erstellen Sie einige Wochentage.'
-                  }
+                  notEmptyTitle={t('weekdays-view-not-empty-title')}
+                  emptyTitle={t('weekdays-view-empty-title')}
+                  emptyMessage={t('weekdays-view-empty-message')}
                 >
                   {(bookingOption, style) => {
                     const {

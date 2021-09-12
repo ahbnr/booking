@@ -19,5 +19,9 @@
   "resources-view-not-empty-title": "Welche Ressource möchten Sie buchen?",
   "resources-view-empty-title": "Es wurden keine Resourcen erstellt.",
   "resources-view-empty-message": "Melden Sie sich als Administrator an und verwenden Sie den Button unten rechts, um eine Resource zu erstellen.",
-  "resources-view-delete-confirmer-name-prefix": "die Ressource"
+  "resources-view-delete-confirmer-name-prefix": "die Ressource",
+  "create-booking-dialog-subtitle": "Sie buchen {{resourceName}} am {{startDate}} von {{startTime}} bis {{endTime}}.",
+  "weekdays-view-not-empty-title": "An welchem Wochentag möchten Sie buchen?",
+  "weekdays-view-empty-title": "Keine Wochentage angelegt",
+  "weekdays-view-empty-message": "Es wurden noch keine Wochentage angelegt."
 }

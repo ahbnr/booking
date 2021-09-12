@@ -26,6 +26,7 @@ import {
 } from 'common';
 import { Controller, useForm } from 'react-hook-form';
 import makeStyles from '@material-ui/core/styles/makeStyles';
+import { WithTranslation, withTranslation } from 'react-i18next';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -80,6 +81,8 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
   }
 
   render() {
+    const { t } = this.props;
+
     return (
       <>
         <Container component="main" maxWidth="xs">
@@ -95,20 +98,23 @@ class UnstyledCreateBookingDialog extends React.PureComponent<
               className={this.props.classes.subtitle}
               variant="subtitle1"
             >
-              {`Sie buchen ${
-                this.props.resourceName
-              } am ${this.props.bookingDay.setLocale('de-DE').toLocaleString({
-                ...DateTime.DATE_SHORT,
-                day: '2-digit',
-                month: '2-digit',
-                year: '2-digit',
-              })} von ${this.props.startTime
-                .setLocale('de-DE')
-                .toLocaleString(
-                  DateTime.TIME_24_SIMPLE
-                )} bis ${this.props.endTime
-                .setLocale('de-DE')
-                .toLocaleString(DateTime.TIME_24_SIMPLE)}.`}
+              {t('create-booking-dialog-subtitle', {
+                resourceName: this.props.resourceName,
+                startDate: this.props.bookingDay
+                  .setLocale('de-DE')
+                  .toLocaleString({
+                    ...DateTime.DATE_SHORT,
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit',
+                  }),
+                startTime: this.props.startTime
+                  .setLocale('de-DE')
+                  .toLocaleString(DateTime.TIME_24_SIMPLE),
+                endTime: this.props.endTime
+                  .setLocale('de-DE')
+                  .toLocaleString(DateTime.TIME_24_SIMPLE),
+              })}
             </Typography>
             <BookingForm
               isAuthenticated={this.props.isAuthenticated}
@@ -214,13 +220,15 @@ function BookingForm(props: SettingsFormProps) {
         type="submit"
         className={classes.submit}
       >
-        {`${props.resourceName} buchen`}
+        {`Buchen`}
       </Button>
     </form>
   );
 }
 
-const CreateBookingDialog = withStyles(styles)(UnstyledCreateBookingDialog);
+const CreateBookingDialog = withTranslation()(
+  withStyles(styles)(UnstyledCreateBookingDialog)
+);
 export default CreateBookingDialog;
 
 interface IFormInput {
@@ -229,7 +237,7 @@ interface IFormInput {
   email: string;
 }
 
-interface Properties extends WithStyles<typeof styles> {
+interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   resourceName: string;
   timeslotId: number;
