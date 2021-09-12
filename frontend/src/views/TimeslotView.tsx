@@ -20,6 +20,7 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import EditIcon from '@material-ui/icons/Edit';
+import GroupIcon from '@material-ui/icons/Group';
 import { TimeslotGetInterface } from 'common';
 import { changeInteractionStateT } from '../App';
 import noop from '../utils/noop';
@@ -186,6 +187,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
                         ampm={false}
                         value={displayData.startTime}
                         onChange={noop}
+                        style={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid item xs={6}>
@@ -199,6 +201,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
                         ampm={false}
                         value={displayData.endTime}
                         onChange={noop}
+                        style={{ width: '100%', paddingRight: '15px' }}
                       />
                     </Grid>
                   </Grid>
@@ -206,12 +209,14 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
               </ListItemText>
               <ListItemSecondaryAction>
                 <Chip
+                  style={{ paddingLeft: '5px' }}
                   clickable
+                  icon={<GroupIcon />}
                   label={
                     this.props.isAuthenticated
                       ? `${displayData.numBookings}/${displayData.timeslot.capacity}`
                       : bookingsAvailable
-                      ? 'Frei'
+                      ? `${displayData.numBookings}/${displayData.timeslot.capacity}`
                       : 'Voll'
                   }
                   color={bookingsAvailable ? 'primary' : 'secondary'}
