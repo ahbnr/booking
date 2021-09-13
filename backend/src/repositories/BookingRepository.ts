@@ -7,7 +7,8 @@ import BookingDBInterface from './model_interfaces/BookingDBInterface';
 import { boundClass } from 'autobind-decorator';
 import {
   assertNever,
-  BookingPostInterface,
+  BookingsCreateInterface,
+  BookingUpdateInterface,
   checkType,
   EMailString,
   throwExpr,
@@ -50,11 +51,10 @@ export default class BookingRepository {
     return new BookingDBInterface(booking, this);
   }
 
-  private async createOrModifyBooking(
+  private async createOrModifyBookings(
     mode: BookingModificationMode,
-    bookingPostData: BookingPostInterface,
     options: BookingModificationOptions
-  ): Promise<BookingDBInterface> {
+  ): Promise<BookingDBInterface[] | BookingDBInterface> {
     let timeslot: TimeslotDBInterface;
     switch (mode.kind) {
       case 'modify':
@@ -71,9 +71,9 @@ export default class BookingRepository {
 
     const weekday = await timeslot.getWeekday();
     const settings = await this.settingsRepository.get();
-    const bookingDay = DateTime.fromISO(bookingPostData.bookingDay);
+    const bookingDay = DateTime.fromISO(mode.data.bookingDay);
 
-    if (options.requireMail && bookingPostData.email == null) {
+    if (options.requireMail && mode.data.email == null) {
       throw new UnprocessableEntity('The E-Mail field may not be empty.');
     }
 
@@ -96,51 +96,64 @@ export default class BookingRepository {
         {
           const bookings = await timeslot.getBookings(bookingDay);
 
-          const newDbData = {
-            ...bookingPostData,
-            startDate: bookingValidation.result.start.toJSDate(),
-            endDate: bookingValidation.result.end.toJSDate(),
-            timeslotId: timeslot.id,
-          };
+          const startDate = bookingValidation.result.start.toJSDate();
+          const endDate = bookingValidation.result.end.toJSDate();
+          const timeslotId = timeslot.id;
 
-          if (
-            bookings.length < timeslot.data.capacity ||
-            mode.kind === 'modify' ||
-            options.allowToExceedCapacity
-          ) {
-            let booking: Booking;
-            switch (mode.kind) {
-              case 'create':
-                booking = await Booking.create<Booking>(newDbData);
-                break;
+          switch (mode.kind) {
+            case 'create': {
+              if (
+                bookings.length + mode.data.participantNames.length >
+                  timeslot.data.capacity &&
+                !options.allowToExceedCapacity
+              ) {
+                throw new Conflict(
+                  'The timeslot has reached max. capacity. This amount of bookings can not be created.'
+                );
+              }
 
-              case 'modify':
-                booking = await mode.toModify.update(newDbData);
-                break;
+              const dbDatas = mode.data.participantNames.map((name) => ({
+                name,
+                email: mode.data.email,
+                bookingDay: mode.data.bookingDay,
+                lookupUrl: mode.data.lookupUrl,
+                startDate,
+                endDate,
+                timeslotId,
+                isVerified: options.autoVerify,
+              }));
 
-              default:
-                assertNever();
+              const newBookings = await Booking.bulkCreate<Booking>(dbDatas);
+              const firstBooking = newBookings[0];
+
+              if (firstBooking.email != null) {
+                await this.sendBookingLookupMail(
+                  mode.data.lookupUrl,
+                  firstBooking,
+                  timeslot
+                );
+              }
+
+              return newBookings.map((booking) => this.toInterface(booking));
             }
 
-            if (booking.email != null) {
-              await this.sendBookingLookupMail(
-                bookingPostData.lookupUrl,
-                booking,
-                timeslot
-              );
+            case 'modify': {
+              const dbData = {
+                name: mode.data.name,
+                email: mode.data.email,
+                bookingDay: mode.data.bookingDay,
+                lookupUrl: mode.data.lookupUrl,
+                startDate,
+                endDate,
+                timeslotId,
+              };
+
+              const booking = await mode.toModify.update(dbData);
+              return this.toInterface(booking);
             }
 
-            if (options.autoVerify) {
-              await booking.update({
-                isVerified: true,
-              });
-            }
-
-            return this.toInterface(booking);
-          } else {
-            throw new Conflict(
-              'The timeslot has reached max. capacity. No more bookings can be created.'
-            );
+            default:
+              assertNever();
           }
         }
         // noinspection UnreachableCodeJS
@@ -152,14 +165,15 @@ export default class BookingRepository {
 
   public async create(
     timeslot: TimeslotDBInterface,
-    bookingPostData: BookingPostInterface,
+    bookingCreateData: BookingsCreateInterface,
     options: BookingModificationOptions
-  ): Promise<BookingDBInterface> {
-    return this.createOrModifyBooking(
-      { kind: 'create', timeslot },
-      bookingPostData,
+  ): Promise<BookingDBInterface[]> {
+    const bookings = (await this.createOrModifyBookings(
+      { kind: 'create', timeslot, data: bookingCreateData },
       options
-    );
+    )) as BookingDBInterface[];
+
+    return bookings;
   }
 
   public async findAll(
@@ -268,17 +282,18 @@ export default class BookingRepository {
 
   public async update(
     id: number,
-    data: BookingPostInterface,
+    data: BookingUpdateInterface,
     options: BookingModificationOptions
   ): Promise<BookingDBInterface> {
     const maybeBooking = await this.findByIdInternal(id);
 
     if (maybeBooking != null) {
-      return this.createOrModifyBooking(
-        { kind: 'modify', toModify: maybeBooking },
-        data,
+      const modifiedBooking = (await this.createOrModifyBookings(
+        { kind: 'modify', toModify: maybeBooking, data },
         options
-      );
+      )) as BookingDBInterface;
+
+      return modifiedBooking;
     } else {
       throw new NoElementToUpdate('booking');
     }
@@ -471,8 +486,12 @@ export default class BookingRepository {
 }
 
 type BookingModificationMode =
-  | { kind: 'create'; timeslot: TimeslotDBInterface }
-  | { kind: 'modify'; toModify: Booking };
+  | {
+      kind: 'create';
+      timeslot: TimeslotDBInterface;
+      data: BookingsCreateInterface;
+    }
+  | { kind: 'modify'; toModify: Booking; data: BookingUpdateInterface };
 
 export interface BookingModificationOptions {
   ignoreDeadlines: boolean;

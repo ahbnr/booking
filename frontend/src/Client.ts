@@ -4,7 +4,7 @@ import { boundClass } from 'autobind-decorator';
 import {
   AuthRequestData,
   BookingGetInterface,
-  BookingPostInterface,
+  BookingsCreateInterface,
   checkType,
   EMailString,
   InviteForSignupData,
@@ -418,7 +418,10 @@ export class Client {
     );
   }
 
-  public async createBooking(timeslotId: number, data: BookingPostInterface) {
+  public async createBookings(
+    timeslotId: number,
+    data: BookingsCreateInterface
+  ) {
     await this.request('POST', `timeslots/${timeslotId}/bookings`, data);
   }
 

@@ -35,10 +35,20 @@ export function compare(
 
 export type BookingGetInterface = t.TypeOf<typeof BookingGetInterface>;
 
-export const BookingPostInterface = t.type({
-  ...BookingData.props,
+export const BookingsCreateInterface = t.type({
+  participantNames: t.readonlyArray(NonEmptyString),
+  email: t.union([EMailString, t.undefined, t.null]),
   bookingDay: ISO8601,
   lookupUrl: t.string,
 });
 
-export type BookingPostInterface = t.TypeOf<typeof BookingPostInterface>;
+export type BookingsCreateInterface = t.TypeOf<typeof BookingsCreateInterface>;
+
+export const BookingUpdateInterface = t.type({
+  name: NonEmptyString,
+  email: t.union([EMailString, t.undefined, t.null]),
+  bookingDay: ISO8601,
+  lookupUrl: t.string,
+});
+
+export type BookingUpdateInterface = t.TypeOf<typeof BookingUpdateInterface>;

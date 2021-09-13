@@ -8,7 +8,8 @@ export {
   BookingData,
   BookingGetInterface,
   compare as bookingCompare,
-  BookingPostInterface,
+  BookingsCreateInterface,
+  BookingUpdateInterface,
 } from './typechecking/api/Booking';
 export {
   WeekdayNameValues,

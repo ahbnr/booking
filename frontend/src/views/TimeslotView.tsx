@@ -94,12 +94,15 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
 
   createBooking(
     timeslot: TimeslotGetInterface,
+    numBookings: number,
     startTime: DateTime,
     endTime: DateTime
   ) {
-    this.props.changeInteractionState('createBooking', {
+    this.props.changeInteractionState('enteringName', {
       resourceName: this.props.resourceName,
       timeslotId: timeslot.id,
+      timeslotCapacity: timeslot.capacity,
+      numBookingsForSlot: numBookings,
       startTime,
       endTime,
       bookingDay: this.props.bookingDay,
@@ -154,6 +157,7 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
             ? () =>
                 this.createBooking(
                   displayData.timeslot,
+                  displayData.numBookings,
                   displayData.startTime,
                   displayData.endTime
                 )

@@ -2,6 +2,7 @@ import {
   TimeslotGetInterface,
   ResourceGetInterface,
   WeekdayName,
+  NonEmptyString,
 } from 'common';
 import { DateTime } from 'luxon';
 
@@ -29,13 +30,29 @@ export interface ViewingBookings {
   bookingDay: DateTime;
 }
 
-export interface CreateBooking {
+export interface EnteringName {
   resourceName: string;
   timeslotId: number;
+  timeslotCapacity: number;
+  numBookingsForSlot: number;
   startTime: DateTime;
   endTime: DateTime;
   bookingDay: DateTime;
 }
+
+export interface AskingAboutAdditionalParticipants extends EnteringName {
+  name: NonEmptyString;
+  numHistoryToClearOnSubmit: number;
+}
+
+export interface AddingParticipant extends EnteringName {
+  participantNames: NonEmptyString[];
+  numHistoryToClearOnSubmit: number;
+}
+
+export interface ConfirmingParticipants extends AddingParticipant {}
+
+export interface EnteringEmail extends ConfirmingParticipants {}
 
 export interface Authenticating {}
 
@@ -69,7 +86,9 @@ export interface AddingWeekday {
 
 export interface ViewingMainPage {}
 
-export interface ConfirmingBookingDialog {}
+export interface ConfirmingBookingDialog {
+  numHistoryToClearOnSubmit: number;
+}
 
 export interface SelectingWeekdayOverview {}
 
@@ -81,7 +100,11 @@ export type Activity = ADT<{
   viewingWeekdays: ViewingWeekdays;
   viewingTimeslots: ViewingTimeslots;
   viewingBookings: ViewingBookings;
-  createBooking: CreateBooking;
+  enteringName: EnteringName;
+  askingAboutAdditionalParticipants: AskingAboutAdditionalParticipants;
+  addingParticipant: AddingParticipant;
+  confirmingParticipants: ConfirmingParticipants;
+  enteringEmail: EnteringEmail;
   authenticating: Authenticating;
   invitingAdmin: InvitingAdmin;
   signingUp: SigningUp;

@@ -1,4 +1,4 @@
 {
   "welcome": "Welcome",
-  "create-booking-dialog-subtitle": "You are booking {{resourceName}} on {{startDate}} from {{startTime}} to {{endTime}}."
+  "enter-email-dialog-info": "You are booking {{resourceName}} on {{startDate}} from {{startTime}} to {{endTime}}."
 }

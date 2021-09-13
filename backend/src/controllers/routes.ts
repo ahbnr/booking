@@ -5,15 +5,15 @@ import {
   Request,
   Response,
 } from 'express';
-import { WeekdaysController } from '../controllers/weekdays.controller';
-import { TimeslotsController } from '../controllers/timeslots.controller';
-import { BookingsController } from '../controllers/bookings.controller';
-import { UsersController } from '../controllers/users.controller';
-import { authHandler, optionalAuthHandler } from './passport';
-import { ResourcesController } from '../controllers/resources.controller';
+import { WeekdaysController } from './weekdays.controller';
+import { TimeslotsController } from './timeslots.controller';
+import { BookingsController } from './bookings.controller';
+import { UsersController } from './users.controller';
+import { authHandler, optionalAuthHandler } from '../config/passport';
+import { ResourcesController } from './resources.controller';
 import DatabaseController from '../models';
-import { AuthController } from '../controllers/auth.controller';
-import { SettingsController } from '../controllers/settings.controller';
+import { AuthController } from './auth.controller';
+import { SettingsController } from './settings.controller';
 import { delay, inject, singleton } from 'tsyringe';
 
 const { DEV_MODE } = process.env;
@@ -159,7 +159,7 @@ export class Routes {
       .route('/timeslots/:id/bookings')
       .post(
         optionalAuthHandler,
-        Routes.asyncHandler(this.bookingsController.createBooking)
+        Routes.asyncHandler(this.bookingsController.createBookings)
       );
     app
       .route('/timeslots/:id/bookings/:dayDate')

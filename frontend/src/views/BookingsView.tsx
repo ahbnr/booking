@@ -4,7 +4,7 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import { Client } from '../Client';
 import BookingView from './BookingView';
-import { BookingGetInterface } from 'common';
+import { BookingGetInterface, TimeslotGetInterface } from 'common';
 import ListEx from './ListEx';
 import Suspense from './Suspense';
 import LoadingScreen from './LoadingScreen';
@@ -27,42 +27,53 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
     super(props);
 
     this.state = {
-      bookings: undefined,
+      remoteData: undefined,
     };
   }
 
   componentDidMount() {
-    this.refreshBookings();
+    this.refreshRemoteData();
   }
 
-  createBooking() {
-    this.props.changeInteractionState('createBooking', {
+  createBooking(timeslot: TimeslotGetInterface, numBookings: number) {
+    this.props.changeInteractionState('enteringName', {
       resourceName: this.props.resourceName,
       timeslotId: this.props.timeslotId,
+      timeslotCapacity: timeslot.capacity,
+      numBookingsForSlot: numBookings,
       startTime: this.props.startTime,
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
     });
   }
 
-  refreshBookings() {
-    const bookingsPromise = this.props.client.getBookings(
+  async fetchRemoteData(): Promise<RemoteData> {
+    const timeslot = await this.props.client.getTimeslot(this.props.timeslotId);
+
+    const bookings = await this.props.client.getBookings(
       this.props.timeslotId,
       this.props.bookingDay
     );
 
+    return {
+      timeslot,
+      bookings,
+    };
+  }
+
+  refreshRemoteData() {
     this.setState({
       ...this.state,
-      bookings: bookingsPromise,
+      remoteData: this.fetchRemoteData(),
     });
   }
 
   render() {
     return (
       <Suspense
-        asyncAction={this.state.bookings}
+        asyncAction={this.state.remoteData}
         fallback={<LoadingScreen />}
-        content={(bookings) => (
+        content={({ timeslot, bookings }) => (
           <>
             <ListEx
               emptyTitle="Keine Buchungen"
@@ -73,13 +84,13 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
                   key={booking.id}
                   client={this.props.client}
                   bookingId={booking.id}
-                  onDelete={this.refreshBookings}
+                  onDelete={this.refreshRemoteData}
                 />
               ))}
             </ListEx>
             <Fab
               className={this.props.classes.fab}
-              onClick={this.createBooking}
+              onClick={() => this.createBooking(timeslot, bookings.length)}
             >
               <PersonAddIcon />
             </Fab>
@@ -96,6 +107,11 @@ const BookingsView = withTranslation()(
 
 export default BookingsView;
 
+interface RemoteData {
+  bookings: BookingGetInterface[];
+  timeslot: TimeslotGetInterface;
+}
+
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   resourceName: string;
@@ -107,5 +123,5 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  bookings?: Promise<BookingGetInterface[]>;
+  remoteData?: Promise<RemoteData>;
 }

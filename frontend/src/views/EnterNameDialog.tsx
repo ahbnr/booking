@@ -13,20 +13,13 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
-import TimelapseIcon from '@material-ui/icons/Timelapse';
-import getBaseUrl from '../utils/getBaseUrl';
+import FaceIcon from '@material-ui/icons/Face';
 import { changeInteractionStateT } from '../App';
-import LoadingBackdrop from './LoadingBackdrop';
 import { DateTime } from 'luxon';
-import {
-  ISO8601,
-  NonEmptyString,
-  BookingData,
-  noRefinementChecks,
-} from 'common';
 import { Controller, useForm } from 'react-hook-form';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import { WithTranslation, withTranslation } from 'react-i18next';
+import { NonEmptyString } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -46,92 +39,65 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledCreateBookingDialog extends React.PureComponent<
-  Properties,
-  State
-> {
-  constructor(props: Properties) {
-    super(props);
-
-    this.state = {
-      backdropOpen: false,
-    };
-  }
-
+class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
   async onSubmit(formInput: IFormInput) {
-    this.setState({
-      backdropOpen: true,
-    });
+    const name = `${formInput.firstName} ${formInput.lastName}` as NonEmptyString;
 
-    // no verification necessary, this is done by react-hook-form
-    const email = noRefinementChecks<BookingData['email']>(
-      formInput.email === '' ? undefined : formInput.email
-    );
-
-    await this.props.client.createBooking(this.props.timeslotId, {
-      bookingDay: noRefinementChecks<ISO8601>(
-        this.props.bookingDay.toISODate()
-      ),
-      name: `${formInput.firstName} ${formInput.lastName}` as NonEmptyString,
-      email,
-      lookupUrl: `${getBaseUrl()}/`,
-    });
-
-    this.props.changeInteractionState('confirmingBookingDialog', {});
+    // Ask about additional participants if there is still more space
+    if (this.props.numBookingsForSlot + 1 < this.props.timeslotCapacity) {
+      this.props.changeInteractionState('askingAboutAdditionalParticipants', {
+        resourceName: this.props.resourceName,
+        timeslotId: this.props.timeslotId,
+        timeslotCapacity: this.props.timeslotCapacity,
+        numBookingsForSlot: this.props.numBookingsForSlot,
+        startTime: this.props.startTime,
+        endTime: this.props.endTime,
+        bookingDay: this.props.bookingDay,
+        name,
+        numHistoryToClearOnSubmit: 2,
+      });
+    } else {
+      this.props.changeInteractionState('enteringEmail', {
+        resourceName: this.props.resourceName,
+        timeslotId: this.props.timeslotId,
+        timeslotCapacity: this.props.timeslotCapacity,
+        numBookingsForSlot: this.props.numBookingsForSlot,
+        startTime: this.props.startTime,
+        endTime: this.props.endTime,
+        bookingDay: this.props.bookingDay,
+        participantNames: [name],
+        numHistoryToClearOnSubmit: 2,
+      });
+    }
   }
 
   render() {
-    const { t } = this.props;
-
     return (
       <>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
-              <TimelapseIcon />
+              <FaceIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Buchung
+              Ihr Name
             </Typography>
             <Typography
               className={this.props.classes.subtitle}
               variant="subtitle1"
             >
-              {t('create-booking-dialog-subtitle', {
-                resourceName: this.props.resourceName,
-                startDate: this.props.bookingDay
-                  .setLocale('de-DE')
-                  .toLocaleString({
-                    ...DateTime.DATE_SHORT,
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: '2-digit',
-                  }),
-                startTime: this.props.startTime
-                  .setLocale('de-DE')
-                  .toLocaleString(DateTime.TIME_24_SIMPLE),
-                endTime: this.props.endTime
-                  .setLocale('de-DE')
-                  .toLocaleString(DateTime.TIME_24_SIMPLE),
-              })}
+              Bitte geben Sie Ihren Namen an:
             </Typography>
-            <BookingForm
-              isAuthenticated={this.props.isAuthenticated}
-              resourceName={this.props.resourceName}
-              onSubmit={this.onSubmit}
-            />
+            <NameForm onSubmit={this.onSubmit} />
           </div>
         </Container>
-        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }
 }
 
 interface SettingsFormProps {
-  isAuthenticated: boolean;
-  resourceName: string;
   onSubmit: (formInput: IFormInput) => unknown;
 }
 
@@ -145,7 +111,7 @@ const useFormStyles = makeStyles((theme) => ({
   },
 }));
 
-function BookingForm(props: SettingsFormProps) {
+function NameForm(props: SettingsFormProps) {
   const { handleSubmit, control } = useForm<IFormInput>();
   const classes = useFormStyles();
 
@@ -187,32 +153,6 @@ function BookingForm(props: SettingsFormProps) {
         )}
       />
 
-      <Controller
-        name="email"
-        control={control}
-        defaultValue=""
-        rules={{
-          required: !props.isAuthenticated,
-          pattern: {
-            // eslint-disable-next-line no-useless-escape
-            value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-            message: 'Dies ist keine gültige E-Mail',
-          },
-        }}
-        render={({ field, fieldState }) => (
-          <TextField
-            required={!props.isAuthenticated}
-            variant="outlined"
-            margin="normal"
-            fullWidth
-            label={'E-Mail'}
-            autoComplete="email"
-            error={!!fieldState.error}
-            helperText={fieldState.error ? fieldState.error.message : null}
-            {...field}
-          />
-        )}
-      />
       <Button
         fullWidth
         variant="contained"
@@ -220,27 +160,28 @@ function BookingForm(props: SettingsFormProps) {
         type="submit"
         className={classes.submit}
       >
-        {`Buchen`}
+        {`OK`}
       </Button>
     </form>
   );
 }
 
-const CreateBookingDialog = withTranslation()(
-  withStyles(styles)(UnstyledCreateBookingDialog)
+const EnterNameDialog = withTranslation()(
+  withStyles(styles)(UnstyledEnterNameDialog)
 );
-export default CreateBookingDialog;
+export default EnterNameDialog;
 
 interface IFormInput {
   firstName: string;
   lastName: string;
-  email: string;
 }
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
   resourceName: string;
   timeslotId: number;
+  timeslotCapacity: number;
+  numBookingsForSlot: number;
   startTime: DateTime;
   endTime: DateTime;
   bookingDay: DateTime;

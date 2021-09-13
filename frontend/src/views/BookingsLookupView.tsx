@@ -7,6 +7,7 @@ import { withTranslation, WithTranslation } from 'react-i18next';
 import {
   Avatar,
   createStyles,
+  Hidden,
   IconButton,
   List,
   ListItem,
@@ -32,6 +33,7 @@ import sortBy from 'lodash/fp/sortBy';
 import { DateTime } from 'luxon';
 import map from 'lodash/fp/map';
 import DeleteConfirmer from './DeleteConfirmer';
+import DateChip from './DateChip';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -67,6 +69,12 @@ const styles = (theme: Theme) =>
     avatarIcon: {
       width: theme.spacing(7),
       height: theme.spacing(7),
+    },
+    dateAttribute: {
+      marginRight: theme.spacing(1),
+    },
+    mobileBreak: {
+      height: theme.spacing(1),
     },
   });
 
@@ -200,10 +208,19 @@ class UnstyledBookingsLookupView extends React.PureComponent<
                     ({ booking, startDate, endDate, resourceName }) => (
                       <ListItem key={booking.id}>
                         <ListItemText>
-                          {startDate.toLocaleString(DateTime.DATE_SHORT)},
+                          <DateChip
+                            date={startDate}
+                            className={this.props.classes.dateAttribute}
+                          />
+                          <Hidden smUp>
+                            <div
+                              className={this.props.classes.mobileBreak}
+                            ></div>
+                          </Hidden>
                           &ldquo;{resourceName}&rdquo; von{' '}
                           {startDate.toLocaleString(DateTime.TIME_24_SIMPLE)}{' '}
-                          bis {endDate.toLocaleString(DateTime.TIME_24_SIMPLE)}
+                          bis {endDate.toLocaleString(DateTime.TIME_24_SIMPLE)}{' '}
+                          für {booking.name}
                         </ListItemText>
                         <ListItemSecondaryAction>
                           <DeleteConfirmer name="die Buchung">

@@ -4,7 +4,6 @@ import WeekdaysView from './views/WeekdaysView';
 import { Activity, InteractionState } from './InteractionState';
 import { boundClass } from 'autobind-decorator';
 import TimeslotsView from './views/TimeslotsView';
-import CreateBookingDialog from './views/CreateBookingDialog';
 import BookingsView from './views/BookingsView';
 import { Client } from './Client';
 import AuthenticationDialog from './views/AuthenticationDialog';
@@ -33,6 +32,11 @@ import ConfirmBookingDialog from './views/ConfirmBookingDialog';
 import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
 import SettingsDialog from './views/SettingsDialog';
 import PrivacyNote from './views/PrivacyNote';
+import EnterNameDialog from './views/EnterNameDialog';
+import AdditionalParticipantsQuestionDialog from './views/AdditionalParticipantsQuestionDialog';
+import AddParticipantDialog from './views/AddParticipantDialog';
+import ConfirmParticipantsDialog from './views/ConfirmParticipantsDialog';
+import EnterEmailDialog from './views/EnterEmailDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -75,6 +79,7 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   public static displayName = 'App';
   private client: Client = new Client();
   private originalWindowOnPopState?: Window['onpopstate'];
+  private popStatePostCallbacks: (() => unknown)[] = [];
   private lastStateId = 0;
 
   constructor(props: AppProps) {
@@ -147,6 +152,29 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     window.history.pushState(++this.lastStateId, constructor);
   }
 
+  clearHistory(numToClear: number) {
+    if (numToClear === 0) {
+      throw new Error('Must clear non-zero number of entries');
+    }
+
+    this.popStatePostCallbacks.push(() => {
+      const targetActivity = this.state.interactionState.activity;
+
+      this.popStatePostCallbacks.push(() => {
+        this.setState({
+          interactionState: this.state.interactionState.changeActivity(
+            targetActivity
+          ),
+        });
+
+        window.history.pushState(++this.lastStateId, targetActivity._type);
+      });
+      window.history.back();
+    });
+
+    window.history.go(-numToClear);
+  }
+
   render() {
     const view = matchI(this.state.interactionState.activity)({
       viewingPrivacyNote: () => <PrivacyNote />,
@@ -192,21 +220,43 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      createBooking: ({
-        resourceName,
-        timeslotId,
-        startTime,
-        endTime,
-        bookingDay,
-      }) => (
-        <CreateBookingDialog
+      enteringName: (params) => (
+        <EnterNameDialog
+          {...params}
           client={this.client}
           changeInteractionState={this.changeInteractionState}
-          resourceName={resourceName}
-          timeslotId={timeslotId}
-          startTime={startTime}
-          endTime={endTime}
-          bookingDay={bookingDay}
+          isAuthenticated={this.state.isAuthenticated}
+        />
+      ),
+      askingAboutAdditionalParticipants: (params) => (
+        <AdditionalParticipantsQuestionDialog
+          {...params}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          isAuthenticated={this.state.isAuthenticated}
+        />
+      ),
+      addingParticipant: (params) => (
+        <AddParticipantDialog
+          {...params}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          isAuthenticated={this.state.isAuthenticated}
+        />
+      ),
+      confirmingParticipants: (params) => (
+        <ConfirmParticipantsDialog
+          {...params}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
+          isAuthenticated={this.state.isAuthenticated}
+        />
+      ),
+      enteringEmail: (params) => (
+        <EnterEmailDialog
+          {...params}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
           isAuthenticated={this.state.isAuthenticated}
         />
       ),
@@ -268,10 +318,12 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       viewingMainPage: () => (
         <MainView changeInteractionState={this.changeInteractionState} />
       ),
-      confirmingBookingDialog: () => (
+      confirmingBookingDialog: ({ numHistoryToClearOnSubmit }) => (
         <ConfirmBookingDialog
           isAuthenticated={this.state.isAuthenticated}
           client={this.client}
+          clearHistory={this.clearHistory}
+          numHistoryToClearOnSubmit={numHistoryToClearOnSubmit}
         />
       ),
       selectingWeekdayOverview: () => (
@@ -306,10 +358,14 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   }
 
   historyPopStateListener(ev: PopStateEvent) {
-    // FIXME: Handle arbitrary history jump
-    if (ev.state === this.lastStateId - 1) {
+    if (ev.state < this.lastStateId) {
+      const diff = this.lastStateId - ev.state;
+
       // back button
-      const previous = this.state.interactionState.goBack();
+      let previous: InteractionState | undefined = this.state.interactionState;
+      for (let i = 0; i < diff; ++i) {
+        previous = previous?.goBack() || previous;
+      }
 
       if (previous != null) {
         this.setState({
@@ -318,9 +374,14 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
 
         this.lastStateId = ev.state;
       }
-    } else if (ev.state === this.lastStateId + 1) {
+    } else if (ev.state > this.lastStateId) {
+      const diff = ev.state - this.lastStateId;
+
       // forward button
-      const next = this.state.interactionState.goNext();
+      let next: InteractionState | undefined = this.state.interactionState;
+      for (let i = 0; i < diff; ++i) {
+        next = next?.goNext();
+      }
 
       if (next != null) {
         this.setState({
@@ -328,6 +389,13 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         });
 
         this.lastStateId = ev.state;
+      }
+    }
+
+    if (this.popStatePostCallbacks.length > 0) {
+      const callback = this.popStatePostCallbacks.pop();
+      if (callback) {
+        callback();
       }
     }
   }
@@ -345,3 +413,4 @@ interface AppState {
 export default App;
 
 export type changeInteractionStateT = UnstyledApp['changeInteractionState'];
+export type clearHistoryT = UnstyledApp['clearHistory'];

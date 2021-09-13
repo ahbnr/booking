@@ -5,7 +5,8 @@ import { TimeslotsController } from './timeslots.controller';
 import { asyncJwtVerify } from '../utils/jwt';
 import {
   BookingGetInterface,
-  BookingPostInterface,
+  BookingsCreateInterface,
+  BookingUpdateInterface,
   checkType,
   hasProperty,
   ISO8601,
@@ -178,22 +179,26 @@ export class BookingsController {
     };
   }
 
-  public async createBooking(
+  public async createBookings(
     req: TypesafeRequest,
-    res: Response<BookingGetInterface | string>
+    res: Response<BookingGetInterface[]>
   ) {
     const timeslot = await this.timeslotController.getTimeslot(req);
-    const bookingPostData = checkType(req.body, BookingPostInterface);
+    const bookingCreateData = checkType(req.body, BookingsCreateInterface);
 
     const settings = await this.settingsRepository.get();
 
-    const booking = await this.bookingRepository.create(
+    const bookings = await this.bookingRepository.create(
       timeslot,
-      bookingPostData,
+      bookingCreateData,
       this.genBookingModificationOptions(req, settings.data)
     );
 
-    res.status(201).json(booking.toGetInterface());
+    const returnData: BookingGetInterface[] = bookings.map((booking) =>
+      booking.toGetInterface()
+    );
+
+    res.status(201).json(returnData);
   }
 
   private async listBookingsByLookupToken(
@@ -227,12 +232,12 @@ export class BookingsController {
   }
 
   public async update(req: TypesafeRequest, res: Response) {
-    const bookingPostData = checkType(req.body, BookingPostInterface);
+    const bookingUpdateData = checkType(req.body, BookingUpdateInterface);
     const settings = await this.settingsRepository.get();
 
     const updatedBooking = await this.bookingRepository.update(
       extractNumericIdFromRequest(req),
-      bookingPostData,
+      bookingUpdateData,
       this.genBookingModificationOptions(req, settings.data)
     );
 
