@@ -29,6 +29,7 @@ import { MailTransporter } from '../mail/MailTransporter';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 import { asyncJwtSign } from '../utils/jwt';
 import { i18nextInstance } from '../utils/i18n';
+import BackendConfig from '../booking-backend.config';
 
 @singleton()
 @boundClass
@@ -444,9 +445,11 @@ export default class BookingRepository {
           `
               : `Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:
           
-          ${lookupLink}
+          ${lookupLink} 
           `
           }
+          
+          ${BackendConfig.mailFooterText || ''}
       `,
       `
         <p>
@@ -477,9 +480,11 @@ export default class BookingRepository {
         </p>
           `
             : `<p>Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:</p>
-        <a href="${lookupLink}">Buchungen einsehen</a>
+        <a href="${lookupLink}">Buchungen einsehen</a> 
         `
         }
+        
+        ${BackendConfig.mailFooterHtml || ''}
       `
     ); // FIXME: Formatting
   }

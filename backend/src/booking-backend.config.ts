@@ -25,6 +25,8 @@ export interface SendGridConfig {
 interface BackendConfigI {
   mailService: EtheralConfig | SMTPConfig | SendGridConfig;
   organization: string;
+  mailFooterHtml?: string;
+  mailFooterText?: string;
 }
 
 const BackendConfig: BackendConfigI = {
