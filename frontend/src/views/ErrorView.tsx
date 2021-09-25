@@ -1,14 +1,24 @@
 import {
   Avatar,
+  Button,
+  Container,
   createStyles,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   Theme,
   Typography,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
 import ErrorIcon from '@material-ui/icons/Error';
+import PhoneIcon from '@material-ui/icons/Phone';
 import React from 'react';
 import DisplayableError from '../errors/DisplayableError';
+import FrontendConfig from '../booking-frontend.config';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -46,7 +56,7 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
     if (this.props.error instanceof DisplayableError) {
       content = <>{this.props.error.message}</>;
     } else {
-      content = <>Ein unbekannter Fehler ist aufgetreten.</>;
+      content = <>Bitte versuchen Sie es später noch einmal.</>;
       if (this.props.error.message != null) {
         console.error(`Error with message: ${this.props.error.message}`);
         if (this.props.error.stack != null) {
@@ -55,14 +65,53 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
       }
     }
 
+    let errorContacts;
+    if (FrontendConfig.errorContacts.length > 0) {
+      errorContacts = (
+        <>
+          <p>
+            Wenn der Fehler weiterhin auftritt, erhalten Sie unter folgenden
+            Kontakten Hilfe:
+          </p>
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableBody>
+                {FrontendConfig.errorContacts.map((contact) => (
+                  <TableRow key={contact.name}>
+                    <TableCell>{contact.name}</TableCell>
+                    <TableCell>
+                      <Button
+                        startIcon={<PhoneIcon />}
+                        href={`tel:${contact.phone}`}
+                        color="primary"
+                      >
+                        {contact.phone}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      );
+    }
+
     return (
-      <div className={this.props.classes.paper}>
-        <Avatar className={this.props.classes.avatar}>
-          <ErrorIcon className={this.props.classes.avatarIcon} />
-        </Avatar>
-        <Typography variant="h5">Ein Fehler ist Aufgetreten</Typography>
-        <Typography variant="body1">{content}</Typography>
-      </div>
+      <Container component="main">
+        <div className={this.props.classes.paper}>
+          <Avatar className={this.props.classes.avatar}>
+            <ErrorIcon className={this.props.classes.avatarIcon} />
+          </Avatar>
+          <Typography variant="h5">Ein Fehler ist Aufgetreten</Typography>
+          <Typography variant="body1" component="p">
+            {content}
+          </Typography>
+          {errorContacts && (
+            <Typography variant="body1">{errorContacts}</Typography>
+          )}
+        </div>
+      </Container>
     );
   }
 }
