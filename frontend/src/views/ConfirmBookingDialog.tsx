@@ -18,7 +18,7 @@ import { SettingsGetInterface } from 'common';
 import LoadingScreen from './LoadingScreen';
 import Suspense from './Suspense';
 import { Client } from '../Client';
-import { clearHistoryT } from '../App';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -69,7 +69,7 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
   }
 
   handleOkButton() {
-    this.props.clearHistory(this.props.numHistoryToClearOnSubmit);
+    this.props.changeInteractionState('viewingMainPage', {});
   }
 
   render() {
@@ -187,8 +187,7 @@ export default ConfirmBookingDialog;
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
   isAuthenticated: boolean;
-  clearHistory: clearHistoryT;
-  numHistoryToClearOnSubmit: number;
+  changeInteractionState: changeInteractionStateT;
 }
 
 interface State {

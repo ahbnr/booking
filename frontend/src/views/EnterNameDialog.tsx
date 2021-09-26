@@ -43,9 +43,8 @@ class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
   async onSubmit(formInput: IFormInput) {
     const name = `${formInput.firstName} ${formInput.lastName}` as NonEmptyString;
 
-    // Ask about additional participants if there is still more space
-    if (this.props.numBookingsForSlot + 1 < this.props.timeslotCapacity) {
-      this.props.changeInteractionState('askingAboutAdditionalParticipants', {
+    if (this.props.isBookingGroup) {
+      this.props.changeInteractionState('addingParticipant', {
         resourceName: this.props.resourceName,
         timeslotId: this.props.timeslotId,
         timeslotCapacity: this.props.timeslotCapacity,
@@ -53,8 +52,7 @@ class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
         startTime: this.props.startTime,
         endTime: this.props.endTime,
         bookingDay: this.props.bookingDay,
-        name,
-        numHistoryToClearOnSubmit: 2,
+        participantNames: [name],
       });
     } else {
       this.props.changeInteractionState('enteringEmail', {
@@ -66,7 +64,6 @@ class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
         endTime: this.props.endTime,
         bookingDay: this.props.bookingDay,
         participantNames: [name],
-        numHistoryToClearOnSubmit: 2,
       });
     }
   }
@@ -87,7 +84,16 @@ class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
               className={this.props.classes.subtitle}
               variant="subtitle1"
             >
-              Bitte geben Sie Ihren Namen an:
+              {this.props.isBookingGroup ? (
+                <>
+                  Bitte geben Sie hier Ihren eigenen Namen an.
+                  <br />
+                  Sie können die Namen der anderen Gruppenmitglieder später
+                  angeben.
+                </>
+              ) : (
+                <>Bitte geben Sie Ihren Namen an:</>
+              )}
             </Typography>
             <NameForm onSubmit={this.onSubmit} />
           </div>
@@ -187,6 +193,7 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
   isAuthenticated: boolean;
+  isBookingGroup: boolean;
 }
 
 interface State {

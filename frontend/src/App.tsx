@@ -33,7 +33,7 @@ import WeekdayOverviewSelector from './views/WeekdayOverviewSelector';
 import SettingsDialog from './views/SettingsDialog';
 import PrivacyNote from './views/PrivacyNote';
 import EnterNameDialog from './views/EnterNameDialog';
-import AdditionalParticipantsQuestionDialog from './views/AdditionalParticipantsQuestionDialog';
+import GroupQuestionDialog from './views/GroupQuestionDialog';
 import AddParticipantDialog from './views/AddParticipantDialog';
 import ConfirmParticipantsDialog from './views/ConfirmParticipantsDialog';
 import EnterEmailDialog from './views/EnterEmailDialog';
@@ -72,6 +72,9 @@ const styles = (theme: Theme) =>
     fixedHeight: {
       height: 240,
     },
+    errorView: {
+      marginTop: theme.spacing(3),
+    },
   });
 
 @boundClass
@@ -79,7 +82,6 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   public static displayName = 'App';
   private client: Client = new Client();
   private originalWindowOnPopState?: Window['onpopstate'];
-  private popStatePostCallbacks: (() => unknown)[] = [];
   private lastStateId = 0;
 
   constructor(props: AppProps) {
@@ -92,22 +94,19 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   }
 
   componentDidMount() {
-    window.history.pushState(this.lastStateId, 'init');
-    this.originalWindowOnPopState = window.onpopstate;
-    window.onpopstate = this.historyPopStateListener;
-
-    this.client.onAuthenticationChanged = this.onAuthenticationChanged;
-
     const search = window.location.search;
     const signupToken = new URLSearchParams(search).get('signupToken');
     const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
 
     // Clear any GET parameters from the URL
-    window.history.replaceState(
-      window.history.state,
-      document.title,
-      process.env.PUBLIC_URL
-    );
+    window.history.replaceState('init', document.title, '/');
+
+    // Actual initial state
+    window.history.pushState(this.lastStateId, document.title);
+    this.originalWindowOnPopState = window.onpopstate;
+    window.onpopstate = this.historyPopStateListener;
+
+    this.client.onAuthenticationChanged = this.onAuthenticationChanged;
 
     (async () => {
       // Try automatic login if we still have a refresh token
@@ -149,33 +148,15 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       ),
     });
 
-    window.history.pushState(++this.lastStateId, constructor);
-  }
-
-  clearHistory(numToClear: number) {
-    if (numToClear === 0) {
-      throw new Error('Must clear non-zero number of entries');
-    }
-
-    this.popStatePostCallbacks.push(() => {
-      const targetActivity = this.state.interactionState.activity;
-
-      this.popStatePostCallbacks.push(() => {
-        this.setState({
-          interactionState: this.state.interactionState.changeActivity(
-            targetActivity
-          ),
-        });
-
-        window.history.pushState(++this.lastStateId, targetActivity._type);
-      });
-      window.history.back();
-    });
-
-    window.history.go(-numToClear);
+    window.history.pushState(++this.lastStateId, document.title);
   }
 
   render() {
+    console.log(`Rendering history ${window.history.state}`);
+    console.log(`That is ${this.lastStateId}`);
+    console.log(`The current activity is`);
+    console.log(this.state.interactionState);
+
     const view = matchI(this.state.interactionState.activity)({
       viewingPrivacyNote: () => <PrivacyNote />,
       viewingResources: () => (
@@ -228,8 +209,8 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           isAuthenticated={this.state.isAuthenticated}
         />
       ),
-      askingAboutAdditionalParticipants: (params) => (
-        <AdditionalParticipantsQuestionDialog
+      askingAboutGroup: (params) => (
+        <GroupQuestionDialog
           {...params}
           client={this.client}
           changeInteractionState={this.changeInteractionState}
@@ -318,12 +299,11 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       viewingMainPage: () => (
         <MainView changeInteractionState={this.changeInteractionState} />
       ),
-      confirmingBookingDialog: ({ numHistoryToClearOnSubmit }) => (
+      confirmingBookingDialog: () => (
         <ConfirmBookingDialog
           isAuthenticated={this.state.isAuthenticated}
           client={this.client}
-          clearHistory={this.clearHistory}
-          numHistoryToClearOnSubmit={numHistoryToClearOnSubmit}
+          changeInteractionState={this.changeInteractionState}
         />
       ),
       selectingWeekdayOverview: () => (
@@ -339,19 +319,28 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       <>
         <div className={this.props.classes.root}>
           <CssBaseline />
-          <AppBar
-            client={this.client}
-            isAuthenticated={this.state.isAuthenticated}
-            changeInteractionState={this.changeInteractionState}
-          />
-          <main className={this.props.classes.content}>
-            <div className={this.props.classes.appBarSpacer} />
-            <Container maxWidth="lg" className={this.props.classes.container}>
-              <ErrorBoundary fallback={(e) => <ErrorView error={e} />}>
+          <ErrorBoundary
+            fallback={(e, clearError) => (
+              <ErrorView
+                className={this.props.classes.errorView}
+                error={e}
+                changeInteractionState={this.changeInteractionState}
+                clearError={clearError}
+              />
+            )}
+          >
+            <AppBar
+              client={this.client}
+              isAuthenticated={this.state.isAuthenticated}
+              changeInteractionState={this.changeInteractionState}
+            />
+            <main className={this.props.classes.content}>
+              <div className={this.props.classes.appBarSpacer} />
+              <Container maxWidth="lg" className={this.props.classes.container}>
                 {view}
-              </ErrorBoundary>
-            </Container>
-          </main>
+              </Container>
+            </main>
+          </ErrorBoundary>
         </div>
       </>
     );
@@ -391,13 +380,6 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
         this.lastStateId = ev.state;
       }
     }
-
-    if (this.popStatePostCallbacks.length > 0) {
-      const callback = this.popStatePostCallbacks.pop();
-      if (callback) {
-        callback();
-      }
-    }
   }
 }
 
@@ -413,4 +395,3 @@ interface AppState {
 export default App;
 
 export type changeInteractionStateT = UnstyledApp['changeInteractionState'];
-export type clearHistoryT = UnstyledApp['clearHistory'];

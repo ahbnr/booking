@@ -85,9 +85,7 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
       );
     }
 
-    this.props.changeInteractionState('confirmingBookingDialog', {
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
-    });
+    this.props.changeInteractionState('confirmingBookingDialog', {});
   }
 
   render() {
@@ -232,7 +230,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   participantNames: NonEmptyString[];
   changeInteractionState: changeInteractionStateT;
   isAuthenticated: boolean;
-  numHistoryToClearOnSubmit: number;
 }
 
 interface State {

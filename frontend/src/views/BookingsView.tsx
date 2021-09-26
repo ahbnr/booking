@@ -44,6 +44,7 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
       startTime: this.props.startTime,
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
+      isBookingGroup: false,
     });
   }
 

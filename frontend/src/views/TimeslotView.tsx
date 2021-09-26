@@ -98,15 +98,31 @@ class UnstyledTimeslotView extends React.PureComponent<Properties, State> {
     startTime: DateTime,
     endTime: DateTime
   ) {
-    this.props.changeInteractionState('enteringName', {
-      resourceName: this.props.resourceName,
-      timeslotId: timeslot.id,
-      timeslotCapacity: timeslot.capacity,
-      numBookingsForSlot: numBookings,
-      startTime,
-      endTime,
-      bookingDay: this.props.bookingDay,
-    });
+    // Ask about additional participants if there is still more space
+    if (numBookings + 1 < timeslot.capacity) {
+      this.props.changeInteractionState('askingAboutGroup', {
+        resourceName: this.props.resourceName,
+        timeslotId: timeslot.id,
+        timeslotCapacity: timeslot.capacity,
+        numBookingsForSlot: numBookings,
+        startTime,
+        endTime,
+        bookingDay: this.props.bookingDay,
+        numHistoryToClearOnSubmit: 1,
+      });
+    } else {
+      this.props.changeInteractionState('enteringName', {
+        resourceName: this.props.resourceName,
+        timeslotId: timeslot.id,
+        timeslotCapacity: timeslot.capacity,
+        numBookingsForSlot: numBookings,
+        startTime,
+        endTime,
+        bookingDay: this.props.bookingDay,
+        numHistoryToClearOnSubmit: 1,
+        isBookingGroup: false,
+      });
+    }
   }
 
   onEdit(timeslot: TimeslotGetInterface) {

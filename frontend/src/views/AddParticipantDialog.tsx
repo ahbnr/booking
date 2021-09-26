@@ -55,7 +55,6 @@ class UnstyledAddParticipantDialog extends React.PureComponent<
       participantNames: this.props.participantNames.concat([
         `${formInput.firstName} ${formInput.lastName}` as NonEmptyString,
       ]),
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
     });
   }
 
@@ -75,7 +74,7 @@ class UnstyledAddParticipantDialog extends React.PureComponent<
               className={this.props.classes.subtitle}
               variant="subtitle1"
             >
-              Bitte geben Sie den Namen der weiteren Person an:
+              Bitte geben Sie den Namen der nächsten Person Ihrer Gruppe an:
             </Typography>
             <NameForm onSubmit={this.onSubmit} />
           </div>
@@ -176,7 +175,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   participantNames: NonEmptyString[];
   changeInteractionState: changeInteractionStateT;
   isAuthenticated: boolean;
-  numHistoryToClearOnSubmit: number;
 }
 
 interface State {

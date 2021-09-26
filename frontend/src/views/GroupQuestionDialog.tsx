@@ -12,11 +12,11 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
+import GroupIcon from '@material-ui/icons/Group';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { changeInteractionStateT } from '../App';
 import { DateTime } from 'luxon';
 import { WithTranslation, withTranslation } from 'react-i18next';
-import { NonEmptyString } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -45,12 +45,12 @@ const styles = (theme: Theme) =>
   });
 
 @boundClass
-class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
+class UnstyledGroupQuestionDialog extends React.PureComponent<
   Properties,
   State
 > {
   onYes() {
-    this.props.changeInteractionState('addingParticipant', {
+    this.props.changeInteractionState('enteringName', {
       resourceName: this.props.resourceName,
       timeslotId: this.props.timeslotId,
       timeslotCapacity: this.props.timeslotCapacity,
@@ -58,13 +58,12 @@ class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
       startTime: this.props.startTime,
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
-      participantNames: [this.props.name],
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
+      isBookingGroup: true,
     });
   }
 
   onNo() {
-    this.props.changeInteractionState('enteringEmail', {
+    this.props.changeInteractionState('enteringName', {
       resourceName: this.props.resourceName,
       timeslotId: this.props.timeslotId,
       timeslotCapacity: this.props.timeslotCapacity,
@@ -72,8 +71,7 @@ class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
       startTime: this.props.startTime,
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
-      participantNames: [this.props.name],
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
+      isBookingGroup: false,
     });
   }
 
@@ -84,10 +82,10 @@ class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
           <CssBaseline />
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
-              <PersonAddIcon />
+              <GroupIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Weitere Personen?
+              Gruppenbuchung?
             </Typography>
             <Typography
               className={this.props.classes.subtitle}
@@ -109,7 +107,7 @@ class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
                 startIcon={<PersonAddIcon />}
                 className={this.props.classes.leadingButton}
               >
-                Ja, Personen hinzufügen
+                Ja, für Gruppe buchen
               </Button>
               <Button
                 fullWidth
@@ -127,10 +125,10 @@ class UnstyledAdditionalParticipantsQuestionDialog extends React.PureComponent<
   }
 }
 
-const AdditionalParticipantsQuestionDialog = withTranslation()(
-  withStyles(styles)(UnstyledAdditionalParticipantsQuestionDialog)
+const GroupQuestionDialog = withTranslation()(
+  withStyles(styles)(UnstyledGroupQuestionDialog)
 );
-export default AdditionalParticipantsQuestionDialog;
+export default GroupQuestionDialog;
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
   client: Client;
@@ -141,10 +139,8 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   startTime: DateTime;
   endTime: DateTime;
   bookingDay: DateTime;
-  name: NonEmptyString;
   changeInteractionState: changeInteractionStateT;
   isAuthenticated: boolean;
-  numHistoryToClearOnSubmit: number;
 }
 
 interface State {

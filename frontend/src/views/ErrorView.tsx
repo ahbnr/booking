@@ -19,6 +19,8 @@ import PhoneIcon from '@material-ui/icons/Phone';
 import React from 'react';
 import DisplayableError from '../errors/DisplayableError';
 import FrontendConfig from '../booking-frontend.config';
+import { boundClass } from 'autobind-decorator';
+import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -46,9 +48,45 @@ const styles = (theme: Theme) =>
       width: theme.spacing(7),
       height: theme.spacing(7),
     },
+    okButton: {
+      marginTop: theme.spacing(2),
+    },
   });
 
+@boundClass
 class UnstyledErrorView extends React.PureComponent<Properties, State> {
+  private savedOldPopStateListener = false;
+  private oldOnPopStateListener: ((ev: PopStateEvent) => any) | null = null;
+
+  private async onOk() {
+    this.restorePopStateListener();
+
+    this.props.clearError();
+    this.props.changeInteractionState('viewingMainPage', {});
+  }
+
+  componentDidMount() {
+    this.oldOnPopStateListener = window.onpopstate;
+    this.savedOldPopStateListener = true;
+    window.onpopstate = this.historyPopStateListener;
+  }
+
+  componentWillUnmount() {
+    this.restorePopStateListener();
+  }
+
+  private historyPopStateListener(_ev: PopStateEvent) {
+    this.onOk();
+  }
+
+  private restorePopStateListener() {
+    if (this.savedOldPopStateListener) {
+      window.onpopstate = this.oldOnPopStateListener;
+      this.savedOldPopStateListener = false;
+      this.oldOnPopStateListener = null;
+    }
+  }
+
   render() {
     console.error(this.props.error);
 
@@ -98,7 +136,7 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
     }
 
     return (
-      <Container component="main">
+      <Container component="main" className={this.props.className}>
         <div className={this.props.classes.paper}>
           <Avatar className={this.props.classes.avatar}>
             <ErrorIcon className={this.props.classes.avatarIcon} />
@@ -110,6 +148,14 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
           {errorContacts && (
             <Typography variant="body1">{errorContacts}</Typography>
           )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.onOk}
+            className={this.props.classes.okButton}
+          >
+            Ok
+          </Button>
         </div>
       </Container>
     );
@@ -121,6 +167,9 @@ export default ErrorView;
 
 interface Properties extends WithStyles<typeof styles> {
   error: Error;
+  changeInteractionState: changeInteractionStateT;
+  clearError: () => unknown;
+  className?: string;
 }
 
 interface State {}

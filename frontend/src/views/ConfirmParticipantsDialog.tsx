@@ -6,8 +6,12 @@ import {
   Container,
   createStyles,
   CssBaseline,
-  List,
-  ListItemText,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   Theme,
   Typography,
   WithStyles,
@@ -38,6 +42,7 @@ const styles = (theme: Theme) =>
       textAlign: 'center',
     },
     list: {
+      marginTop: theme.spacing(2),
       flexGrow: 1,
       width: '100%',
     },
@@ -66,7 +71,6 @@ class UnstyledConfirmParticipantsDialog extends React.PureComponent<
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
       participantNames: this.props.participantNames,
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
     });
   }
 
@@ -80,7 +84,6 @@ class UnstyledConfirmParticipantsDialog extends React.PureComponent<
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
       participantNames: this.props.participantNames,
-      numHistoryToClearOnSubmit: this.props.numHistoryToClearOnSubmit + 1,
     });
   }
 
@@ -124,11 +127,22 @@ class UnstyledConfirmParticipantsDialog extends React.PureComponent<
               )}
             </Typography>
 
-            <List className={this.props.classes.list}>
-              {this.props.participantNames.map((participant) => (
-                <ListItemText key={participant}>{participant}</ListItemText>
-              ))}
-            </List>
+            <TableContainer
+              className={this.props.classes.list}
+              component={(props) => (
+                <Paper elevation={0} variant="outlined" {...props} />
+              )}
+            >
+              <Table size="small">
+                <TableBody>
+                  {this.props.participantNames.map((participant) => (
+                    <TableRow key={participant}>
+                      <TableCell>{participant}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
             <div className={this.props.classes.buttonField}>
               {additionalParticipantPossible && (
@@ -177,7 +191,6 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
   bookingDay: DateTime;
   changeInteractionState: changeInteractionStateT;
   isAuthenticated: boolean;
-  numHistoryToClearOnSubmit: number;
 }
 
 interface State {

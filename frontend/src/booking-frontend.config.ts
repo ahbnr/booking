@@ -20,7 +20,7 @@ const FrontendConfig: IFrontendConfig = {
   privacyInfo: {
     entitiesWithDataAccess: ['Staff of My Organization'],
   },
-  errorContacts: [],
+  errorContacts: [{ name: 'Mr. Admin', phone: '0170 42 42 42' }],
 };
 
 export default FrontendConfig;

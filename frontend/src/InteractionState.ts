@@ -30,7 +30,7 @@ export interface ViewingBookings {
   bookingDay: DateTime;
 }
 
-export interface EnteringName {
+export interface AskingAboutGroup {
   resourceName: string;
   timeslotId: number;
   timeslotCapacity: number;
@@ -40,14 +40,12 @@ export interface EnteringName {
   bookingDay: DateTime;
 }
 
-export interface AskingAboutAdditionalParticipants extends EnteringName {
-  name: NonEmptyString;
-  numHistoryToClearOnSubmit: number;
+export interface EnteringName extends AskingAboutGroup {
+  isBookingGroup: boolean;
 }
 
-export interface AddingParticipant extends EnteringName {
+export interface AddingParticipant extends AskingAboutGroup {
   participantNames: NonEmptyString[];
-  numHistoryToClearOnSubmit: number;
 }
 
 export interface ConfirmingParticipants extends AddingParticipant {}
@@ -86,9 +84,7 @@ export interface AddingWeekday {
 
 export interface ViewingMainPage {}
 
-export interface ConfirmingBookingDialog {
-  numHistoryToClearOnSubmit: number;
-}
+export interface ConfirmingBookingDialog {}
 
 export interface SelectingWeekdayOverview {}
 
@@ -101,7 +97,7 @@ export type Activity = ADT<{
   viewingTimeslots: ViewingTimeslots;
   viewingBookings: ViewingBookings;
   enteringName: EnteringName;
-  askingAboutAdditionalParticipants: AskingAboutAdditionalParticipants;
+  askingAboutGroup: AskingAboutGroup;
   addingParticipant: AddingParticipant;
   confirmingParticipants: ConfirmingParticipants;
   enteringEmail: EnteringEmail;
