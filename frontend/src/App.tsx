@@ -37,6 +37,7 @@ import GroupQuestionDialog from './views/GroupQuestionDialog';
 import AddParticipantDialog from './views/AddParticipantDialog';
 import ConfirmParticipantsDialog from './views/ConfirmParticipantsDialog';
 import EnterEmailDialog from './views/EnterEmailDialog';
+import getBaseUrl from './utils/getBaseUrl';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -99,7 +100,8 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
     const bookingsLookupToken = new URLSearchParams(search).get('lookupToken');
 
     // Clear any GET parameters from the URL
-    window.history.replaceState('init', document.title, '/');
+    const cleanPath = new URL(getBaseUrl()).pathname;
+    window.history.replaceState('init', document.title, cleanPath);
 
     // Actual initial state
     window.history.pushState(this.lastStateId, document.title);
