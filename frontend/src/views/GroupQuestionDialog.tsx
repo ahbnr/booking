@@ -30,6 +30,9 @@ const styles = (theme: Theme) =>
       margin: theme.spacing(1),
       backgroundColor: theme.palette.secondary.main,
     },
+    title: {
+      textAlign: 'center',
+    },
     subtitle: {
       paddingTop: theme.spacing(1),
       textAlign: 'center',
@@ -84,8 +87,12 @@ class UnstyledGroupQuestionDialog extends React.PureComponent<
             <Avatar className={this.props.classes.avatar}>
               <GroupIcon />
             </Avatar>
-            <Typography component="h1" variant="h5">
-              Gruppenbuchung?
+            <Typography
+              className={this.props.classes.title}
+              component="h1"
+              variant="h5"
+            >
+              Einzel- oder Gruppenbuchung?
             </Typography>
             <Typography
               className={this.props.classes.subtitle}
