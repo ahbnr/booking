@@ -147,11 +147,13 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                   </>
                 ) : (
                   <Alert severity="success">
-                    Ihre Buchung wurde erstellt. Wir haben Ihnen eine E-Mail
-                    zugesandt mit Informationen zu Ihrem Buchungstermin. Die
-                    E-Mail enthält auch Informationen wie Sie Ihre Buchung
-                    wieder absagen können. Sehen Sie auch in Ihrem Spam Ordner
-                    nach.
+                    <p style={{ marginTop: '0px' }}>
+                      Ihre Buchung wurde erstellt.
+                    </p>
+                    Wir haben Ihnen eine E-Mail zugesandt mit Informationen zu
+                    Ihrem Buchungstermin. Die E-Mail enthält auch Informationen
+                    wie Sie Ihre Buchung wieder absagen können. Sehen Sie auch
+                    in Ihrem Spam Ordner nach.
                   </Alert>
                 )}
                 <Button

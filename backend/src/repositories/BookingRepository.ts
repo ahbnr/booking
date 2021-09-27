@@ -24,11 +24,11 @@ import getBookingInterval from '../date_math/getBookingInterval';
 import { DateTime } from 'luxon';
 import SettingsRepository from './SettingsRepository';
 import { delay, inject, singleton } from 'tsyringe';
-import humanizeDuration from 'humanize-duration';
 import { MailTransporter } from '../mail/MailTransporter';
 import { BookingLookupTokenData } from '../types/token-types/BookingLookupTokenData';
 import { asyncJwtSign } from '../utils/jwt';
-import { i18nextInstance } from '../utils/i18n';
+import { genBookingConfirmation } from '../docgen/GenBookingConfirmation';
+import dedent from 'dedent-js';
 import BackendConfig from '../booking-backend.config';
 
 @singleton()
@@ -401,90 +401,71 @@ export default class BookingRepository {
       booking
     );
 
-    const weekday = await timeslot.getWeekday();
-    const resourceName = weekday.resourceName;
-
-    const startDate = DateTime.fromJSDate(booking.startDate).setLocale('de-DE');
-    const endDate = DateTime.fromJSDate(booking.endDate).setLocale('de-DE');
-
-    const intro = i18nextInstance.t('booking-repository-mail-booking-intro');
-    const timeString = `"${resourceName}"
-              am
-              ${startDate.toLocaleString({ ...DateTime.DATE_MED_WITH_WEEKDAY })}
-              von
-              ${startDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
-              bis
-              ${endDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE })}
-    `;
-
-    const lookupLink = `${lookupUrl}?lookupToken=${lookupToken}`;
-
     const settings = await this.settingsRepository.get();
+
+    const bookingConfirmationTexts = await genBookingConfirmation(
+      lookupUrl,
+      booking,
+      timeslot,
+      lookupToken,
+      settings
+    );
 
     await this.mailTransporter.send(
       booking.email,
-      `Ihre Buchung - ${booking.name}`,
-      `
-          ${intro}
+      bookingConfirmationTexts.title,
+      dedent`
+          ${bookingConfirmationTexts.intro}
           
-              ${timeString}
+          ${bookingConfirmationTexts.timeString}
           
-          ${
-            settings.data.requireMailConfirmation
-              ? `Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
+          ${bookingConfirmationTexts.linkIntro}
           
-          ${lookupLink}
-        
-            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
-            ${humanizeDuration(VerificationTimeout.toMillis(), {
-              language: 'de',
-            }).toUpperCase()}
-            WENN SIE NICHT BESTÄTIGT WIRD.
-            
-          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen
-          `
-              : `Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:
+          ${bookingConfirmationTexts.lookupLink}
           
-          ${lookupLink} 
-          `
-          }
+          ${bookingConfirmationTexts.linkPrimaryHint || ''}
           
-          ${BackendConfig.mailFooterText || ''}
+          ${bookingConfirmationTexts.linkSecondaryHint || ''}
+          
+          ${dedent(BackendConfig.mailFooterText || '')}
       `,
-      `
+      dedent`
         <p>
-          ${intro}
+          ${bookingConfirmationTexts.intro}
           <p>
             <i style="margin-left: 2em">
-                ${timeString}
+                ${bookingConfirmationTexts.timeString}
             </i>
           </p>
         </p>
+        <p>
+          ${bookingConfirmationTexts.linkIntro}
+        </p>
+        <a href="${bookingConfirmationTexts.lookupLink}">${
+        bookingConfirmationTexts.linkText
+      }</a>
         ${
-          settings.data.requireMailConfirmation
-            ? `<p>
-          Klicken Sie auf diesen Link um ihre Buchung zu bestätigen:
-        </p>
-        <a href="${lookupLink}">Bestätigen und Buchungen einsehen</a>
-        <p>
-          <b style="font-size: 1.5em;">
-            IHRE BUCHUNG VERFÄLLT AUTOMATISCH NACH
-            ${humanizeDuration(VerificationTimeout.toMillis(), {
-              language: 'de',
-            }).toUpperCase()}
-            WENN SIE NICHT BESTÄTIGT WIRD.
-          </b>
-        </p>
-        <p>
-          Sie können den Link auch verwenden um alle Buchungen auf diese E-Mail Adresse einzusehen oder Buchungen zu löschen.
-        </p>
-          `
-            : `<p>Sie können Ihre Buchungen unter diesem Link einsehen und ggf. löschen:</p>
-        <a href="${lookupLink}">Buchungen einsehen</a> 
-        `
+          bookingConfirmationTexts.linkPrimaryHint
+            ? dedent`
+                <p>
+                  <b style="font-size: 1.5em;">
+                    ${bookingConfirmationTexts.linkPrimaryHint}
+                  </b>
+                </p>
+              `
+            : ''
+        }
+        ${
+          bookingConfirmationTexts.linkSecondaryHint
+            ? dedent`
+              <p>
+                ${bookingConfirmationTexts.linkSecondaryHint}
+              </p>
+            `
+            : ''
         }
         
-        ${BackendConfig.mailFooterHtml || ''}
+        ${dedent(BackendConfig.mailFooterHtml || '')}
       `
     ); // FIXME: Formatting
   }
