@@ -18,10 +18,8 @@ import { DateTime } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      width: '100%',
-      maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
+    container: {
+      marginTop: theme.spacing(4),
     },
     extendedIcon: {
       marginRight: theme.spacing(1),
@@ -73,24 +71,26 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
 
           return (
             <>
-              <ListEx
-                notEmptyTitle="Wählen Sie einen Zeitslot:"
-                emptyTitle="Keine Timeslots angelegt"
-                emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
-              >
-                {sortedTimeslots.map((timeslot, index) => (
-                  <TimeslotView
-                    key={timeslot.id}
-                    index={index}
-                    isAuthenticated={this.props.isAuthenticated}
-                    client={this.props.client}
-                    changeInteractionState={this.props.changeInteractionState}
-                    resourceName={this.props.resourceName}
-                    timeslotId={timeslot.id}
-                    bookingDay={this.props.bookingDay}
-                  />
-                ))}
-              </ListEx>
+              <div className={this.props.classes.container}>
+                <ListEx
+                  notEmptyTitle="Wählen Sie einen Zeitslot:"
+                  emptyTitle="Keine Timeslots angelegt"
+                  emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
+                >
+                  {sortedTimeslots.map((timeslot, index) => (
+                    <TimeslotView
+                      key={timeslot.id}
+                      index={index}
+                      isAuthenticated={this.props.isAuthenticated}
+                      client={this.props.client}
+                      changeInteractionState={this.props.changeInteractionState}
+                      resourceName={this.props.resourceName}
+                      timeslotId={timeslot.id}
+                      bookingDay={this.props.bookingDay}
+                    />
+                  ))}
+                </ListEx>
+              </div>
 
               {this.props.isAuthenticated && (
                 <Fab

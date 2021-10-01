@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   TextField,
   Theme,
   Typography,
@@ -22,6 +21,9 @@ import { Alert, AlertTitle } from '@material-ui/lab';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -143,8 +145,11 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
     if (this.state.isSignupTokenOk === true) {
       return (
         <>
-          <Container component="main" maxWidth="xs">
-            <CssBaseline />
+          <Container
+            className={this.props.classes.container}
+            component="main"
+            maxWidth="xs"
+          >
             <div className={this.props.classes.paper}>
               <Avatar className={this.props.classes.avatar}>
                 <PersonAddIcon />
@@ -202,11 +207,13 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
       );
     } else if (this.state.isSignupTokenOk === false) {
       return (
-        <Alert severity="error">
-          <AlertTitle>Einladungslink abgelaufen</AlertTitle>
-          Der Einladungslink ist leider abgelaufen oder wurde bereits für eine
-          Registrierung benutzt. Bitte beantragen sie einen neuen.
-        </Alert>
+        <div className={this.props.classes.container}>
+          <Alert severity="error">
+            <AlertTitle>Einladungslink abgelaufen</AlertTitle>
+            Der Einladungslink ist leider abgelaufen oder wurde bereits für eine
+            Registrierung benutzt. Bitte beantragen sie einen neuen.
+          </Alert>
+        </div>
       );
     } else {
       return <LoadingScreen />;

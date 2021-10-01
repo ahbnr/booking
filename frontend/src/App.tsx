@@ -59,16 +59,9 @@ const styles = (theme: Theme) =>
     },
     container: {
       flexGrow: 1,
-      paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
       paddingLeft: '0',
       paddingRight: '0',
-    },
-    paper: {
-      padding: theme.spacing(2),
-      display: 'flex',
-      overflow: 'auto',
-      flexDirection: 'column',
     },
     fixedHeight: {
       height: 240,
@@ -154,11 +147,6 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
   }
 
   render() {
-    console.log(`Rendering history ${window.history.state}`);
-    console.log(`That is ${this.lastStateId}`);
-    console.log(`The current activity is`);
-    console.log(this.state.interactionState);
-
     const view = matchI(this.state.interactionState.activity)({
       viewingPrivacyNote: () => <PrivacyNote />,
       viewingResources: () => (

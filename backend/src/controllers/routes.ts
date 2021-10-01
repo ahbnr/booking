@@ -15,6 +15,7 @@ import DatabaseController from '../models';
 import { AuthController } from './auth.controller';
 import { SettingsController } from './settings.controller';
 import { delay, inject, singleton } from 'tsyringe';
+import { BlockedDatesController } from './blockeddates.controller';
 
 const { DEV_MODE } = process.env;
 
@@ -43,7 +44,10 @@ export class Routes {
     private readonly authController: AuthController,
 
     @inject(delay(() => SettingsController))
-    private readonly settingsController: SettingsController
+    private readonly settingsController: SettingsController,
+
+    @inject(delay(() => BlockedDatesController))
+    private readonly blockedDatesController: BlockedDatesController
   ) {}
 
   private static asyncHandler<T>(
@@ -207,5 +211,20 @@ export class Routes {
       .route('/settings')
       .get(Routes.asyncHandler(this.settingsController.show))
       .put(authHandler, Routes.asyncHandler(this.settingsController.update));
+
+    app
+      .route('/blockedDates')
+      .get(Routes.asyncHandler(this.blockedDatesController.index));
+
+    app
+      .route('/blockedDates/:date')
+      .post(
+        authHandler,
+        Routes.asyncHandler(this.blockedDatesController.create)
+      )
+      .delete(
+        authHandler,
+        Routes.asyncHandler(this.blockedDatesController.delete)
+      );
   }
 }

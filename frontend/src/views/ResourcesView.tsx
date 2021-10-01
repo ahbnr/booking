@@ -34,27 +34,8 @@ import DeleteConfirmer from './DeleteConfirmer';
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      width: '100%',
-      maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
-    },
-    paper: {
-      marginTop: theme.spacing(8),
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    },
-    avatar: {
-      margin: theme.spacing(1),
-      backgroundColor: theme.palette.secondary.main,
-      width: theme.spacing(9),
-      height: theme.spacing(9),
-      marginBottom: theme.spacing(3),
-    },
-    avatarIcon: {
-      width: theme.spacing(7),
-      height: theme.spacing(7),
+    container: {
+      marginTop: theme.spacing(4),
     },
     extendedIcon: {
       marginRight: theme.spacing(1),
@@ -221,7 +202,7 @@ class UnstyledResourcesView extends React.PureComponent<Properties, State> {
 
     return (
       <>
-        {content}
+        <div className={this.props.classes.container}>{content}</div>
         {this.props.isAuthenticated && (
           <Fab
             className={this.props.classes.fab}

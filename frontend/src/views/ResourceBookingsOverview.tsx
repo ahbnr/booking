@@ -23,6 +23,9 @@ import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      width: '100%',
+    },
     popoverTypography: {
       padding: theme.spacing(2),
     },
@@ -83,7 +86,7 @@ class UnstyledResourceBookingsOverview extends React.PureComponent<
     const color = colorHash.hex(this.props.resourceName);
 
     return (
-      <div style={{ width: '100%' }}>
+      <div className={this.props.classes.container}>
         <Typography
           component="h5"
           variant="h5"

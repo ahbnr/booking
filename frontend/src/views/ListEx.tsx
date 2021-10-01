@@ -13,7 +13,6 @@ import MoodBadIcon from '@material-ui/icons/MoodBad';
 const styles = (theme: Theme) =>
   createStyles({
     paper: {
-      paddingTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

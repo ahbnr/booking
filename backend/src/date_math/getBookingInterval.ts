@@ -13,15 +13,18 @@ import {
   ValidationError,
   ValidationSuccess,
 } from '../types/Validation';
+import BlockedDateRepository from '../repositories/BlockedDateRepository';
 
-export default function getBookingInterval(
+export default async function getBookingInterval(
   dayDate: DateTime,
   weekday: WeekdayName,
   timeslot: TimeslotData,
   settings: SettingsDBInterface,
+  blockedDateRepository: BlockedDateRepository,
   ignoreDeadlines: boolean,
-  ignoreMaxWeekDistance: boolean
-): Validation<Interval, string> {
+  ignoreMaxWeekDistance: boolean,
+  ignoreBlockedDates: boolean
+): Promise<Validation<Interval, string>> {
   if (dayDate.weekday !== weekdayToISOInt(weekday)) {
     return ValidationError(`The booking date is not a ${weekday}`);
   }
@@ -59,6 +62,19 @@ export default function getBookingInterval(
     return ValidationError(
       `The booking date is too early. The earliest date where you can create a booking is ${earliestBookingDate.toISO()}`
     );
+  }
+
+  if (!ignoreBlockedDates) {
+    const blockedDates = await blockedDateRepository.getInRange(
+      bookingInterval.start,
+      bookingInterval.end
+    );
+
+    if (blockedDates.length > 0) {
+      return ValidationError(
+        'The booking date is blocked. No bookings can be created on this day, unless you are an admin.'
+      );
+    }
   }
 
   return ValidationSuccess(bookingInterval);

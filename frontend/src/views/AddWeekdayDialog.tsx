@@ -6,7 +6,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   FormControl,
   InputLabel,
   MenuItem,
@@ -25,8 +24,10 @@ import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -40,7 +41,8 @@ const styles = (theme: Theme) =>
       marginTop: theme.spacing(1),
     },
     formControl: {
-      margin: theme.spacing(1),
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
     },
     submit: {
       margin: theme.spacing(3, 0, 2),
@@ -110,8 +112,11 @@ export class UnstyledAddWeekdayDialog extends React.PureComponent<
 
     return (
       <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
               <TodayIcon />

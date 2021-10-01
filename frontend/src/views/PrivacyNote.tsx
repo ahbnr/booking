@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   Theme,
   Typography,
   WithStyles,
@@ -16,6 +15,9 @@ import FrontendConfig from '../booking-frontend.config';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -49,8 +51,11 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
   render() {
     return (
       <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
               <SecurityIcon />

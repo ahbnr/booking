@@ -18,6 +18,9 @@ import { DateTime } from 'luxon';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     fab: fabStyle(theme),
   });
 
@@ -75,7 +78,7 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
         asyncAction={this.state.remoteData}
         fallback={<LoadingScreen />}
         content={({ timeslot, bookings }) => (
-          <>
+          <div className={this.props.classes.container}>
             <ListEx
               emptyTitle="Keine Buchungen"
               emptyMessage="Dieser Zeitslot wurde noch nicht gebucht."
@@ -95,7 +98,7 @@ class UnstyledBookingsView extends React.PureComponent<Properties, State> {
             >
               <PersonAddIcon />
             </Fab>
-          </>
+          </div>
         )}
       />
     );

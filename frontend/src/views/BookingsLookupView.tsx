@@ -37,6 +37,9 @@ import DateChip from './DateChip';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     root: {
       width: '100%',
       maxWidth: 360,
@@ -50,7 +53,6 @@ const styles = (theme: Theme) =>
       marginBottom: theme.spacing(1),
     },
     paper: {
-      paddingTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -151,14 +153,16 @@ class UnstyledBookingsLookupView extends React.PureComponent<
           content={(remoteData) => {
             if (remoteData.bookings.length === 0) {
               return (
-                <div className={this.props.classes.paper}>
-                  <Avatar className={this.props.classes.avatar}>
-                    <MoodBadIcon className={this.props.classes.avatarIcon} />
-                  </Avatar>
-                  <Typography variant="h5">Keine Buchungen</Typography>
-                  <Typography variant="body1">
-                    Für Sie liegen keine Buchungen vor.
-                  </Typography>
+                <div className={this.props.classes.container}>
+                  <div className={this.props.classes.paper}>
+                    <Avatar className={this.props.classes.avatar}>
+                      <MoodBadIcon className={this.props.classes.avatarIcon} />
+                    </Avatar>
+                    <Typography variant="h5">Keine Buchungen</Typography>
+                    <Typography variant="body1">
+                      Für Sie liegen keine Buchungen vor.
+                    </Typography>
+                  </div>
                 </div>
               );
             }
@@ -190,7 +194,7 @@ class UnstyledBookingsLookupView extends React.PureComponent<
             )(remoteData.bookings);
 
             return (
-              <>
+              <div className={this.props.classes.container}>
                 <div className={this.props.classes.textSection}>
                   <Typography variant="h4">Ihre Buchungen</Typography>
                   <Typography
@@ -237,7 +241,7 @@ class UnstyledBookingsLookupView extends React.PureComponent<
                     )
                   )}
                 </List>
-              </>
+              </div>
             );
           }}
         />

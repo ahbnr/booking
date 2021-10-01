@@ -4,7 +4,6 @@ import {
   CircularProgress,
   Container,
   createStyles,
-  CssBaseline,
   Grid,
   GridSize,
   Theme,
@@ -26,6 +25,9 @@ import FileSpeedDial from './FileSpeedDial';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -102,8 +104,10 @@ class UnstyledDayOverviewView extends React.PureComponent<Properties, State> {
           });
 
           return (
-            <Container component="main">
-              <CssBaseline />
+            <Container
+              className={this.props.classes.container}
+              component="main"
+            >
               <div className={this.props.classes.paper}>
                 <Typography
                   component="h5"

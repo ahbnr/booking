@@ -173,6 +173,7 @@ export class BookingsController {
     return {
       ignoreMaxWeekDistance: isAuthenticated,
       ignoreDeadlines: isAuthenticated,
+      ignoreBlockedDates: isAuthenticated,
       requireMail: !isAuthenticated,
       autoVerify: isAuthenticated || !settings.requireMailConfirmation,
       allowToExceedCapacity: isAuthenticated,

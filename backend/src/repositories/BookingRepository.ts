@@ -30,6 +30,7 @@ import { asyncJwtSign } from '../utils/jwt';
 import { genBookingConfirmation } from '../docgen/GenBookingConfirmation';
 import dedent from 'dedent-js';
 import BackendConfig from '../booking-backend.config';
+import BlockedDateRepository from './BlockedDateRepository';
 
 @singleton()
 @boundClass
@@ -43,6 +44,9 @@ export default class BookingRepository {
 
     @inject(delay(() => SettingsRepository))
     private readonly settingsRepository: SettingsRepository,
+
+    @inject(delay(() => BlockedDateRepository))
+    private readonly blockedDateRepository: BlockedDateRepository,
 
     @inject('MailTransporter')
     private readonly mailTransporter: MailTransporter
@@ -78,13 +82,15 @@ export default class BookingRepository {
       throw new UnprocessableEntity('The E-Mail field may not be empty.');
     }
 
-    const bookingValidation = getBookingInterval(
+    const bookingValidation = await getBookingInterval(
       bookingDay,
       weekday.data.name,
       timeslot.data,
       settings,
+      this.blockedDateRepository,
       options.ignoreDeadlines,
-      options.ignoreMaxWeekDistance
+      options.ignoreMaxWeekDistance,
+      options.ignoreBlockedDates
     );
 
     // noinspection UnreachableCodeJS
@@ -482,6 +488,7 @@ type BookingModificationMode =
 export interface BookingModificationOptions {
   ignoreDeadlines: boolean;
   ignoreMaxWeekDistance: boolean;
+  ignoreBlockedDates: boolean;
   requireMail: boolean;
   autoVerify: boolean;
   allowToExceedCapacity: boolean;

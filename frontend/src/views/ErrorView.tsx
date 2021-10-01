@@ -24,6 +24,9 @@ import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     progressContainer: {
       width: '100%',
       height: '80vh',
@@ -136,7 +139,10 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
     }
 
     return (
-      <Container component="main" className={this.props.className}>
+      <Container
+        className={`${this.props.classes.container} ${this.props.className}`}
+        component="main"
+      >
         <div className={this.props.classes.paper}>
           <Avatar className={this.props.classes.avatar}>
             <ErrorIcon className={this.props.classes.avatarIcon} />

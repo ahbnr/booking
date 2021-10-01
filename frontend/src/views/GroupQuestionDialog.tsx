@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   Theme,
   Typography,
   WithStyles,
@@ -20,6 +19,9 @@ import { WithTranslation, withTranslation } from 'react-i18next';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -81,8 +83,11 @@ class UnstyledGroupQuestionDialog extends React.PureComponent<
   render() {
     return (
       <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
               <GroupIcon />

@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   TextField,
   Theme,
   Typography,
@@ -23,6 +22,9 @@ import { NonEmptyString } from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -60,26 +62,27 @@ class UnstyledAddParticipantDialog extends React.PureComponent<
 
   render() {
     return (
-      <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
-          <div className={this.props.classes.paper}>
-            <Avatar className={this.props.classes.avatar}>
-              <PersonAddIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Person Hinzufügen
-            </Typography>
-            <Typography
-              className={this.props.classes.subtitle}
-              variant="subtitle1"
-            >
-              Bitte geben Sie den Namen der nächsten Person Ihrer Gruppe an:
-            </Typography>
-            <NameForm onSubmit={this.onSubmit} />
-          </div>
-        </Container>
-      </>
+      <Container
+        className={this.props.classes.container}
+        component="main"
+        maxWidth="xs"
+      >
+        <div className={this.props.classes.paper}>
+          <Avatar className={this.props.classes.avatar}>
+            <PersonAddIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Person Hinzufügen
+          </Typography>
+          <Typography
+            className={this.props.classes.subtitle}
+            variant="subtitle1"
+          >
+            Bitte geben Sie den Namen der nächsten Person Ihrer Gruppe an:
+          </Typography>
+          <NameForm onSubmit={this.onSubmit} />
+        </div>
+      </Container>
     );
   }
 }

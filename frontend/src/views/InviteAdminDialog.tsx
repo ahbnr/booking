@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   TextField,
   Theme,
   Typography,
@@ -24,8 +23,10 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
-      marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -71,8 +72,11 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
   render() {
     return (
       <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
               <PersonAddIcon />

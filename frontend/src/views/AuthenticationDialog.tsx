@@ -19,6 +19,9 @@ import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -104,7 +107,11 @@ class UnstyledAuthenticationDialog extends React.PureComponent<
   render() {
     return (
       <>
-        <Container component="main" maxWidth="xs">
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <CssBaseline />
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>

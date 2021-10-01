@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   TextField,
   Theme,
   Typography,
@@ -32,6 +31,9 @@ import { is } from '../utils/constructAdt';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -167,8 +169,11 @@ class UnstyledTimeslotEditDialog extends React.PureComponent<
   render() {
     return (
       <>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
+        <Container
+          className={this.props.classes.container}
+          component="main"
+          maxWidth="xs"
+        >
           <div className={this.props.classes.paper}>
             <Avatar className={this.props.classes.avatar}>
               <TimelapseIcon />

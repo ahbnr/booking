@@ -18,9 +18,17 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { Skeleton } from '@material-ui/lab';
 import { InfoMessage } from './ListEx';
 import { WeekdayBookingConstraint } from '../complex_queries/getValidBookingDays';
+import { Client } from '../Client';
+import Suspense from './Suspense';
+import LoadingScreen from './LoadingScreen';
 
-const styles = (_theme: Theme) =>
+const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+      width: '100%',
+      height: '100%',
+    },
     listItemText: {
       textAlign: 'center',
     },
@@ -40,19 +48,39 @@ class UnstyledInfiniteWeekdaysList extends React.PureComponent<
     this.state = {
       bookingOptions: [],
       weekMultiplier: 0,
+      getBlockedDates: undefined,
     };
   }
 
-  loadNextWeek(): Promise<void> {
+  componentDidMount() {
+    this.refreshBlockedDates();
+  }
+
+  private refreshBlockedDates() {
+    this.setState({
+      getBlockedDates: this.props.client.getAllBlockedDates(),
+    });
+  }
+
+  private loadNextWeek(blockedDates: DateTime[]): Promise<void> {
     return new Promise<void>((resolve) => {
       const newBookingOptions: BookingOption[] = this.props.weekdays.map(
-        (base) => ({
-          weekdayName: base.weekdayName,
-          weekdayId: base.weekdayId,
-          bookingDay: base.earliestDate
+        (base) => {
+          const bookingDay = base.earliestDate
             .plus(Duration.fromObject({ weeks: this.state.weekMultiplier }))
-            .startOf('day'),
-        })
+            .startOf('day');
+
+          const isBlocked = blockedDates.some((blockedDate) =>
+            blockedDate.hasSame(bookingDay, 'day')
+          );
+
+          return {
+            weekdayName: base.weekdayName,
+            weekdayId: base.weekdayId,
+            bookingDay,
+            isBlocked,
+          };
+        }
       );
 
       this.setState(
@@ -66,85 +94,93 @@ class UnstyledInfiniteWeekdaysList extends React.PureComponent<
   }
 
   render() {
-    let itemCount = 0;
-    if (this.props.weekdays.length > 0) {
-      itemCount = this.state.bookingOptions.length + 1;
-      if (this.props.maxWeekDistance >= 0) {
-        itemCount = Math.min(itemCount, this.props.maxWeekDistance + 1);
-      }
-    }
-    const itemSize = 70;
+    return (
+      <Suspense
+        asyncAction={this.state.getBlockedDates}
+        fallback={<LoadingScreen />}
+        content={(blockedDates) => {
+          let itemCount = 0;
+          if (this.props.weekdays.length > 0) {
+            itemCount = this.state.bookingOptions.length + 1;
+            if (this.props.maxWeekDistance >= 0) {
+              itemCount = Math.min(itemCount, this.props.maxWeekDistance + 1);
+            }
+          }
+          const itemSize = 80;
 
-    let content: ReactNode;
-    if (itemCount === 0) {
-      content = (
-        <InfoMessage
-          emptyTitle={this.props.emptyTitle}
-          emptyMessage={this.props.emptyMessage}
-        />
-      );
-    } else {
-      content = (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <Typography variant="h6" align="center">
-            {this.props.notEmptyTitle}
-          </Typography>
-          <div style={{ width: '100%', flexGrow: 1 }}>
-            <AutoSizer>
-              {({ width, height }) => (
-                <InfiniteLoader
-                  isItemLoaded={(index) =>
-                    index < this.state.bookingOptions.length
-                  }
-                  itemCount={itemCount}
-                  loadMoreItems={this.loadNextWeek}
-                  minimumBatchSize={this.props.weekdays.length}
-                  threshold={this.props.weekdays.length}
-                >
-                  {({ onItemsRendered, ref }) => (
-                    <FixedSizeList
-                      itemSize={itemSize}
-                      height={height}
-                      itemCount={itemCount}
-                      width={width}
-                      onItemsRendered={onItemsRendered}
-                      ref={ref}
-                    >
-                      {({ index, style }) => {
-                        if (index >= this.state.bookingOptions.length) {
-                          return (
-                            <Skeleton
-                              style={style}
-                              variant="rect"
-                              width={300}
-                              height={itemSize}
-                            />
-                          );
+          let content: ReactNode;
+          if (itemCount === 0) {
+            content = (
+              <InfoMessage
+                emptyTitle={this.props.emptyTitle}
+                emptyMessage={this.props.emptyMessage}
+              />
+            );
+          } else {
+            content = (
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Typography variant="h6" align="center">
+                  {this.props.notEmptyTitle}
+                </Typography>
+                <div style={{ width: '100%', flexGrow: 1 }}>
+                  <AutoSizer>
+                    {({ width, height }) => (
+                      <InfiniteLoader
+                        isItemLoaded={(index) =>
+                          index < this.state.bookingOptions.length
                         }
+                        itemCount={itemCount}
+                        loadMoreItems={() => this.loadNextWeek(blockedDates)}
+                        minimumBatchSize={this.props.weekdays.length}
+                        threshold={this.props.weekdays.length}
+                      >
+                        {({ onItemsRendered, ref }) => (
+                          <FixedSizeList
+                            itemSize={itemSize}
+                            height={height}
+                            itemCount={itemCount}
+                            width={width}
+                            onItemsRendered={onItemsRendered}
+                            ref={ref}
+                          >
+                            {({ index, style }) => {
+                              if (index >= this.state.bookingOptions.length) {
+                                return (
+                                  <Skeleton
+                                    style={style}
+                                    variant="rect"
+                                    width={300}
+                                    height={itemSize}
+                                  />
+                                );
+                              }
 
-                        return this.props.children(
-                          this.state.bookingOptions[index],
-                          style
-                        );
-                      }}
-                    </FixedSizeList>
-                  )}
-                </InfiniteLoader>
-              )}
-            </AutoSizer>
-          </div>
-        </div>
-      );
-    }
+                              return this.props.children(
+                                this.state.bookingOptions[index],
+                                style
+                              );
+                            }}
+                          </FixedSizeList>
+                        )}
+                      </InfiniteLoader>
+                    )}
+                  </AutoSizer>
+                </div>
+              </div>
+            );
+          }
 
-    return <div style={{ width: '100%', height: '100%' }}>{content}</div>;
+          return <div className={this.props.classes.container}>{content}</div>;
+        }}
+      />
+    );
   }
 }
 
@@ -154,6 +190,7 @@ const InfiniteWeekdaysList = withTranslation()(
 export default InfiniteWeekdaysList;
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
+  client: Client;
   weekdays: WeekdayBookingConstraint[];
   maxWeekDistance: number;
   notEmptyTitle: string;
@@ -168,10 +205,12 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 interface State {
   bookingOptions: BookingOption[];
   weekMultiplier: number;
+  getBlockedDates: Promise<DateTime[]> | undefined;
 }
 
 export interface BookingOption {
   weekdayName: WeekdayName;
   weekdayId: number;
   bookingDay: DateTime;
+  isBlocked: boolean;
 }

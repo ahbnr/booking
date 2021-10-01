@@ -23,6 +23,7 @@ import {
   InviteForSignupResponseData,
   SignupResponseData,
   ResourceGroupedBookingsGetInterface,
+  ISO8601,
 } from 'common';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
@@ -505,6 +506,37 @@ export class Client {
       'settings',
       data
     );
+  }
+
+  public async getAllBlockedDates(): Promise<DateTime[]> {
+    const blockedDateStrings = await this.typedRequest(
+      t.readonlyArray(ISO8601),
+      'GET',
+      'blockedDates'
+    );
+
+    return blockedDateStrings.map((isoString) => DateTime.fromISO(isoString));
+  }
+
+  public async getBlockedDatesInRange(
+    startDate: DateTime,
+    endDate: DateTime
+  ): Promise<DateTime[]> {
+    const blockedDateStrings = await this.typedRequest(
+      t.readonlyArray(ISO8601),
+      'GET',
+      `blockedDates?start=${startDate.toISODate()}&end=${endDate.toISODate()}`
+    );
+
+    return blockedDateStrings.map((isoString) => DateTime.fromISO(isoString));
+  }
+
+  public async createBlockedDate(date: DateTime) {
+    await this.request('POST', `blockedDates/${date.toISODate()}`);
+  }
+
+  public async deleteBlockedDate(date: DateTime) {
+    await this.request('DELETE', `blockedDates/${date.toISODate()}`);
   }
 }
 

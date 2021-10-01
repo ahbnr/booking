@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  CssBaseline,
   Theme,
   Typography,
   WithStyles,
@@ -22,6 +21,9 @@ import { changeInteractionStateT } from '../App';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+    },
     paper: {
       display: 'flex',
       flexDirection: 'column',
@@ -170,12 +172,13 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
           }
 
           return (
-            <>
-              <Container component="main" maxWidth="xs">
-                <CssBaseline />
-                <div className={this.props.classes.paper}>{content}</div>
-              </Container>
-            </>
+            <Container
+              className={this.props.classes.container}
+              component="main"
+              maxWidth="xs"
+            >
+              <div className={this.props.classes.paper}>{content}</div>
+            </Container>
           );
         }}
       />

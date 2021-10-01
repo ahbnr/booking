@@ -99,6 +99,7 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
           <div style={{ width: '100%', height: '100%' }}>
             <div style={{ width: '100%', height: '100%' }}>
               <InfiniteWeekdaysList
+                client={this.props.client}
                 weekdays={weekdayConstraints}
                 maxWeekDistance={-1}
                 notEmptyTitle="Zu welchem Tag möchten Sie eine Übersicht der Buchungen?"
@@ -115,6 +116,8 @@ class UnstyledWeekdayOverviewSelector extends React.PureComponent<
                   >
                     <ListItemText className={this.props.classes.listItemText}>
                       <WeekdayButton
+                        isAuthenticated={true}
+                        isBlocked={bookingOption.isBlocked}
                         weekdayName={bookingOption.weekdayName}
                         bookingDay={bookingOption.bookingDay}
                         onClick={() =>

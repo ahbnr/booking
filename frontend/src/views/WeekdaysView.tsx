@@ -40,6 +40,11 @@ import WeekdayButton from './WeekdayButton';
 
 const styles = (theme: Theme) =>
   createStyles({
+    container: {
+      marginTop: theme.spacing(4),
+      width: '100%',
+      height: '100%',
+    },
     root: {
       width: '100%',
       maxWidth: 360,
@@ -147,9 +152,10 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
           );
 
           return (
-            <div style={{ width: '100%', height: '100%' }}>
+            <div className={this.props.classes.container}>
               <div style={{ width: '100%', height: '100%' }}>
                 <InfiniteWeekdaysList
+                  client={this.props.client}
                   weekdays={weekdayConstraints}
                   maxWeekDistance={
                     this.props.isAuthenticated
@@ -165,6 +171,7 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                       weekdayName,
                       weekdayId,
                       bookingDay,
+                      isBlocked,
                     } = bookingOption;
 
                     // Depending on whether there are secondary actions, we have to inject the style differently
@@ -186,8 +193,10 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                           className={this.props.classes.listItemText}
                         >
                           <WeekdayButton
+                            isAuthenticated={this.props.isAuthenticated}
                             weekdayName={weekdayName}
                             bookingDay={bookingDay}
+                            isBlocked={isBlocked}
                             onClick={() =>
                               this.viewTimeslots(weekdayId, bookingDay)
                             }
