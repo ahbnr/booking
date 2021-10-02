@@ -6,7 +6,16 @@ import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
 import { timeslotCompare, TimeslotGetInterface } from 'common';
 import { changeInteractionStateT } from '../App';
-import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
+import {
+  Avatar,
+  Button,
+  Container,
+  createStyles,
+  Theme,
+  Typography,
+  withStyles,
+  WithStyles,
+} from '@material-ui/core';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { fabStyle } from '../styles/fab';
@@ -15,11 +24,30 @@ import LoadingScreen from './LoadingScreen';
 import ListEx from './ListEx';
 import LoadingBackdrop from './LoadingBackdrop';
 import { DateTime } from 'luxon';
+import EventBusyIcon from '@material-ui/icons/EventBusy';
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 const styles = (theme: Theme) =>
   createStyles({
     container: {
       marginTop: theme.spacing(4),
+    },
+    paper: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    avatar: {
+      margin: theme.spacing(1),
+      backgroundColor: theme.palette.secondary.main,
+    },
+    backButton: {
+      margin: theme.spacing(3, 0, 2),
+    },
+    alert: {
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+      marginBottom: theme.spacing(2),
     },
     extendedIcon: {
       marginRight: theme.spacing(1),
@@ -33,29 +61,50 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
     super(props);
 
     this.state = {
-      timeslots: undefined,
+      remoteData: undefined,
       backdropOpen: false,
     };
   }
 
   componentDidMount() {
-    this.refreshTimeslots();
+    this.refreshRemoteData();
   }
 
-  addTimeslot() {
+  private addTimeslot() {
     this.props.changeInteractionState('creatingTimeslot', {
       weekdayId: this.props.weekdayId,
     });
   }
 
-  refreshTimeslots() {
-    const timeslotsPromise = this.props.client.getTimeslots(
-      this.props.weekdayId
-    );
+  private refreshRemoteData() {
+    const fetchRemoteData = async () => {
+      const timeslots = await this.props.client.getTimeslots(
+        this.props.weekdayId
+      );
+
+      const blockedDates = await this.props.client.getBlockedDatesInRange(
+        this.props.bookingDay.startOf('day'),
+        this.props.bookingDay.endOf('day')
+      );
+
+      return {
+        timeslots,
+        isDateBlocked: blockedDates.length > 0,
+      };
+    };
 
     this.setState({
-      ...this.state,
-      timeslots: timeslotsPromise,
+      remoteData: fetchRemoteData(),
+    });
+  }
+
+  private goBack() {
+    window.history.back();
+  }
+
+  private changeDateBlockedSettings() {
+    this.props.changeInteractionState('updatingSettings', {
+      initialTab: 'blocked-dates',
     });
   }
 
@@ -63,49 +112,108 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
     return (
       <Suspense
         fallback={<LoadingScreen />}
-        asyncAction={this.state.timeslots}
-        content={(timeslots) => {
-          const sortedTimeslots: TimeslotGetInterface[] = timeslots.sort(
-            timeslotCompare
-          );
+        asyncAction={this.state.remoteData}
+        content={({ timeslots, isDateBlocked }) => {
+          if (isDateBlocked && !this.props.isAuthenticated) {
+            return (
+              <Container className={this.props.classes.container} maxWidth="xs">
+                <div className={this.props.classes.paper}>
+                  <Avatar className={this.props.classes.avatar}>
+                    <EventBusyIcon />
+                  </Avatar>
+                  <Typography component="h1" variant="h5" align="center">
+                    Keine Termine
+                  </Typography>
+                  <Typography variant="body1">
+                    Für den{' '}
+                    {this.props.bookingDay
+                      .setLocale('de-DE')
+                      .toLocaleString({ ...DateTime.DATE_SHORT })}{' '}
+                    werden leider keine Termine vergeben.
+                  </Typography>
+                  <Typography style={{ fontWeight: 'bold' }} variant="body1">
+                    Bitte wählen Sie im vorherigen Menü ein anderes Datum aus.
+                  </Typography>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={this.props.classes.backButton}
+                    onClick={this.goBack}
+                  >
+                    OK
+                  </Button>
+                </div>
+              </Container>
+            );
+          } else {
+            const sortedTimeslots: TimeslotGetInterface[] = timeslots.sort(
+              timeslotCompare
+            );
 
-          return (
-            <>
-              <div className={this.props.classes.container}>
-                <ListEx
-                  notEmptyTitle="Wählen Sie einen Zeitslot:"
-                  emptyTitle="Keine Timeslots angelegt"
-                  emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
-                >
-                  {sortedTimeslots.map((timeslot, index) => (
-                    <TimeslotView
-                      key={timeslot.id}
-                      index={index}
-                      isAuthenticated={this.props.isAuthenticated}
-                      client={this.props.client}
-                      changeInteractionState={this.props.changeInteractionState}
-                      resourceName={this.props.resourceName}
-                      timeslotId={timeslot.id}
-                      bookingDay={this.props.bookingDay}
-                    />
-                  ))}
-                </ListEx>
-              </div>
+            return (
+              <>
+                <div className={this.props.classes.container}>
+                  {isDateBlocked && (
+                    <Alert
+                      severity="warning"
+                      className={this.props.classes.alert}
+                      action={
+                        <Button
+                          color="inherit"
+                          size="small"
+                          onClick={this.changeDateBlockedSettings}
+                        >
+                          Ändern
+                        </Button>
+                      }
+                    >
+                      <AlertTitle>Tag Gesperrt</AlertTitle>
+                      Achtung, dieses Datum (
+                      {this.props.bookingDay
+                        .setLocale('de-DE')
+                        .toLocaleString({ ...DateTime.DATE_SHORT })}
+                      ) wurde in den Einstellungen gesperrt und normale Nutzer
+                      können an diesem Tag nicht buchen.
+                    </Alert>
+                  )}
+                  <ListEx
+                    notEmptyTitle="Wählen Sie einen Zeitslot:"
+                    emptyTitle="Keine Timeslots angelegt"
+                    emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
+                  >
+                    {sortedTimeslots.map((timeslot, index) => (
+                      <TimeslotView
+                        key={timeslot.id}
+                        index={index}
+                        isAuthenticated={this.props.isAuthenticated}
+                        client={this.props.client}
+                        changeInteractionState={
+                          this.props.changeInteractionState
+                        }
+                        resourceName={this.props.resourceName}
+                        timeslotId={timeslot.id}
+                        bookingDay={this.props.bookingDay}
+                      />
+                    ))}
+                  </ListEx>
+                </div>
 
-              {this.props.isAuthenticated && (
-                <Fab
-                  className={this.props.classes.fab}
-                  variant="extended"
-                  onClick={this.addTimeslot}
-                  data-cy={'add-timeslot-button'}
-                >
-                  <AddIcon className={this.props.classes.extendedIcon} />
-                  Timeslot
-                </Fab>
-              )}
-              <LoadingBackdrop open={this.state.backdropOpen} />
-            </>
-          );
+                {this.props.isAuthenticated && (
+                  <Fab
+                    className={this.props.classes.fab}
+                    variant="extended"
+                    onClick={this.addTimeslot}
+                    data-cy={'add-timeslot-button'}
+                  >
+                    <AddIcon className={this.props.classes.extendedIcon} />
+                    Timeslot
+                  </Fab>
+                )}
+                <LoadingBackdrop open={this.state.backdropOpen} />
+              </>
+            );
+          }
         }}
       />
     );
@@ -125,6 +233,11 @@ interface Properties extends WithStyles<typeof styles> {
 }
 
 interface State {
-  timeslots?: Promise<TimeslotGetInterface[]>;
+  remoteData?: Promise<RemoteData>;
   backdropOpen: boolean;
+}
+
+interface RemoteData {
+  timeslots: TimeslotGetInterface[];
+  isDateBlocked: boolean;
 }

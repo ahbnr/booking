@@ -155,7 +155,6 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
             <div className={this.props.classes.container}>
               <div style={{ width: '100%', height: '100%' }}>
                 <InfiniteWeekdaysList
-                  client={this.props.client}
                   weekdays={weekdayConstraints}
                   maxWeekDistance={
                     this.props.isAuthenticated
@@ -171,7 +170,6 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                       weekdayName,
                       weekdayId,
                       bookingDay,
-                      isBlocked,
                     } = bookingOption;
 
                     // Depending on whether there are secondary actions, we have to inject the style differently
@@ -196,7 +194,6 @@ class UnstyledWeekdaysView extends React.PureComponent<Properties, State> {
                             isAuthenticated={this.props.isAuthenticated}
                             weekdayName={weekdayName}
                             bookingDay={bookingDay}
-                            isBlocked={isBlocked}
                             onClick={() =>
                               this.viewTimeslots(weekdayId, bookingDay)
                             }

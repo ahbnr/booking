@@ -22,13 +22,13 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     super(props);
 
     this.state = {
-      currentTab: 'main-settings',
+      currentTab: this.props.initialTab || 'main-settings',
     };
   }
 
   private onChangeTab(event: unknown, newTab: string) {
     this.setState({
-      currentTab: newTab,
+      currentTab: newTab as TabId,
     });
   }
 
@@ -55,10 +55,13 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
 const SettingsDialog = withStyles(styles)(UnstyledSettingsDialog);
 export default SettingsDialog;
 
+export type TabId = 'main-settings' | 'blocked-dates';
+
 interface Properties extends WithStyles<typeof styles> {
   client: Client;
+  initialTab?: TabId;
 }
 
 interface State {
-  currentTab: string;
+  currentTab: TabId;
 }

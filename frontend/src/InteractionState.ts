@@ -7,6 +7,7 @@ import {
 import { DateTime } from 'luxon';
 
 import { ADT } from 'ts-adt';
+import { TabId } from './views/SettingsDialog';
 
 export interface ViewingPrivacyNote {}
 
@@ -88,7 +89,9 @@ export interface ConfirmingBookingDialog {}
 
 export interface SelectingWeekdayOverview {}
 
-export interface UpdatingSettings {}
+export interface UpdatingSettings {
+  initialTab?: TabId;
+}
 
 export type Activity = ADT<{
   viewingPrivacyNote: ViewingPrivacyNote;

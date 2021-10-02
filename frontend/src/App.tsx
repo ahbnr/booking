@@ -302,7 +302,9 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
           changeInteractionState={this.changeInteractionState}
         />
       ),
-      updatingSettings: () => <SettingsDialog client={this.client} />,
+      updatingSettings: ({ initialTab }) => (
+        <SettingsDialog client={this.client} initialTab={initialTab} />
+      ),
     });
 
     return (
