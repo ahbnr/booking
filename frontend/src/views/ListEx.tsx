@@ -71,7 +71,11 @@ export default class ListEx extends React.PureComponent<Properties, State> {
       return (
         <>
           {this.props.notEmptyTitle != null && (
-            <Typography variant="h6" align="center">
+            <Typography
+              variant="h6"
+              align="center"
+              style={{ marginLeft: '0.5em', marginRight: '0.5em' }}
+            >
               {this.props.notEmptyTitle}
             </Typography>
           )}

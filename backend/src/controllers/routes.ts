@@ -192,6 +192,9 @@ export class Routes {
         optionalAuthHandler,
         Routes.asyncHandler(this.bookingsController.delete)
       );
+    app
+      .route('/bookings/:id/lookupPdf')
+      .post(Routes.asyncHandler(this.bookingsController.getLookupPdf));
 
     app
       .route('/bookings/forDay/:dayDate')

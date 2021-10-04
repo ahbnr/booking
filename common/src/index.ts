@@ -9,7 +9,9 @@ export {
   BookingGetInterface,
   compare as bookingCompare,
   BookingsCreateInterface,
+  BookingsCreateResponseInterface,
   BookingUpdateInterface,
+  IBookingLookupPdfRequest,
 } from './typechecking/api/Booking';
 export {
   WeekdayNameValues,

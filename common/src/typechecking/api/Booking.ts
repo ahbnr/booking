@@ -44,6 +44,25 @@ export const BookingsCreateInterface = t.type({
 
 export type BookingsCreateInterface = t.TypeOf<typeof BookingsCreateInterface>;
 
+export const BookingsCreateResponseInterface = t.type({
+  status: t.union([t.literal('ok'), t.literal('mail_undeliverable')]),
+  bookings: t.readonlyArray(BookingGetInterface),
+  lookupToken: t.string,
+});
+
+export type BookingsCreateResponseInterface = t.TypeOf<
+  typeof BookingsCreateResponseInterface
+>;
+
+export const IBookingLookupPdfRequest = t.type({
+  lookupUrl: t.string,
+  lookupToken: t.string,
+});
+
+export type IBookingLookupPdfRequest = t.TypeOf<
+  typeof IBookingLookupPdfRequest
+>;
+
 export const BookingUpdateInterface = t.type({
   name: NonEmptyString,
   email: t.union([EMailString, t.undefined, t.null]),

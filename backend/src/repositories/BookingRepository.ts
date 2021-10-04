@@ -31,6 +31,9 @@ import { genBookingConfirmation } from '../docgen/GenBookingConfirmation';
 import dedent from 'dedent-js';
 import BackendConfig from '../booking-backend.config';
 import BlockedDateRepository from './BlockedDateRepository';
+import renderBookingConfirmationPDF from '../pdf-rendering/RenderBookingConfirmationPDF';
+import ReactPDF from '@react-pdf/renderer';
+import ReadableStream = NodeJS.ReadableStream;
 
 @singleton()
 @boundClass
@@ -131,15 +134,6 @@ export default class BookingRepository {
               }));
 
               const newBookings = await Booking.bulkCreate<Booking>(dbDatas);
-              const firstBooking = newBookings[0];
-
-              if (firstBooking.email != null) {
-                await this.sendBookingLookupMail(
-                  mode.data.lookupUrl,
-                  firstBooking,
-                  timeslot
-                );
-              }
 
               return newBookings.map((booking) => this.toInterface(booking));
             }
@@ -306,10 +300,10 @@ export default class BookingRepository {
     }
   }
 
-  public async destroy(bookingId: number) {
+  public async destroy(bookingIds: number | number[]) {
     const options: DestroyOptions = {
-      where: { id: bookingId },
-      limit: 1,
+      where: { id: bookingIds },
+      limit: bookingIds.constructor === Array ? bookingIds.length : 1,
     };
 
     await Booking.destroy(options);
@@ -371,8 +365,8 @@ export default class BookingRepository {
     return valid_bookings;
   }
 
-  private static async createBookingLookupToken(
-    booking: Booking
+  public static async createBookingLookupToken(
+    booking: BookingDBInterface
   ): Promise<string> {
     const email = checkType(booking.email, EMailString);
     const validDuration = await booking.timeTillDue();
@@ -392,20 +386,38 @@ export default class BookingRepository {
     return tokenResult.token;
   }
 
-  private async sendBookingLookupMail(
+  public async genBookingLookupPdf(
     lookupUrl: string,
-    booking: Booking,
+    lookupToken: string,
+    booking: BookingDBInterface,
     timeslot: TimeslotDBInterface
-  ) {
+  ): Promise<ReadableStream> {
+    const settings = await this.settingsRepository.get();
+
+    const reactDoc = await renderBookingConfirmationPDF(
+      lookupUrl,
+      booking,
+      timeslot,
+      lookupToken,
+      settings
+    );
+
+    const pdfStream = await ReactPDF.renderToStream(reactDoc);
+
+    return pdfStream;
+  }
+
+  public async sendBookingLookupMail(
+    lookupUrl: string,
+    lookupToken: string,
+    booking: BookingDBInterface,
+    timeslot: TimeslotDBInterface
+  ): Promise<boolean> {
     if (booking.email == null) {
       throw Error(
         'This booking has no email. This is a programming error and should never happen.'
       );
     }
-
-    const lookupToken = await BookingRepository.createBookingLookupToken(
-      booking
-    );
 
     const settings = await this.settingsRepository.get();
 
@@ -417,11 +429,10 @@ export default class BookingRepository {
       settings
     );
 
-    await this.mailTransporter.send(
-      booking.email,
-      bookingConfirmationTexts.title,
-      dedent`
+    const text = dedent`
           ${bookingConfirmationTexts.intro}
+          
+            ${bookingConfirmationTexts.resourceString}
           
           ${bookingConfirmationTexts.timeString}
           
@@ -434,22 +445,24 @@ export default class BookingRepository {
           ${bookingConfirmationTexts.linkSecondaryHint || ''}
           
           ${dedent(BackendConfig.mailFooterText || '')}
-      `,
-      dedent`
+      `;
+
+    const html = dedent`
         <p>
-          ${bookingConfirmationTexts.intro}
-          <p>
-            <i style="margin-left: 2em">
-                ${bookingConfirmationTexts.timeString}
-            </i>
-          </p>
+          <p>${bookingConfirmationTexts.intro}</p>
+          <p style="margin-left: 2em">${
+            bookingConfirmationTexts.resourceString
+          }</p>
+          <i>
+              ${bookingConfirmationTexts.timeString}
+          </i>
         </p>
         <p>
           ${bookingConfirmationTexts.linkIntro}
         </p>
         <a href="${bookingConfirmationTexts.lookupLink}">${
-        bookingConfirmationTexts.linkText
-      }</a>
+      bookingConfirmationTexts.linkText
+    }</a>
         ${
           bookingConfirmationTexts.linkPrimaryHint
             ? dedent`
@@ -472,8 +485,28 @@ export default class BookingRepository {
         }
         
         ${dedent(BackendConfig.mailFooterHtml || '')}
-      `
-    ); // FIXME: Formatting
+      `;
+
+    try {
+      await this.mailTransporter.send(
+        booking.email,
+        bookingConfirmationTexts.title,
+        text,
+        html
+      ); // FIXME: Formatting
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public async getTimeslotFromBooking(
+    booking: Booking
+  ): Promise<TimeslotDBInterface> {
+    const timeslot = await booking.lazyTimeslot;
+
+    return this.timeslotRepository.toInterface(timeslot);
   }
 }
 

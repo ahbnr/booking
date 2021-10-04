@@ -8,6 +8,7 @@ import ResourceDBInterface from './ResourceDBInterface';
 import BookingRepository from '../BookingRepository';
 import { Duration } from 'luxon';
 import { LazyGetter } from 'lazy-get-decorator';
+import TimeslotDBInterface from './TimeslotDBInterface';
 
 export default class BookingDBInterface {
   private readonly booking: Booking;
@@ -18,11 +19,23 @@ export default class BookingDBInterface {
     this.bookingRepository = bookingRepository;
   }
 
+  public get id(): number {
+    return this.booking.id;
+  }
+
   public get startDate(): Date {
     return this.booking.startDate;
   }
   public get endDate(): Date {
     return this.booking.endDate;
+  }
+
+  public get email(): string | undefined {
+    return this.booking.email;
+  }
+
+  public get name(): string {
+    return this.booking.name;
   }
 
   @LazyGetter()
@@ -35,6 +48,10 @@ export default class BookingDBInterface {
 
   public getResource(): ResourceDBInterface {
     return this.bookingRepository.getResourceOfBooking(this.booking);
+  }
+
+  public async getTimeslot(): Promise<TimeslotDBInterface> {
+    return await this.bookingRepository.getTimeslotFromBooking(this.booking);
   }
 
   public async markAsVerified() {

@@ -6,11 +6,14 @@ import { asyncJwtVerify } from '../utils/jwt';
 import {
   BookingGetInterface,
   BookingsCreateInterface,
+  BookingsCreateResponseInterface,
   BookingUpdateInterface,
   checkType,
   hasProperty,
+  IBookingLookupPdfRequest,
   ISO8601,
   NonEmptyString,
+  noRefinementChecks,
   ResourceGroupedBookings,
   ResourceGroupedBookingsGetInterface,
 } from 'common';
@@ -154,6 +157,45 @@ export class BookingsController {
     pdfStream.pipe(res);
   }
 
+  public async getLookupPdf(req: TypesafeRequest, res: Response) {
+    const bookingId = extractNumericIdFromRequest(req);
+    const requestData = checkType(req.body, IBookingLookupPdfRequest);
+
+    const verifiedToken = await asyncJwtVerify(requestData.lookupToken);
+
+    const tokenContent = checkType(verifiedToken, BookingLookupTokenData);
+
+    const booking = await this.bookingRepository.findById(bookingId);
+
+    if (booking != null) {
+      if (tokenContent.email !== booking?.email) {
+        res
+          .status(401)
+          .json(
+            'E-Mail of the booking does not match e-mail of the lookup token.'
+          );
+      } else {
+        const timeslot = await booking.getTimeslot();
+
+        const pdfStream = await this.bookingRepository.genBookingLookupPdf(
+          requestData.lookupUrl,
+          requestData.lookupToken,
+          booking,
+          timeslot
+        );
+
+        res.attachment(
+          `SGI Flieden Buchung ${DateTime.fromJSDate(booking.startDate)
+            .setLocale('de-DE')
+            .toLocaleString({ ...DateTime.DATE_SHORT })}.pdf`
+        );
+        pdfStream.pipe(res);
+      }
+    } else {
+      res.status(404).json();
+    }
+  }
+
   public async show(req: TypesafeRequest, res: Response<BookingGetInterface>) {
     const bookingId = extractNumericIdFromRequest(req);
     const booking = await this.bookingRepository.findById(bookingId);
@@ -182,7 +224,7 @@ export class BookingsController {
 
   public async createBookings(
     req: TypesafeRequest,
-    res: Response<BookingGetInterface[]>
+    res: Response<BookingsCreateResponseInterface>
   ) {
     const timeslot = await this.timeslotController.getTimeslot(req);
     const bookingCreateData = checkType(req.body, BookingsCreateInterface);
@@ -195,11 +237,54 @@ export class BookingsController {
       this.genBookingModificationOptions(req, settings.data)
     );
 
-    const returnData: BookingGetInterface[] = bookings.map((booking) =>
-      booking.toGetInterface()
-    );
+    try {
+      const bookingsToReturn: BookingGetInterface[] = bookings.map((booking) =>
+        booking.toGetInterface()
+      );
 
-    res.status(201).json(returnData);
+      let status_code = 201;
+      let status_text: 'ok' | 'mail_undeliverable' = 'ok';
+      const firstBooking = bookings[0];
+
+      const lookupToken = await BookingRepository.createBookingLookupToken(
+        firstBooking
+      );
+
+      if (firstBooking.email != null) {
+        const sendResult = await this.bookingRepository.sendBookingLookupMail(
+          bookingCreateData.lookupUrl,
+          lookupToken,
+          firstBooking,
+          timeslot
+        );
+
+        if (!sendResult) {
+          status_text = 'mail_undeliverable';
+
+          if (settings.data.requireMailConfirmation && !req.authenticated) {
+            await this.bookingRepository.destroy(
+              bookings.map((booking) => booking.id)
+            );
+
+            status_code = 500;
+          }
+        }
+      }
+
+      res.status(status_code).json(
+        noRefinementChecks({
+          status: status_text,
+          bookings: bookingsToReturn,
+          lookupToken,
+        })
+      );
+    } catch (e) {
+      await this.bookingRepository.destroy(
+        bookings.map((booking) => booking.id)
+      );
+
+      throw e;
+    }
   }
 
   private async listBookingsByLookupToken(

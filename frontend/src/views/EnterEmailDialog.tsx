@@ -23,7 +23,7 @@ import {
   useTranslation,
 } from 'react-i18next';
 import {
-  BookingData,
+  EMailString,
   ISO8601,
   NonEmptyString,
   noRefinementChecks,
@@ -67,18 +67,32 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
     });
 
     // no verification necessary, this is done by react-hook-form
-    const email = noRefinementChecks<BookingData['email']>(
-      formInput.email === '' ? undefined : formInput.email
-    );
+    const email = noRefinementChecks<EMailString>(formInput.email);
 
     try {
-      await this.props.client.createBookings(this.props.timeslotId, {
-        bookingDay: noRefinementChecks<ISO8601>(
-          this.props.bookingDay.toISODate()
-        ),
+      const createResponse = await this.props.client.createBookings(
+        this.props.timeslotId,
+        {
+          bookingDay: noRefinementChecks<ISO8601>(
+            this.props.bookingDay.toISODate()
+          ),
+          participantNames: this.props.participantNames,
+          email,
+          lookupUrl: `${getBaseUrl()}/`,
+        }
+      );
+
+      this.props.changeInteractionState('confirmingBookingDialog', {
+        createResponse,
+        mailAddress: email,
+        resourceName: this.props.resourceName,
+        timeslotId: this.props.timeslotId,
+        timeslotCapacity: this.props.timeslotCapacity,
+        numBookingsForSlot: this.props.numBookingsForSlot,
+        startTime: this.props.startTime,
+        endTime: this.props.endTime,
+        bookingDay: this.props.bookingDay,
         participantNames: this.props.participantNames,
-        email,
-        lookupUrl: `${getBaseUrl()}/`,
       });
     } catch (e) {
       throw new DisplayableError(
@@ -86,8 +100,6 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
         e
       );
     }
-
-    this.props.changeInteractionState('confirmingBookingDialog', {});
   }
 
   render() {

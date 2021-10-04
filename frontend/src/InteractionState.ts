@@ -3,6 +3,8 @@ import {
   ResourceGetInterface,
   WeekdayName,
   NonEmptyString,
+  BookingsCreateResponseInterface,
+  EMailString,
 } from 'common';
 import { DateTime } from 'luxon';
 
@@ -85,7 +87,10 @@ export interface AddingWeekday {
 
 export interface ViewingMainPage {}
 
-export interface ConfirmingBookingDialog {}
+export interface ConfirmingBookingDialog extends EnteringEmail {
+  createResponse: BookingsCreateResponseInterface;
+  mailAddress: EMailString;
+}
 
 export interface SelectingWeekdayOverview {}
 

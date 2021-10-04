@@ -24,6 +24,8 @@ import {
   SignupResponseData,
   ResourceGroupedBookingsGetInterface,
   ISO8601,
+  BookingsCreateResponseInterface,
+  IBookingLookupPdfRequest,
 } from 'common';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
@@ -164,17 +166,21 @@ export class Client {
       headers['Authorization'] = `Bearer ${this.jsonWebToken.token}`;
     }
 
-    const url = `${baseUrl}/${subUrl}`;
+    let url = `${baseUrl}/${subUrl}`;
 
     let response: Response;
     try {
       if (body != null) {
         headers['Content-Type'] = 'application/json';
 
+        if (method === 'GET') {
+          url = `${url}?${new URLSearchParams(body)}`;
+        }
+
         response = await fetch(url, {
           method: method,
           headers: headers,
-          body: JSON.stringify(body),
+          body: method !== 'GET' ? JSON.stringify(body) : undefined,
         });
       } else {
         response = await fetch(url, {
@@ -183,6 +189,9 @@ export class Client {
         });
       }
     } catch (e) {
+      console.error(e);
+      console.error(e.message);
+
       throw new DisplayableError(
         'Es gibt ein Problem mit der Netzwerkverbindung. Versuchen Sie es später erneut',
         e
@@ -422,8 +431,13 @@ export class Client {
   public async createBookings(
     timeslotId: number,
     data: BookingsCreateInterface
-  ) {
-    await this.request('POST', `timeslots/${timeslotId}/bookings`, data);
+  ): Promise<BookingsCreateResponseInterface> {
+    return await this.typedRequest(
+      BookingsCreateResponseInterface,
+      'POST',
+      `timeslots/${timeslotId}/bookings`,
+      data
+    );
   }
 
   public async getBooking(bookingId: number): Promise<BookingGetInterface> {
@@ -480,6 +494,25 @@ export class Client {
     const response = await this.request(
       'GET',
       `bookings/forDay/${dayDate.toISODate()}/pdf`
+    );
+
+    return response.blob();
+  }
+
+  public async getLookupPdf(
+    bookingId: number,
+    lookupToken: string,
+    lookupUrl: string
+  ): Promise<Blob> {
+    const requestData: IBookingLookupPdfRequest = {
+      lookupUrl,
+      lookupToken,
+    };
+
+    const response = await this.request(
+      'POST',
+      `bookings/${bookingId}/lookupPdf`,
+      requestData
     );
 
     return response.blob();

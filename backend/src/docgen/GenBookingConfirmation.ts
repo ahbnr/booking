@@ -1,4 +1,4 @@
-import { Booking, VerificationTimeout } from '../models/booking.model';
+import { VerificationTimeout } from '../models/booking.model';
 import TimeslotDBInterface from '../repositories/model_interfaces/TimeslotDBInterface';
 import { DateTime } from 'luxon';
 import { i18nextInstance } from '../utils/i18n';
@@ -6,10 +6,12 @@ import humanizeDuration from 'humanize-duration';
 import SettingsDBInterface from '../repositories/model_interfaces/SettingsDBInterface';
 
 import dedent from 'dedent-js';
+import BookingDBInterface from '../repositories/model_interfaces/BookingDBInterface';
 
 export interface BookingConfirmationDoc {
   title: string;
   intro: string;
+  resourceString: string;
   timeString: string;
   linkIntro: string;
   linkText: string | undefined;
@@ -20,7 +22,7 @@ export interface BookingConfirmationDoc {
 
 export async function genBookingConfirmation(
   lookupUrl: string,
-  booking: Booking,
+  booking: BookingDBInterface,
   timeslot: TimeslotDBInterface,
   lookupToken: string,
   settings: SettingsDBInterface
@@ -39,11 +41,9 @@ export async function genBookingConfirmation(
   const startTime = startDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE });
   const endTime = endDate.toLocaleString({ ...DateTime.TIME_24_SIMPLE });
 
-  const timeString = dedent`
-        "${resourceName}"
-      
-      am ${dateWithWeekday} von ${startTime} bis ${endTime}.
-    `;
+  const resourceString = `"${resourceName}"`;
+
+  const timeString = `am ${dateWithWeekday} von ${startTime} bis ${endTime}.`;
 
   let linkIntro: string;
   let linkText: string;
@@ -72,6 +72,7 @@ export async function genBookingConfirmation(
   const confirmationDoc: BookingConfirmationDoc = {
     title: `Ihre Buchung - ${booking.name}`,
     intro,
+    resourceString,
     timeString,
     linkIntro,
     linkText,
