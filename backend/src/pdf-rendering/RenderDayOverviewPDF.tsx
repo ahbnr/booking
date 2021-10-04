@@ -26,6 +26,17 @@ export default function renderDayOverviewPDF(
       textAlign: 'center',
       marginBottom: '0.8cm',
     },
+    footer: {
+      position: 'absolute',
+      fontSize: 12,
+      bottom: 30,
+      left: 0,
+      right: 0,
+      textAlign: 'center',
+      color: 'grey',
+      paddingLeft: '1cm',
+      paddingRight: '1cm',
+    },
   });
 
   return (
@@ -39,6 +50,11 @@ export default function renderDayOverviewPDF(
         {resourceGroupedBookings.map((resourceGroupedBookings, idx) =>
           renderResourceBookingsPDF(idx, resourceGroupedBookings)
         )}
+        <Text style={styles.footer} fixed>
+          Aus Datenschutzgründen muss dieses Dokument nach Ablauf des letzten
+          aufgeführten Termins vernichtet werden. Falls dieses Dokument als
+          Datei vorliegt, muss diese gelöscht werden.
+        </Text>
       </Page>
     </Document>
   );
