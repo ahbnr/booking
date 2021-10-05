@@ -35,6 +35,7 @@ import ReactPDF from '@react-pdf/renderer';
 import renderDayOverviewPDF from '../pdf-rendering/RenderDayOverviewPDF';
 import { MissingPathParameter } from './errors';
 import { SettingsData } from 'common/dist/typechecking/api/Settings';
+import UnreliableMailDomainRepository from '../repositories/UnreliableMailDomainRepository';
 
 @singleton()
 @boundClass
@@ -45,6 +46,9 @@ export class BookingsController {
 
     @inject(delay(() => SettingsRepository))
     private readonly settingsRepository: SettingsRepository,
+
+    @inject(delay(() => UnreliableMailDomainRepository))
+    private readonly unreliableMailDomainRepository: UnreliableMailDomainRepository,
 
     @inject(delay(() => TimeslotsController))
     private readonly timeslotController: TimeslotsController
@@ -169,6 +173,13 @@ export class BookingsController {
 
     if (booking != null) {
       if (tokenContent.email !== booking?.email) {
+        /**
+         * FIXME: We should also check, if there was actually a problem with sending the confirmation mail for this
+         * booking, because this PDF allows to circumvent mail verification by the included lookup link.
+         *
+         * Currently the frontend prevents misuse by normal users,
+         * but this scenario is still possible by direct API accesses
+         */
         res
           .status(401)
           .json(
@@ -250,7 +261,23 @@ export class BookingsController {
         firstBooking
       );
 
+      let isMailDomainUnreliable: BookingsCreateResponseInterface['isMailDomainUnreliable'] = undefined;
+
       if (firstBooking.email != null) {
+        // Mail addresses are actually complex:
+        // https://en.wikipedia.org/wiki/Email_address
+        // Also, for extracting the domain, a sophisticated parser should also be used https://stackoverflow.com/a/49893282
+        // However, since providing a lookup PDF in case of an unreliable mail domain is not a critical feature and most
+        // users will enter simple mail addresses, we just take the part after the last '@' as the domain here
+        const splitMail = firstBooking.email.split('@');
+        if (splitMail.length >= 2) {
+          const mailDomain = splitMail[splitMail.length - 1];
+
+          isMailDomainUnreliable = await this.unreliableMailDomainRepository.isMailDomainUnreliable(
+            mailDomain
+          );
+        }
+
         const sendResult = await this.bookingRepository.sendBookingLookupMail(
           bookingCreateData.lookupUrl,
           lookupToken,
@@ -276,6 +303,7 @@ export class BookingsController {
           status: status_text,
           bookings: bookingsToReturn,
           lookupToken,
+          isMailDomainUnreliable,
         })
       );
     } catch (e) {

@@ -29,6 +29,8 @@ import getBaseUrl from '../utils/getBaseUrl';
 import { saveAs } from 'file-saver';
 import LoadingBackdrop from './LoadingBackdrop';
 import DisplayableError from '../errors/DisplayableError';
+import FrontendConfig from '../booking-frontend.config';
+import ErrorContactsView from './ErrorContactsView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -60,6 +62,9 @@ const styles = (theme: Theme) =>
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
+    secondAlert: {
+      marginTop: theme.spacing(1),
+    },
     firstButton: {
       margin: theme.spacing(3, 0, 2),
       width: '100%',
@@ -81,10 +86,10 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
   }
 
   componentDidMount() {
-    this.refreshSettings();
+    this.refreshRemoteData();
   }
 
-  refreshSettings() {
+  refreshRemoteData() {
     const settingsPromise = this.props.client.getSettings();
 
     this.setState({
@@ -200,6 +205,31 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                         sie nicht bestätigt wird! Prüfen Sie auch Ihren Spam
                         Ordner.
                       </Alert>
+
+                      {this.props.createResponse.isMailDomainUnreliable && (
+                        <Alert
+                          severity="warning"
+                          className={this.props.classes.secondAlert}
+                        >
+                          <p style={{ marginTop: '0px', fontWeight: 'bold' }}>
+                            Leider neigt der Anbieter Ihrer E-Mail Adresse
+                            erfahrungsgemäß dazu, unsere Mails nicht
+                            zuzustellen.
+                          </p>
+
+                          {FrontendConfig.errorContacts != null &&
+                            FrontendConfig.errorContacts.length > 0 && (
+                              <>
+                                <p>
+                                  Wurde innerhalb von 15min keine Mail
+                                  zugestellt, dann kontaktieren Sie bitte eine
+                                  dieser Personen:
+                                </p>
+                                <ErrorContactsView />
+                              </>
+                            )}
+                        </Alert>
+                      )}
                     </>
                     <Button
                       autoFocus
@@ -268,20 +298,57 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                       <p style={{ marginTop: '0px' }}>
                         Ihre Buchung wurde erstellt.
                       </p>
-                      Wir haben Ihnen eine E-Mail zugesandt mit Informationen zu
-                      Ihrem Buchungstermin. Die E-Mail enthält auch
-                      Informationen wie Sie Ihre Buchung wieder absagen können.
-                      Sehen Sie auch in Ihrem Spam Ordner nach.
+                      Wir haben Ihnen Ihren Buchungstermin per E-Mail zugesandt.
+                      Die Mail enthält auch Informationen, wie Sie Ihre Buchung
+                      wieder absagen können. Sehen Sie auch in Ihrem Spam Ordner
+                      nach.
                     </Alert>
-                    <Button
-                      autoFocus
-                      variant="contained"
-                      color="primary"
-                      className={this.props.classes.firstButton}
-                      onClick={this.handleOkButton}
-                    >
-                      Ok
-                    </Button>
+                    {this.props.createResponse.isMailDomainUnreliable ? (
+                      <>
+                        <Alert
+                          severity="warning"
+                          className={this.props.classes.secondAlert}
+                        >
+                          <p style={{ marginTop: '0px', fontWeight: 'bold' }}>
+                            Leider neigt der Anbieter Ihrer E-Mail Adresse
+                            erfahrungsgemäß dazu, unsere Mails nicht
+                            zuzustellen.
+                          </p>
+                          Wir empfehlen Ihnen daher, Ihre Terminbestätigung auch
+                          über den Button unten{' '}
+                          <span style={{ fontWeight: 'bold' }}>
+                            herunterzuladen.
+                          </span>
+                        </Alert>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={this.props.classes.firstButton}
+                          onClick={this.downloadLookupPdf}
+                          startIcon={<GetAppIcon />}
+                        >
+                          Bestätigung Herunterladen
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={this.handleOkButton}
+                          className={this.props.classes.button}
+                        >
+                          Fertig
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        autoFocus
+                        variant="contained"
+                        color="primary"
+                        className={this.props.classes.firstButton}
+                        onClick={this.handleOkButton}
+                      >
+                        Ok
+                      </Button>
+                    )}
                   </>
                 );
               }

@@ -13,6 +13,7 @@ import { Client } from '../Client';
 import { TabContext, TabPanel } from '@material-ui/lab';
 import MainSettingsView from './MainSettingsView';
 import BlockedDatesView from './BlockedDatesView';
+import UnreliableMailDomainsView from './UnreliableMailDomainsView';
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -36,9 +37,18 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
     return (
       <TabContext value={this.state.currentTab}>
         <Box style={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={this.state.currentTab} onChange={this.onChangeTab}>
+          <Tabs
+            value={this.state.currentTab}
+            onChange={this.onChangeTab}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
             <Tab label="Einstellungen" value="main-settings" />
             <Tab label="Gesperrte Tage" value="blocked-dates" />
+            <Tab
+              label="Unzuverlässige Mail Domains"
+              value="unreliable-mail-domains"
+            />
           </Tabs>
         </Box>
         <TabPanel value="main-settings">
@@ -46,6 +56,9 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
         </TabPanel>
         <TabPanel value="blocked-dates">
           <BlockedDatesView client={this.props.client} />
+        </TabPanel>
+        <TabPanel value="unreliable-mail-domains">
+          <UnreliableMailDomainsView client={this.props.client} />
         </TabPanel>
       </TabContext>
     );
@@ -55,7 +68,10 @@ class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {
 const SettingsDialog = withStyles(styles)(UnstyledSettingsDialog);
 export default SettingsDialog;
 
-export type TabId = 'main-settings' | 'blocked-dates';
+export type TabId =
+  | 'main-settings'
+  | 'blocked-dates'
+  | 'unreliable-mail-domains';
 
 interface Properties extends WithStyles<typeof styles> {
   client: Client;

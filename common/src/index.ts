@@ -63,6 +63,7 @@ export { AuthResponseData } from './typechecking/api/responses/AuthResponseData'
 export { IsSignupTokenOkRequestData } from './typechecking/api/IsSignupTokenOkRequestData';
 export { SignupRequestData } from './typechecking/api/SignupRequestData';
 export { BookingDayIndexRequestData } from './typechecking/api/requests/BookingDayIndexRequestData';
+export { SetUnreliableMailDomainsRequest } from './typechecking/api/requests/SetUnreliableMailDomainsRequest';
 export {
   ResourceGroupedBookings,
   ResourceGroupedBookingsGetInterface,

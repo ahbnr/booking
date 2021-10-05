@@ -26,6 +26,7 @@ import {
   ISO8601,
   BookingsCreateResponseInterface,
   IBookingLookupPdfRequest,
+  SetUnreliableMailDomainsRequest,
 } from 'common';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
@@ -570,6 +571,32 @@ export class Client {
 
   public async deleteBlockedDate(date: DateTime) {
     await this.request('DELETE', `blockedDates/${date.toISODate()}`);
+  }
+
+  public async getAllUnreliableMailDomains(): Promise<readonly string[]> {
+    const domains = await this.typedRequest(
+      t.readonlyArray(t.string),
+      'GET',
+      'unreliableMailDomains'
+    );
+
+    return domains;
+  }
+
+  public async isMailDomainUnreliable(domain: string): Promise<boolean> {
+    const isUnreliable = await this.typedRequest(
+      t.boolean,
+      'GET',
+      `unreliableMailDomains/${domain}`
+    );
+
+    return isUnreliable;
+  }
+
+  public async setUnreliableMailDomains(
+    domains: SetUnreliableMailDomainsRequest
+  ) {
+    await this.request('POST', `unreliableMailDomains`, domains);
   }
 }
 

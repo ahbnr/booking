@@ -16,6 +16,7 @@ import { AuthController } from './auth.controller';
 import { SettingsController } from './settings.controller';
 import { delay, inject, singleton } from 'tsyringe';
 import { BlockedDatesController } from './blockeddates.controller';
+import { UnreliableMailDomainsController } from './UnreliableMailDomains.controller';
 
 const { DEV_MODE } = process.env;
 
@@ -47,7 +48,10 @@ export class Routes {
     private readonly settingsController: SettingsController,
 
     @inject(delay(() => BlockedDatesController))
-    private readonly blockedDatesController: BlockedDatesController
+    private readonly blockedDatesController: BlockedDatesController,
+
+    @inject(delay(() => UnreliableMailDomainsController))
+    private readonly unreliableMailDomainsController: UnreliableMailDomainsController
   ) {}
 
   private static asyncHandler<T>(
@@ -228,6 +232,22 @@ export class Routes {
       .delete(
         authHandler,
         Routes.asyncHandler(this.blockedDatesController.delete)
+      );
+
+    app
+      .route('/unreliableMailDomains')
+      .get(Routes.asyncHandler(this.unreliableMailDomainsController.index))
+      .post(
+        authHandler,
+        Routes.asyncHandler(this.unreliableMailDomainsController.set)
+      );
+
+    app
+      .route('/unreliableMailDomains/:domain')
+      .get(
+        Routes.asyncHandler(
+          this.unreliableMailDomainsController.isMailDomainUnreliable
+        )
       );
   }
 }

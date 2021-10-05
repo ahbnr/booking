@@ -3,24 +3,18 @@ import {
   Button,
   Container,
   createStyles,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
   Theme,
   Typography,
   withStyles,
   WithStyles,
 } from '@material-ui/core';
 import ErrorIcon from '@material-ui/icons/Error';
-import PhoneIcon from '@material-ui/icons/Phone';
 import React from 'react';
 import DisplayableError from '../errors/DisplayableError';
 import FrontendConfig from '../booking-frontend.config';
 import { boundClass } from 'autobind-decorator';
 import { changeInteractionStateT } from '../App';
+import ErrorContactsView from './ErrorContactsView';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -114,26 +108,7 @@ class UnstyledErrorView extends React.PureComponent<Properties, State> {
             Wenn der Fehler weiterhin auftritt, erhalten Sie unter folgenden
             Kontakten Hilfe:
           </p>
-          <TableContainer component={Paper}>
-            <Table size="small">
-              <TableBody>
-                {FrontendConfig.errorContacts.map((contact) => (
-                  <TableRow key={contact.name}>
-                    <TableCell>{contact.name}</TableCell>
-                    <TableCell>
-                      <Button
-                        startIcon={<PhoneIcon />}
-                        href={`tel:${contact.phone}`}
-                        color="primary"
-                      >
-                        {contact.phone}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <ErrorContactsView />
         </>
       );
     }
