@@ -47,7 +47,7 @@ export type BookingsCreateInterface = t.TypeOf<typeof BookingsCreateInterface>;
 export const BookingsCreateResponseInterface = t.type({
   status: t.union([t.literal('ok'), t.literal('mail_undeliverable')]),
   bookings: t.readonlyArray(BookingGetInterface),
-  lookupToken: t.string,
+  lookupToken: t.union([t.string, t.undefined, t.null]),
   isMailDomainUnreliable: t.union([t.boolean, t.undefined, t.null]),
 });
 

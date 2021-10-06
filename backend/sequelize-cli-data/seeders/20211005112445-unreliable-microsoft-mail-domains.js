@@ -39,8 +39,12 @@ const countrySpecific = [
 
 const additionalMicrosoftMailDomains = ['msn.com', 'passport.com'];
 
-const microsoftMailDomains = countrySpecific
-  .flatMap((postfix) => microsoftMailBaseDomains.map((base) => base + postfix))
+const microsoftMailDomains = []
+  .concat(
+    ...countrySpecific.map((postfix) =>
+      microsoftMailBaseDomains.map((base) => base + postfix)
+    )
+  )
   .concat(additionalMicrosoftMailDomains);
 
 const commentedOutMicrosoftMailDomains = microsoftMailDomains.map(

@@ -235,17 +235,21 @@ export class BookingsController {
 
   public async createBookings(
     req: TypesafeRequest,
-    res: Response<BookingsCreateResponseInterface>
+    res: Response<BookingsCreateResponseInterface | string>
   ) {
     const timeslot = await this.timeslotController.getTimeslot(req);
     const bookingCreateData = checkType(req.body, BookingsCreateInterface);
 
     const settings = await this.settingsRepository.get();
 
+    const modificationOptions = this.genBookingModificationOptions(
+      req,
+      settings.data
+    );
     const bookings = await this.bookingRepository.create(
       timeslot,
       bookingCreateData,
-      this.genBookingModificationOptions(req, settings.data)
+      modificationOptions
     );
 
     try {
@@ -257,9 +261,10 @@ export class BookingsController {
       let status_text: 'ok' | 'mail_undeliverable' = 'ok';
       const firstBooking = bookings[0];
 
-      const lookupToken = await BookingRepository.createBookingLookupToken(
-        firstBooking
-      );
+      const lookupToken =
+        firstBooking.email != null
+          ? await BookingRepository.createBookingLookupToken(firstBooking)
+          : undefined;
 
       let isMailDomainUnreliable: BookingsCreateResponseInterface['isMailDomainUnreliable'] = undefined;
 
@@ -280,7 +285,8 @@ export class BookingsController {
 
         const sendResult = await this.bookingRepository.sendBookingLookupMail(
           bookingCreateData.lookupUrl,
-          lookupToken,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          lookupToken!,
           firstBooking,
           timeslot
         );
@@ -296,6 +302,9 @@ export class BookingsController {
             status_code = 500;
           }
         }
+      } else if (modificationOptions.requireMail) {
+        res.status(400).json('Missing E-Mail');
+        return;
       }
 
       res.status(status_code).json(

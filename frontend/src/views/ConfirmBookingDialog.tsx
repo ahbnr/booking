@@ -17,6 +17,7 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import { Alert } from '@material-ui/lab';
 import {
   BookingsCreateResponseInterface,
+  EMailString,
   NonEmptyString,
   SettingsGetInterface,
 } from 'common';
@@ -116,6 +117,12 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
   }
 
   private async downloadLookupPdf() {
+    if (this.props.createResponse.lookupToken == null) {
+      throw new Error(
+        'Ohne Lookup Token kann kein PDF heruntergeladen werden. In diesem Fall sollte diese Funktion nie aufgerufen werden. Es handelt sich um einen Programmierfehler.'
+      );
+    }
+
     this.setState({
       backdropOpen: true,
     });
@@ -244,7 +251,10 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
                 );
               }
             } else {
-              if (this.props.createResponse.status === 'mail_undeliverable') {
+              if (
+                this.props.createResponse.status === 'mail_undeliverable' &&
+                this.props.createResponse.lookupToken != null
+              ) {
                 content = (
                   <>
                     <Avatar className={this.props.classes.avatarWarning}>
@@ -381,7 +391,7 @@ interface Properties extends WithStyles<typeof styles> {
   isAuthenticated: boolean;
   createResponse: BookingsCreateResponseInterface;
   changeInteractionState: changeInteractionStateT;
-  mailAddress: string;
+  mailAddress?: EMailString;
   resourceName: string;
   timeslotId: number;
   timeslotCapacity: number;

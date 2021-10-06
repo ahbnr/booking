@@ -23,7 +23,7 @@ import {
   useTranslation,
 } from 'react-i18next';
 import {
-  EMailString,
+  BookingsCreateInterface,
   ISO8601,
   NonEmptyString,
   noRefinementChecks,
@@ -67,7 +67,12 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
     });
 
     // no verification necessary, this is done by react-hook-form
-    const email = noRefinementChecks<EMailString>(formInput.email);
+    let email = noRefinementChecks<BookingsCreateInterface['email']>(
+      formInput.email
+    );
+    if (email === '') {
+      email = undefined;
+    }
 
     try {
       const createResponse = await this.props.client.createBookings(
@@ -84,7 +89,7 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
 
       this.props.changeInteractionState('confirmingBookingDialog', {
         createResponse,
-        mailAddress: email,
+        mailAddress: email || undefined,
         resourceName: this.props.resourceName,
         timeslotId: this.props.timeslotId,
         timeslotCapacity: this.props.timeslotCapacity,

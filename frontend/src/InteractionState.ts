@@ -89,7 +89,7 @@ export interface ViewingMainPage {}
 
 export interface ConfirmingBookingDialog extends EnteringEmail {
   createResponse: BookingsCreateResponseInterface;
-  mailAddress: EMailString;
+  mailAddress?: EMailString;
 }
 
 export interface SelectingWeekdayOverview {}
