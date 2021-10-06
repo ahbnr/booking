@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "booking",
+    "password": "password",
+    "database": "bookingdb",
+    "dialect": "sqlite",
+    "storage": "memory"
+  },
+  "production": {
+    "username": "booking",
+    "password": "password",
+    "database": "bookingdb",
+    "host": "localhost",
+    "dialect": "mariadb"
+  }
+}

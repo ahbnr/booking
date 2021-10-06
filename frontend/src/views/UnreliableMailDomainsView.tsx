@@ -120,8 +120,8 @@ class UnstyledUnreliableMailDomainsView extends React.PureComponent<
             <TextField
               multiline
               margin="dense"
-              id="domain"
-              label="Domain"
+              id="domains"
+              label="Domains"
               fullWidth
               value={this.state.unreliableMailDomains}
               onChange={this.handleChange}

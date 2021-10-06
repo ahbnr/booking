@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.createTable('UnreliableMailDomains', {
       domain: {
         primaryKey: true,
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(253),
         allowNull: false,
       },
       createdAt: {

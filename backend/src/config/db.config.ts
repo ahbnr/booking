@@ -1,11 +1,5 @@
 import { ModelMatch, SequelizeOptions } from 'sequelize-typescript';
-
-type DbConfigType = {
-  db: string;
-  user: string;
-  password: string;
-  sequelize_options: SequelizeOptions;
-};
+import fs from 'fs';
 
 const models = [__dirname + '/../models/**/*.model.@(ts|js)'];
 const modelMatch: ModelMatch = (filename, member) => {
@@ -14,28 +8,16 @@ const modelMatch: ModelMatch = (filename, member) => {
   );
 };
 
-const debug_sequelize_options: SequelizeOptions = {
-  dialect: 'sqlite',
-  storage: 'memory',
-  models: models,
-  modelMatch: modelMatch,
-};
+export function getSequelizeOptions(): SequelizeOptions {
+  const raw_file_contents = fs.readFileSync('db_config.json');
+  const db_config = JSON.parse(raw_file_contents.toString());
 
-/* eslint-disable */
-// noinspection JSUnusedLocalSymbols
-const production_sequelize_options: SequelizeOptions = {
-  /* eslint-enable */
-  host: 'localhost',
-  dialect: 'mariadb',
-  models: models,
-  modelMatch: modelMatch,
-};
+  const env = process.env.NODE_ENV || 'development';
+  const sequelize_base_options = db_config[env];
 
-export const dbConfig: DbConfigType = {
-  db: 'bookingdb',
-  user: 'booking_backend',
-  password: 'password',
-  sequelize_options: debug_sequelize_options,
-};
-
-export default dbConfig;
+  return {
+    ...sequelize_base_options,
+    models,
+    modelMatch,
+  };
+}

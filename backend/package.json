@@ -9,7 +9,7 @@
     "start-unwatched": "run-s lint run-index",
     "start": "nodemon --watch src --ext \"js,mjs,jsx,ts,tsx,json\" --exec yarn start-unwatched",
     "clear-memory-start": "run-s clear-memory start",
-    "start-prod": "node dist/index.js",
+    "start-prod": "NODE_ENV=production node dist/index.js",
     "compile-ts": "tsc --build tsconfig.json",
     "build": "run-s lint compile-ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",

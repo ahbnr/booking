@@ -138,6 +138,7 @@ function InviteAdminForm(props: InviteAdminFormProps) {
             value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
             message: 'Dies ist keine gültige E-Mail',
           },
+          maxLength: { value: 320, message: 'Die E-Mail ist zu lang.' },
         }}
         render={({ field, fieldState }) => (
           <TextField

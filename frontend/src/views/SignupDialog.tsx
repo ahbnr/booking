@@ -169,6 +169,7 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
                   error={this.state.userNameError != null}
                   helperText={this.state.userNameError}
                   onChange={this.onUsernameChanged}
+                  inputProps={{ maxLength: 32 }}
                 />
                 <TextField
                   variant="outlined"
@@ -182,6 +183,7 @@ class UnstyledSignupDialog extends React.PureComponent<Properties, State> {
                   error={this.state.passwordError != null}
                   helperText={this.state.passwordError}
                   onChange={this.onPasswordChanged}
+                  inputProps={{ maxLength: 64 }}
                 />
                 {this.state.requestError != null && (
                   <Alert severity="error">

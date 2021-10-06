@@ -35,11 +35,11 @@ export class Booking extends BaseModel<Booking> {
   public timeslotId!: number;
 
   @NotEmpty
-  @Column({ allowNull: false })
+  @Column({ type: DataType.STRING(128), allowNull: false })
   public name!: string;
 
   @IsEmail
-  @Column({ allowNull: true })
+  @Column({ type: DataType.STRING(320), allowNull: true })
   public email?: string;
 
   @IsDate

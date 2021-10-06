@@ -240,6 +240,7 @@ class UnstyledResourcesView extends React.PureComponent<Properties, State> {
                 fullWidth
                 value={this.state.newResourceName}
                 onChange={this.onNewResourceNameChange}
+                inputProps={{ maxLength: 64 }}
               />
             </form>
           </DialogContent>

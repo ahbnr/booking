@@ -13,7 +13,8 @@ import { singleton } from 'tsyringe';
 @boundClass
 export default class UserRepository {
   public async initRootUser() {
-    if ((await this.findUserByName('root')) == null) {
+    const rootUser = await this.findUserByName('root');
+    if (rootUser == null) {
       let generatedPassword;
       if (DEV_MODE === '1') {
         generatedPassword = 'root';
@@ -27,9 +28,10 @@ export default class UserRepository {
       });
 
       const rootPasswordPath = 'root-password.txt';
-      fs.writeFileSync(
-        rootPasswordPath,
-        `Created "root" user with password. The password was saved to ${rootPasswordPath}.\n\n`
+      fs.writeFileSync(rootPasswordPath, generatedPassword);
+
+      console.log(
+        `\n\nCreated "root" user with password. The password was saved to ${rootPasswordPath}.\n\n`
       );
     }
   }

@@ -15,7 +15,7 @@ module.exports = {
         allowNull: false,
       },
       resourceName: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(64),
         allowNull: false,
         references: {
           model: 'Resources',

@@ -1,23 +1,32 @@
-import { BelongsTo, ForeignKey, NotEmpty } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  DataType,
+  ForeignKey,
+  NotEmpty,
+} from 'sequelize-typescript';
 import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { BaseModel } from './BaseModel';
-import { User } from './user.model';
+import { MAX_USER_NAME_LENGTH, User } from './user.model';
 import { LazyGetter } from '../utils/LazyGetter';
 import { DateTime } from 'luxon';
+
+const NUM_REFRESH_TOKEN_BYTES = 128;
 
 @Table
 export class RefreshToken extends BaseModel<RefreshToken> {
   @PrimaryKey
   @NotEmpty
-  @Column
+  // twice the refresh token byte size, since we store it in hex format
+  @Column(DataType.STRING(NUM_REFRESH_TOKEN_BYTES * 2))
   public token!: string;
 
   @NotEmpty
-  @Column
+  // twice the refresh token byte size, since we store it in hex format
+  @Column(DataType.STRING(NUM_REFRESH_TOKEN_BYTES * 2))
   public activation!: string;
 
   @ForeignKey(() => User)
-  @Column({ allowNull: false })
+  @Column({ type: DataType.STRING(MAX_USER_NAME_LENGTH), allowNull: false })
   public userName!: string;
 
   @BelongsTo(() => User, { onDelete: 'CASCADE' })

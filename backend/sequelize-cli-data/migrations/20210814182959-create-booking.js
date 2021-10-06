@@ -8,6 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         onDelete: 'CASCADE',
         allowNull: false,
+        autoIncrement: true,
       },
       timeslotId: {
         type: Sequelize.INTEGER,
@@ -19,12 +20,12 @@ module.exports = {
         },
       },
       name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(128),
         allowNull: false,
         notEmpty: true,
       },
       email: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(320),
         isEmail: true,
         allowNull: false,
       },

@@ -1,7 +1,7 @@
 import { DataType, ForeignKey, BelongsTo, IsIn } from 'sequelize-typescript';
 import { Timeslot } from './timeslot.model';
 import { Column, HasMany, PrimaryKey, Table } from 'sequelize-typescript';
-import { Resource } from './resource.model';
+import { MAX_RESOURCE_NAME_LENGTH, Resource } from './resource.model';
 import { WeekdayName, WeekdayNameValues } from 'common/dist';
 import { BaseModel } from './BaseModel';
 import { LazyGetter } from '../utils/LazyGetter';
@@ -25,7 +25,7 @@ export class Weekday extends BaseModel<Weekday> {
   public name!: WeekdayName;
 
   @ForeignKey(() => Resource)
-  @Column({ allowNull: false })
+  @Column({ type: DataType.STRING(MAX_RESOURCE_NAME_LENGTH), allowNull: false })
   public resourceName!: string;
 
   @BelongsTo(() => Resource, { onDelete: 'CASCADE' })

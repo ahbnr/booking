@@ -1,9 +1,9 @@
-import { Column, PrimaryKey, Table } from 'sequelize-typescript';
+import { Column, DataType, PrimaryKey, Table } from 'sequelize-typescript';
 import { BaseModel } from './BaseModel';
 
 @Table
 export class UnreliableMailDomain extends BaseModel<UnreliableMailDomain> {
   @PrimaryKey
-  @Column({ allowNull: false })
+  @Column({ type: DataType.STRING(253), allowNull: false })
   public domain!: string;
 }

@@ -3,6 +3,7 @@ import {
   BeforeBulkUpdate,
   BeforeCreate,
   BeforeUpdate,
+  DataType,
   HasMany,
   IsEmail,
   NotEmpty,
@@ -13,19 +14,22 @@ import bcrypt from 'bcrypt';
 import { BaseModel } from './BaseModel';
 import { RefreshToken } from './refreshtoken.model';
 
+export const MAX_USER_NAME_LENGTH = 32;
+
 @Table
 export class User extends BaseModel<User> {
   @PrimaryKey
   @NotEmpty
-  @Column
+  @Column(DataType.STRING(MAX_USER_NAME_LENGTH))
   public name!: string;
 
   @IsEmail
-  @Column({ allowNull: true })
+  @Column({ type: DataType.STRING(320), allowNull: true })
   public email?: string;
 
   @NotEmpty
-  @Column({ allowNull: false })
+  // BCrypt always produces length 60 strings: https://stackoverflow.com/a/5882472
+  @Column({ type: DataType.STRING(60), allowNull: false })
   public password!: string;
 
   @HasMany(() => RefreshToken, { onDelete: 'CASCADE' })

@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Resources', {
       name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(64),
         allowNull: false,
         notEmpty: true,
         onDelete: 'CASCADE',

@@ -102,7 +102,11 @@ const useFormStyles = makeStyles((theme) => ({
 }));
 
 function NameForm(props: SettingsFormProps) {
-  const { handleSubmit, control } = useForm<IFormInput>();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<IFormInput>();
   const classes = useFormStyles();
 
   return (
@@ -112,6 +116,7 @@ function NameForm(props: SettingsFormProps) {
         control={control}
         rules={{
           required: true,
+          maxLength: { value: 64, message: 'Der Name ist zu lang!' },
         }}
         render={({ field }) => (
           <TextField
@@ -121,6 +126,8 @@ function NameForm(props: SettingsFormProps) {
             fullWidth
             autoFocus
             label={'Vorname'}
+            error={!!errors.firstName}
+            helperText={errors.firstName?.message}
             {...field}
           />
         )}
@@ -130,6 +137,7 @@ function NameForm(props: SettingsFormProps) {
         control={control}
         rules={{
           required: true,
+          maxLength: { value: 64, message: 'Der Name ist zu lang!' },
         }}
         render={({ field }) => (
           <TextField
@@ -138,6 +146,8 @@ function NameForm(props: SettingsFormProps) {
             margin="normal"
             fullWidth
             label={'Nachname'}
+            error={!!errors.lastName}
+            helperText={errors.lastName?.message}
             {...field}
           />
         )}

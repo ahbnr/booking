@@ -7,15 +7,15 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
         notEmpty: true,
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(32),
       },
       email: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(320),
         isEmail: true,
         allowNull: true,
       },
       password: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(60),
         notEmpty: true,
         allowNull: false,
       },
