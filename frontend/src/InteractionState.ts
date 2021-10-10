@@ -4,7 +4,7 @@ import {
   WeekdayName,
   NonEmptyString,
   BookingsCreateResponseInterface,
-  EMailString,
+  BookingsCreateInterface,
 } from 'common';
 import { DateTime } from 'luxon';
 
@@ -55,6 +55,10 @@ export interface ConfirmingParticipants extends AddingParticipant {}
 
 export interface EnteringEmail extends ConfirmingParticipants {}
 
+export interface ConsentingDataProcessing extends EnteringEmail {
+  mailAddress: BookingsCreateInterface['email'];
+}
+
 export interface Authenticating {}
 
 export interface InvitingAdmin {}
@@ -87,9 +91,8 @@ export interface AddingWeekday {
 
 export interface ViewingMainPage {}
 
-export interface ConfirmingBookingDialog extends EnteringEmail {
+export interface ConfirmingBookingDialog extends ConsentingDataProcessing {
   createResponse: BookingsCreateResponseInterface;
-  mailAddress?: EMailString;
 }
 
 export interface SelectingWeekdayOverview {}
@@ -109,6 +112,7 @@ export type Activity = ADT<{
   addingParticipant: AddingParticipant;
   confirmingParticipants: ConfirmingParticipants;
   enteringEmail: EnteringEmail;
+  consentingDataProcessing: ConsentingDataProcessing;
   authenticating: Authenticating;
   invitingAdmin: InvitingAdmin;
   signingUp: SigningUp;

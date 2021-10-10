@@ -24,14 +24,10 @@ import {
 } from 'react-i18next';
 import {
   BookingsCreateInterface,
-  ISO8601,
   NonEmptyString,
   noRefinementChecks,
 } from 'common';
-import getBaseUrl from '../utils/getBaseUrl';
-import DisplayableError from '../errors/DisplayableError';
 import { Alert } from '@material-ui/lab';
-import LoadingBackdrop from './LoadingBackdrop';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,11 +57,7 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
     this.state = { backdropOpen: false };
   }
 
-  async onSubmit(formInput: IFormInput) {
-    this.setState({
-      backdropOpen: true,
-    });
-
+  onSubmit(formInput: IFormInput) {
     // no verification necessary, this is done by react-hook-form
     let email = noRefinementChecks<BookingsCreateInterface['email']>(
       formInput.email
@@ -74,37 +66,17 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
       email = undefined;
     }
 
-    try {
-      const createResponse = await this.props.client.createBookings(
-        this.props.timeslotId,
-        {
-          bookingDay: noRefinementChecks<ISO8601>(
-            this.props.bookingDay.toISODate()
-          ),
-          participantNames: this.props.participantNames,
-          email,
-          lookupUrl: `${getBaseUrl()}/`,
-        }
-      );
-
-      this.props.changeInteractionState('confirmingBookingDialog', {
-        createResponse,
-        mailAddress: email || undefined,
-        resourceName: this.props.resourceName,
-        timeslotId: this.props.timeslotId,
-        timeslotCapacity: this.props.timeslotCapacity,
-        numBookingsForSlot: this.props.numBookingsForSlot,
-        startTime: this.props.startTime,
-        endTime: this.props.endTime,
-        bookingDay: this.props.bookingDay,
-        participantNames: this.props.participantNames,
-      });
-    } catch (e) {
-      throw new DisplayableError(
-        'Konnte Buchungen nicht erstellen. Eventuell hat jemand anderes den Platz inzwischen gebucht. Versuchen Sie einen anderen Zeitslot zu wählen.',
-        e
-      );
-    }
+    this.props.changeInteractionState('consentingDataProcessing', {
+      mailAddress: email,
+      resourceName: this.props.resourceName,
+      timeslotId: this.props.timeslotId,
+      timeslotCapacity: this.props.timeslotCapacity,
+      numBookingsForSlot: this.props.numBookingsForSlot,
+      startTime: this.props.startTime,
+      endTime: this.props.endTime,
+      bookingDay: this.props.bookingDay,
+      participantNames: this.props.participantNames,
+    });
   }
 
   render() {
@@ -138,7 +110,6 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
             />
           </div>
         </Container>
-        <LoadingBackdrop open={this.state.backdropOpen} />
       </>
     );
   }

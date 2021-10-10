@@ -6,6 +6,7 @@ interface IFrontendConfig {
   appBarTitle: string;
   privacyInfo: {
     entitiesWithDataAccess: string[];
+    privacyStatementUrl?: string;
   };
   errorContacts: {
     name: string;
@@ -19,6 +20,7 @@ const FrontendConfig: IFrontendConfig = {
   appBarTitle: '',
   privacyInfo: {
     entitiesWithDataAccess: ['Staff of My Organization'],
+    privacyStatementUrl: 'https://localhost:8000',
   },
   errorContacts: [{ name: 'Mr. Admin', phone: '0170 42 42 42' }],
 };

@@ -16,8 +16,8 @@ import WarningIcon from '@material-ui/icons/Warning';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { Alert } from '@material-ui/lab';
 import {
+  BookingsCreateInterface,
   BookingsCreateResponseInterface,
-  EMailString,
   NonEmptyString,
   SettingsGetInterface,
 } from 'common';
@@ -101,19 +101,6 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
 
   private handleOkButton() {
     this.props.changeInteractionState('viewingMainPage', {});
-  }
-
-  private reconfirmMailAddress() {
-    this.props.changeInteractionState('enteringEmail', {
-      resourceName: this.props.resourceName,
-      timeslotId: this.props.timeslotId,
-      timeslotCapacity: this.props.timeslotCapacity,
-      numBookingsForSlot: this.props.numBookingsForSlot,
-      startTime: this.props.startTime,
-      endTime: this.props.endTime,
-      bookingDay: this.props.bookingDay,
-      participantNames: this.props.participantNames,
-    });
   }
 
   private async downloadLookupPdf() {
@@ -391,7 +378,7 @@ interface Properties extends WithStyles<typeof styles> {
   isAuthenticated: boolean;
   createResponse: BookingsCreateResponseInterface;
   changeInteractionState: changeInteractionStateT;
-  mailAddress?: EMailString;
+  mailAddress: BookingsCreateInterface['email'];
   resourceName: string;
   timeslotId: number;
   timeslotCapacity: number;

@@ -5,6 +5,7 @@ import {
   Button,
   Container,
   createStyles,
+  Link,
   Theme,
   Typography,
   WithStyles,
@@ -44,8 +45,12 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
     this.state = {};
   }
 
-  handleOkButton() {
+  private handleOkButton() {
     window.history.back();
+  }
+
+  private preventDefault(): boolean {
+    return false;
   }
 
   render() {
@@ -64,12 +69,23 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
               Datenschutz
             </Typography>
             <Typography variant="body1" className={this.props.classes.mainText}>
-              <em>Welche Daten</em>t werden bei einer Anmeldung über Sie
+              <em>Welche Daten</em> werden bei einer Anmeldung über Sie
               gespeichert?
               <ul>
                 <li>Ihr Vorname und Nachname</li>
                 <li>Ihre E-Mail Adresse</li>
                 <li>Der Termin und die angemeldete Resource</li>
+                {FrontendConfig.privacyInfo.privacyStatementUrl && (
+                  <li>
+                    ggf. Verbindungsdaten, siehe unsere{' '}
+                    <Link
+                      href={FrontendConfig.privacyInfo.privacyStatementUrl}
+                      onClick={this.preventDefault}
+                    >
+                      Datenschutzerklärung
+                    </Link>
+                  </li>
+                )}
               </ul>
               <em>Warum</em> werden diese Daten gespeichert?
               <ul>
@@ -92,6 +108,14 @@ class UnstyledPrivacyNote extends React.PureComponent<Properties, State> {
                   </ul>
                 </>
               )}
+              Dies ist nur eine kurze Übersicht, für genaue Informationen zum
+              Datenschutz und betroffenen Daten, verweisen wir auf unsere{' '}
+              <Link
+                href={FrontendConfig.privacyInfo.privacyStatementUrl}
+                onClick={this.preventDefault}
+              >
+                Datenschutzerklärung.
+              </Link>
             </Typography>
             <Button
               variant="contained"

@@ -38,6 +38,7 @@ import AddParticipantDialog from './views/AddParticipantDialog';
 import ConfirmParticipantsDialog from './views/ConfirmParticipantsDialog';
 import EnterEmailDialog from './views/EnterEmailDialog';
 import getBaseUrl from './utils/getBaseUrl';
+import EnterDataConsentDialog from './views/EnterDataConsentDialog';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -226,9 +227,15 @@ class UnstyledApp extends React.Component<AppProps, AppState> {
       enteringEmail: (params) => (
         <EnterEmailDialog
           {...params}
-          client={this.client}
           changeInteractionState={this.changeInteractionState}
           isAuthenticated={this.state.isAuthenticated}
+        />
+      ),
+      consentingDataProcessing: (params) => (
+        <EnterDataConsentDialog
+          {...params}
+          client={this.client}
+          changeInteractionState={this.changeInteractionState}
         />
       ),
       authenticating: () => (

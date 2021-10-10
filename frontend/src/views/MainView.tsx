@@ -15,7 +15,6 @@ import { changeInteractionStateT } from '../App';
 import FrontendConfig from '../booking-frontend.config';
 
 import { withTranslation, WithTranslation } from 'react-i18next';
-import Snackbar from '@material-ui/core/Snackbar';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -89,16 +88,6 @@ class UnstyledMainView extends React.PureComponent<Properties, State> {
             {t('start-button')}
           </Button>
         </Grid>
-        <Snackbar
-          open={true}
-          message="Hinweise zum Datenschutz"
-          action={
-            <Button color="inherit" size="small" onClick={this.viewPrivacyNote}>
-              Öffnen
-            </Button>
-          }
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        />
       </>
     );
   }
