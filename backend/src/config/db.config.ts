@@ -9,8 +9,11 @@ const modelMatch: ModelMatch = (filename, member) => {
 };
 
 export function getSequelizeOptions(): SequelizeOptions {
-  const raw_file_contents = fs.readFileSync('db_config.json');
-  const db_config = JSON.parse(raw_file_contents.toString());
+  const raw_file_contents = fs.readFileSync('db_config.js');
+  const db_config = eval(raw_file_contents.toString()) as Record<
+    string,
+    SequelizeOptions
+  >;
 
   const env = process.env.NODE_ENV || 'development';
   const sequelize_base_options = db_config[env];
