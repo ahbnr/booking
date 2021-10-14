@@ -15,7 +15,7 @@ import MainSettingsView from './MainSettingsView';
 import BlockedDatesView from './BlockedDatesView';
 import UnreliableMailDomainsView from './UnreliableMailDomainsView';
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (_theme: Theme) => createStyles({});
 
 @boundClass
 class UnstyledSettingsDialog extends React.PureComponent<Properties, State> {

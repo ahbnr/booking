@@ -16,7 +16,7 @@ import React from 'react';
 import FrontendConfig from '../booking-frontend.config';
 import { boundClass } from 'autobind-decorator';
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (_theme: Theme) => createStyles({});
 
 @boundClass
 class UnstyledErrorContactsView extends React.PureComponent<Properties, State> {
