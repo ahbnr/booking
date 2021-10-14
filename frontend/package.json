@@ -39,6 +39,7 @@
     "start-prod": "node static-server/static-server.js",
     "react-scripts-build": "react-scripts build",
     "build": "GENERATE_SOURCEMAP=true run-s react-scripts-build",
+    "heroku-postbuild": "run-s build",
     "eject": "react-scripts eject",
     "test-start-backend": "yarn workspace backend clear-memory-start",
     "test-wait-for-backend": "yarn workspace backend wait-for-api",

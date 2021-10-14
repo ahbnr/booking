@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach run build",
+    "heroku-postbuild": "yarn workspaces foreach run heroku-postbuild",
     "clean": "rimraf **/build **/dist **/node_modules **/yarn.lock"
   },
   "devDependencies": {

@@ -15,6 +15,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "compile-ts": "tsc --build tsconfig.json",
     "build": "run-s lint compile-ts",
+    "heroku-postbuild": "run-s build",
     "test": "echo \"No tests defined\""
   },
   "devDependencies": {
