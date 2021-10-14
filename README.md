@@ -4,7 +4,7 @@
 # WORK-IN-PROGRESS Booking Service
 
 <div style="text-align: center;">
-![Demo GIF](https://i.imgur.com/URYiFSd.gif)
+ <img src="https://i.imgur.com/URYiFSd.gif" />
 </div>
 
 > Do you offer appointments on a regular basis or have to manage access to resources like meeting rooms for a set of timeslots?

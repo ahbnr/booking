@@ -1,6 +1,11 @@
 const express = require('express');
 const compression = require('compression');
 const helmet = require('helmet');
+let createProxyMiddleware = require('http-proxy-middleware');
+if (createProxyMiddleware.createProxyMiddleware != null) {
+  createProxyMiddleware = createProxyMiddleware.createProxyMiddleware;
+}
+
 const app = express(); // create express app
 
 app.use(compression());
@@ -22,6 +27,17 @@ app.use(
     },
   })
 );
+
+if (process.env.API_URL != null) {
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: process.env.API_URL,
+      changeOrigin: true,
+      pathRewrite: { '^/api': '' }, // remove /api url prefix when redirecting to backend
+    })
+  );
+}
 
 app.listen(process.env.PORT || 8000, () => {
   console.log('Serving static react app build.');

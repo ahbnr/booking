@@ -32,7 +32,7 @@ import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
 import includes from 'lodash/fp/includes';
 
-const baseUrl = process.env.API_URL || `${process.env.PUBLIC_URL}/api`;
+const baseUrl = `${process.env.PUBLIC_URL}/api`;
 
 class RequestError {
   public readonly response: Response;
