@@ -9,6 +9,8 @@
 **WARNING**: Currently, the UI is only available in German. The i18next internationalization-framework has already been
 partially integrated but there are no English translations yet. *Pull-Requests to add translations are welcome!*.
 
+**LIVE-DEMO**: <https://booking-frontend-app.herokuapp.com/>
+
 ## Features
 
 * manage various resources (conference rooms, support employees, ...)

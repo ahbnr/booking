@@ -25,10 +25,11 @@ module.exports = {
     storage: 'memory',
   },
   production: {
-    username: 'booking',
-    password: 'password',
-    database: 'bookingdb',
-    host: 'localhost',
-    dialect: 'mariadb',
+    username: process.env.DB_PROD_USERNAME || 'booking',
+    password: process.env.DB_PROD_PASSWORD || 'password',
+    database: process.env.DB_PROD_DBNAME || 'bookingdb',
+    host: process.env.DB_PROD_HOST || 'localhost',
+    dialect: process.env.DB_PROD_DIALECT || 'mariadb',
+    storage: process.env.DB_PROD_STORAGE || undefined,
   },
 };

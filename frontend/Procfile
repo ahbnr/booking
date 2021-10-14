@@ -1,1 +1,1 @@
-web: bin/boot
+web: yarn workspace frontend start-prod
