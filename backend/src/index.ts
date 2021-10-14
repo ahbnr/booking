@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Load .env files
+
 import 'reflect-metadata'; // needed to get tsyringe dependency injection going
 import express from 'express';
 import bodyParser from 'body-parser';
