@@ -6,6 +6,9 @@
 > Do you offer appointments on a regular basis or have to manage access to resources like meeting rooms for a set of timeslots?
 > This project provides a user-friendly, responsive web-ui for booking such resources.
 
+**WARNING**: Currently, the UI is only available in German. The i18next internationalization-framework has already been
+partially integrated but there are no English translations yet. *Pull-Requests to add translations are welcome!*.
+
 ## Features
 
 * manage various resources (conference rooms, support employees, ...)

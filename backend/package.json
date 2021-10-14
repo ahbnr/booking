@@ -12,12 +12,15 @@
     "start-prod": "NODE_ENV=production node dist/index.js",
     "compile-ts": "tsc --build tsconfig.json",
     "build": "run-s lint compile-ts",
+    "heroku-postbuild": "run-s build clear-memory db-migrate db-seed-demo-data",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "run-vrest-now": "vrest-ng-cli run --projectdir=./testing/vREST_NG --testsuitenames=\"Shallow API Tests\" --logger=xunit",
     "wait-for-api": "wait-on tcp:3000",
     "run-vrest-when-ready": "run-s wait-for-api run-vrest-now",
     "test-old": "concurrently -k -s first yarn:clear-memory-start yarn:run-vrest-when-ready",
-    "test": "echo \"Currently no isolated tests for backend. Use end-to-end tests in frontend.\""
+    "test": "echo \"Currently no isolated tests for backend. Use end-to-end tests in frontend.\"",
+    "db-migrate": "sequelize-cli db:migrate",
+    "db-seed-demo-data": "sequelize-cli db:seed --seed 20211014124632-demo-data.js"
   },
   "keywords": [],
   "author": "",

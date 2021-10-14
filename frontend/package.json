@@ -45,7 +45,8 @@
     "test-wait-for-frontend": "wait-on tcp:8000",
     "test-start-cypress": "cypress run",
     "test-run-cypress-when-ready": "run-s test-wait-for-backend test-wait-for-frontend test-start-cypress",
-    "test": "concurrently -k -s first yarn:test-start-backend yarn:start-no-browser yarn:test-run-cypress-when-ready",
+    "test-old": "concurrently -k -s first yarn:test-start-backend yarn:start-no-browser yarn:test-run-cypress-when-ready",
+    "test": "echo \"Currently no frontend tests. Create some using cypress.\"",
     "source-map-explorer": "source-map-explorer 'build/static/js/*.js'",
     "analyze": "run-s react-scripts-build source-map-explorer"
   },
