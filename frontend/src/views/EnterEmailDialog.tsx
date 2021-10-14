@@ -10,7 +10,6 @@ import {
   Typography,
   WithStyles,
 } from '@material-ui/core';
-import { Client } from '../Client';
 import withStyles from '@material-ui/core/styles/withStyles';
 import EmailIcon from '@material-ui/icons/Email';
 import { changeInteractionStateT } from '../App';
@@ -213,7 +212,6 @@ interface IFormInput {
 }
 
 interface Properties extends WithStyles<typeof styles>, WithTranslation {
-  client: Client;
   resourceName: string;
   timeslotId: number;
   timeslotCapacity: number;

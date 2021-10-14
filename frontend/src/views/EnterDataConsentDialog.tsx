@@ -21,7 +21,7 @@ import {
   noRefinementChecks,
 } from 'common';
 import PolicyIcon from '@material-ui/icons/Policy';
-import getBaseUrl from '../utils/getBaseUrl';
+import getFrontendUrl from '../utils/getFrontendUrl';
 import DisplayableError from '../errors/DisplayableError';
 import LoadingBackdrop from './LoadingBackdrop';
 import { Client } from '../Client';
@@ -78,7 +78,7 @@ class UnstyledEnterDataConsentDialog extends React.PureComponent<
           ),
           participantNames: this.props.participantNames,
           email: this.props.mailAddress,
-          lookupUrl: `${getBaseUrl()}/`,
+          lookupUrl: `${getFrontendUrl()}/`,
         }
       );
 

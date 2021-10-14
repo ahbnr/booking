@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core';
 import { Client } from '../Client';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import getBaseUrl from '../utils/getBaseUrl';
+import getFrontendUrl from '../utils/getFrontendUrl';
 import { EMailString } from 'common';
 import { changeInteractionStateT } from '../App';
 import LoadingBackdrop from './LoadingBackdrop';
@@ -53,7 +53,7 @@ class UnstyledInviteAdminDialog extends React.PureComponent<Properties, State> {
     });
     const response = await this.props.client.inviteForSignup(
       formInput.email as EMailString,
-      `${getBaseUrl()}/`
+      `${getFrontendUrl()}/`
     );
 
     switch (response.kind) {

@@ -26,7 +26,7 @@ import Suspense from './Suspense';
 import { Client } from '../Client';
 import { changeInteractionStateT } from '../App';
 import { DateTime } from 'luxon';
-import getBaseUrl from '../utils/getBaseUrl';
+import getFrontendUrl from '../utils/getFrontendUrl';
 import { saveAs } from 'file-saver';
 import LoadingBackdrop from './LoadingBackdrop';
 import DisplayableError from '../errors/DisplayableError';
@@ -118,7 +118,7 @@ class UnstyledConfirmBookingDialog extends React.PureComponent<
     const blob = await this.props.client.getLookupPdf(
       firstBooking.id,
       this.props.createResponse.lookupToken,
-      `${getBaseUrl()}/`
+      `${getFrontendUrl()}/`
     );
 
     saveAs(

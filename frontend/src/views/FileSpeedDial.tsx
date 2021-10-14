@@ -73,7 +73,6 @@ class UnstyledFileSpeedDial extends React.PureComponent<Properties, State> {
 
     untypedNavigator
       .share({
-        //url: process.env.PUBLIC_URL,
         files: [file],
         title: this.props.title,
         text: this.props.text,
