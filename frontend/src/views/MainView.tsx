@@ -15,6 +15,7 @@ import { changeInteractionStateT } from '../App';
 import FrontendConfig from '../booking-frontend.config';
 
 import { withTranslation, WithTranslation } from 'react-i18next';
+import { Alert } from '@material-ui/lab';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -36,6 +37,9 @@ const styles = (theme: Theme) =>
     },
     startButton: {
       margin: theme.spacing(3, 0, 2),
+    },
+    welcomeHint: {
+      marginTop: theme.spacing(2),
     },
   });
 
@@ -78,6 +82,11 @@ class UnstyledMainView extends React.PureComponent<Properties, State> {
           <Typography variant="subtitle1" align="center">
             {t('welcome-subtitle')} {FrontendConfig.organization}
           </Typography>
+          {FrontendConfig.welcomeHint && (
+            <Alert severity="info" className={this.props.classes.welcomeHint}>
+              {FrontendConfig.welcomeHint}
+            </Alert>
+          )}
           <Button
             variant="contained"
             color="primary"

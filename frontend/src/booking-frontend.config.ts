@@ -4,6 +4,7 @@ interface IFrontendConfig {
   language: string;
   organization: string;
   appBarTitle: string;
+  welcomeHint?: string; // Will be shown on the first welcome page as emphasized text
   privacyInfo: {
     entitiesWithDataAccess: string[];
     privacyStatementUrl?: string;
