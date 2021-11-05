@@ -59,7 +59,7 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
   onSubmit(formInput: IFormInput) {
     // no verification necessary, this is done by react-hook-form
     let email = noRefinementChecks<BookingsCreateInterface['email']>(
-      formInput.email
+      formInput.email.trim()
     );
     if (email === '') {
       email = undefined;
@@ -151,7 +151,7 @@ function EmailForm(props: SettingsFormProps) {
           required: !props.isAuthenticated,
           pattern: {
             // eslint-disable-next-line no-useless-escape
-            value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            value: /^\s*(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\s*$/,
             message: 'Dies ist keine gültige E-Mail',
           },
           maxLength: { value: 320, message: 'Der Name ist zu lang!' },
