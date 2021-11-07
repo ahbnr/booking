@@ -1,4 +1,4 @@
-import { IsDate } from 'sequelize-typescript';
+import { DataType, IsDate, NotEmpty } from 'sequelize-typescript';
 import { Column, PrimaryKey, Table } from 'sequelize-typescript';
 import { BaseModel } from './BaseModel';
 
@@ -8,4 +8,8 @@ export class BlockedDate extends BaseModel<BlockedDate> {
   @IsDate
   @Column({ allowNull: false })
   public date!: Date;
+
+  @NotEmpty
+  @Column({ type: DataType.STRING(256), allowNull: true, defaultValue: null })
+  public note?: string;
 }

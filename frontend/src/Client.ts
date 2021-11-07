@@ -23,10 +23,11 @@ import {
   InviteForSignupResponseData,
   SignupResponseData,
   ResourceGroupedBookingsGetInterface,
-  ISO8601,
   BookingsCreateResponseInterface,
   IBookingLookupPdfRequest,
   SetUnreliableMailDomainsRequest,
+  BlockedDateGetInterface,
+  BlockedDatePostInterface,
 } from 'common';
 import DisplayableError from './errors/DisplayableError';
 import { DateTime } from 'luxon';
@@ -542,31 +543,36 @@ export class Client {
     );
   }
 
-  public async getAllBlockedDates(): Promise<DateTime[]> {
+  public async getAllBlockedDates(): Promise<
+    readonly BlockedDateGetInterface[]
+  > {
     const blockedDateStrings = await this.typedRequest(
-      t.readonlyArray(ISO8601),
+      t.readonlyArray(BlockedDateGetInterface),
       'GET',
       'blockedDates'
     );
 
-    return blockedDateStrings.map((isoString) => DateTime.fromISO(isoString));
+    return blockedDateStrings;
   }
 
   public async getBlockedDatesInRange(
     startDate: DateTime,
     endDate: DateTime
-  ): Promise<DateTime[]> {
+  ): Promise<readonly BlockedDateGetInterface[]> {
     const blockedDateStrings = await this.typedRequest(
-      t.readonlyArray(ISO8601),
+      t.readonlyArray(BlockedDateGetInterface),
       'GET',
       `blockedDates?start=${startDate.toISODate()}&end=${endDate.toISODate()}`
     );
 
-    return blockedDateStrings.map((isoString) => DateTime.fromISO(isoString));
+    return blockedDateStrings;
   }
 
-  public async createBlockedDate(date: DateTime) {
-    await this.request('POST', `blockedDates/${date.toISODate()}`);
+  public async createBlockedDate(
+    date: DateTime,
+    postData: BlockedDatePostInterface
+  ) {
+    await this.request('POST', `blockedDates/${date.toISODate()}`, postData);
   }
 
   public async deleteBlockedDate(date: DateTime) {

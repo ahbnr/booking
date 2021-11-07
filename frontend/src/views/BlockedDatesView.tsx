@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { boundClass } from 'autobind-decorator';
 import {
   Avatar,
@@ -15,6 +15,7 @@ import {
   ListItem,
   ListItemSecondaryAction,
   ListItemText,
+  TextField,
   Theme,
   Typography,
   WithStyles,
@@ -33,6 +34,11 @@ import LuxonUtils from '@date-io/luxon';
 import { fabStyle } from '../styles/fab';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { WithTranslation, withTranslation } from 'react-i18next';
+import {
+  BlockedDateGetInterface,
+  BlockedDatePostInterface,
+  noRefinementChecks,
+} from 'common';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -64,6 +70,7 @@ class UnstyledBlockedDatesView extends React.PureComponent<Properties, State> {
 
     this.state = {
       newDate: new Date(),
+      newNote: '',
       showAddBlockedDateModal: false,
       backdropOpen: false,
       getBlockedDates: undefined,
@@ -111,10 +118,17 @@ class UnstyledBlockedDatesView extends React.PureComponent<Properties, State> {
       this.setState({
         backdropOpen: true,
       });
+
+      const postData = noRefinementChecks<BlockedDatePostInterface>({
+        note: this.state.newNote.length > 0 ? this.state.newNote : undefined,
+      });
+
       await this.props.client.createBlockedDate(
-        DateTime.fromJSDate(this.state.newDate)
+        DateTime.fromJSDate(this.state.newDate),
+        postData
       );
       this.setState({
+        newNote: '',
         backdropOpen: false,
       });
 
@@ -134,13 +148,21 @@ class UnstyledBlockedDatesView extends React.PureComponent<Properties, State> {
     this.refreshBlockedDates();
   }
 
+  private onNewNoteChange(
+    change: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) {
+    this.setState({
+      newNote: change.target.value,
+    });
+  }
+
   render() {
     return (
       <>
         <Suspense
           asyncAction={this.state.getBlockedDates}
           fallback={<LoadingScreen />}
-          content={(blockedDates) => (
+          content={(blockedDates: readonly BlockedDateGetInterface[]) => (
             <Container
               className={this.props.classes.container}
               component="main"
@@ -159,23 +181,34 @@ class UnstyledBlockedDatesView extends React.PureComponent<Properties, State> {
                     : 'Momentan werden keine Tage gesperrt.'}
                 </Typography>
                 <List className={this.props.classes.list}>
-                  {blockedDates.map((blockedDate) => (
-                    <ListItem key={blockedDate.toISODate()}>
-                      <ListItemText className={this.props.classes.listItemText}>
-                        {blockedDate
-                          .setLocale('de-DE')
-                          .toLocaleString({ ...DateTime.DATE_SHORT })}
-                      </ListItemText>
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          onClick={() => this.deleteBlockedDate(blockedDate)}
-                          edge="end"
+                  {blockedDates.map((blockedDate) => {
+                    const dateTime = DateTime.fromISO(blockedDate.date);
+
+                    return (
+                      <ListItem key={blockedDate.date}>
+                        <ListItemText
+                          className={this.props.classes.listItemText}
                         >
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
+                          {dateTime
+                            .setLocale('de-DE')
+                            .toLocaleString({ ...DateTime.DATE_SHORT })}
+                          {blockedDate.note && (
+                            <>
+                              {' - '} {blockedDate.note}
+                            </>
+                          )}
+                        </ListItemText>
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            onClick={() => this.deleteBlockedDate(dateTime)}
+                            edge="end"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    );
+                  })}
                 </List>
               </div>
               <Fab
@@ -217,6 +250,15 @@ class UnstyledBlockedDatesView extends React.PureComponent<Properties, State> {
                   fullWidth
                   animateYearScrolling
                 />
+                <TextField
+                  margin="dense"
+                  label="Anmerkung"
+                  variant="outlined"
+                  fullWidth
+                  value={this.state.newNote}
+                  onChange={this.onNewNoteChange}
+                  inputProps={{ maxLength: 256 }}
+                />
               </form>
             </MuiPickersUtilsProvider>
           </DialogContent>
@@ -253,7 +295,8 @@ interface Properties extends WithStyles<typeof styles>, WithTranslation {
 
 interface State {
   newDate: Date;
+  newNote: string;
   showAddBlockedDateModal: boolean;
   backdropOpen: boolean;
-  getBlockedDates: Promise<DateTime[]> | undefined;
+  getBlockedDates: Promise<readonly BlockedDateGetInterface[]> | undefined;
 }

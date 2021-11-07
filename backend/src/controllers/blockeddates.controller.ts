@@ -6,7 +6,12 @@ import TypesafeRequest from './TypesafeRequest';
 import { delay, inject, singleton } from 'tsyringe';
 import BlockedDateRepository from '../repositories/BlockedDateRepository';
 import { DateTime } from 'luxon';
-import { ISO8601, noRefinementChecks } from 'common';
+import {
+  BlockedDateGetInterface,
+  BlockedDatePostInterface,
+  ISO8601,
+} from 'common';
+import BlockedDateDBInterface from '../repositories/model_interfaces/BlockedDateDBInterface';
 
 @singleton()
 @boundClass
@@ -16,11 +21,14 @@ export class BlockedDatesController {
     private readonly blockedDateRepository: BlockedDateRepository
   ) {}
 
-  public async index(req: TypesafeRequest, res: Response<readonly ISO8601[]>) {
+  public async index(
+    req: TypesafeRequest,
+    res: Response<readonly BlockedDateGetInterface[]>
+  ) {
     const startDateString = req.query.start;
     const endDateString = req.query.end;
 
-    let blockedDates: DateTime[];
+    let blockedDates: BlockedDateDBInterface[];
 
     if (
       startDateString != null &&
@@ -39,16 +47,15 @@ export class BlockedDatesController {
       blockedDates = await this.blockedDateRepository.findAll();
     }
 
-    res.json(
-      blockedDates.map((date) => noRefinementChecks<ISO8601>(date.toISODate()))
-    );
+    res.json(blockedDates.map((blockedDate) => blockedDate.toGetInterface()));
   }
 
   public async create(req: TypesafeRequest, res: Response) {
     const dateString = BlockedDatesController.dateFromRoute(req);
     const date = DateTime.fromISO(dateString);
+    const postData = checkType(req.body, BlockedDatePostInterface);
 
-    await this.blockedDateRepository.create(date);
+    await this.blockedDateRepository.create(date, postData.note);
 
     res.status(201).json();
   }

@@ -4,7 +4,11 @@ import '../utils/map_extensions';
 import { boundClass } from 'autobind-decorator';
 import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
-import { timeslotCompare, TimeslotGetInterface } from 'common';
+import {
+  BlockedDateGetInterface,
+  timeslotCompare,
+  TimeslotGetInterface,
+} from 'common';
 import { changeInteractionStateT } from '../App';
 import {
   Avatar,
@@ -87,9 +91,12 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
         this.props.bookingDay.endOf('day')
       );
 
+      const isDateBlocked = blockedDates.length > 0;
+
       return {
         timeslots,
-        isDateBlocked: blockedDates.length > 0,
+        isDateBlocked,
+        blockedDate: isDateBlocked ? blockedDates[0] : undefined,
       };
     };
 
@@ -113,7 +120,7 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
       <Suspense
         fallback={<LoadingScreen />}
         asyncAction={this.state.remoteData}
-        content={({ timeslots, isDateBlocked }) => {
+        content={({ timeslots, isDateBlocked, blockedDate }) => {
           if (isDateBlocked && !this.props.isAuthenticated) {
             return (
               <Container className={this.props.classes.container} maxWidth="xs">
@@ -131,7 +138,19 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
                       .toLocaleString({ ...DateTime.DATE_SHORT })}{' '}
                     werden leider keine Termine vergeben.
                   </Typography>
-                  <Typography style={{ fontWeight: 'bold' }} variant="body1">
+                  {blockedDate?.note && (
+                    <Typography
+                      style={{
+                        fontWeight: 'bold',
+                        marginTop: '0.5ex',
+                        marginBottom: '0.5ex',
+                      }}
+                      variant="body1"
+                    >
+                      ({blockedDate.note})
+                    </Typography>
+                  )}
+                  <Typography variant="body1">
                     Bitte wählen Sie im vorherigen Menü ein anderes Datum aus.
                   </Typography>
                   <Button
@@ -169,12 +188,19 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
                       }
                     >
                       <AlertTitle>Tag Gesperrt</AlertTitle>
-                      Achtung, dieses Datum (
-                      {this.props.bookingDay
-                        .setLocale('de-DE')
-                        .toLocaleString({ ...DateTime.DATE_SHORT })}
-                      ) wurde in den Einstellungen gesperrt und normale Nutzer
-                      können an diesem Tag nicht buchen.
+                      <Typography variant="body1">
+                        Achtung, dieses Datum (
+                        {this.props.bookingDay
+                          .setLocale('de-DE')
+                          .toLocaleString({ ...DateTime.DATE_SHORT })}
+                        ) wurde in den Einstellungen gesperrt und normale Nutzer
+                        können an diesem Tag nicht buchen.
+                      </Typography>
+                      {blockedDate?.note && (
+                        <Typography variant="body1">
+                          Anmerkung: {blockedDate.note}
+                        </Typography>
+                      )}
                     </Alert>
                   )}
                   <ListEx
@@ -240,4 +266,5 @@ interface State {
 interface RemoteData {
   timeslots: TimeslotGetInterface[];
   isDateBlocked: boolean;
+  blockedDate?: BlockedDateGetInterface;
 }

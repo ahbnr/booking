@@ -36,6 +36,12 @@ export {
   ResourceGetInterface,
   ResourcePostInterface,
 } from './typechecking/api/Resource';
+
+export {
+  BlockedDateGetInterface,
+  BlockedDatePostInterface,
+} from './typechecking/api/BlockedDate';
+
 export {
   UserData,
   UserGetInterface,
