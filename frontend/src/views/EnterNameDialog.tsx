@@ -43,7 +43,7 @@ const styles = (theme: Theme) =>
 @boundClass
 class UnstyledEnterNameDialog extends React.PureComponent<Properties, State> {
   async onSubmit(formInput: IFormInput) {
-    const name = `${formInput.firstName} ${formInput.lastName}` as NonEmptyString;
+    const name = `${formInput.firstName.trim()} ${formInput.lastName.trim()}` as NonEmptyString;
 
     if (this.props.isBookingGroup) {
       this.props.changeInteractionState('addingParticipant', {

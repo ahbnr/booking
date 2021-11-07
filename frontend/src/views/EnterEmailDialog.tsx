@@ -59,7 +59,7 @@ class UnstyledEnterEmailDialog extends React.PureComponent<Properties, State> {
   onSubmit(formInput: IFormInput) {
     // no verification necessary, this is done by react-hook-form
     let email = noRefinementChecks<BookingsCreateInterface['email']>(
-      formInput.email.trim()
+      formInput.email.trim().toLowerCase()
     );
     if (email === '') {
       email = undefined;
@@ -164,6 +164,7 @@ function EmailForm(props: SettingsFormProps) {
             fullWidth
             label={'E-Mail'}
             autoComplete="email"
+            type="email"
             error={!!fieldState.error}
             helperText={fieldState.error ? fieldState.error.message : null}
             {...field}

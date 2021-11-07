@@ -55,7 +55,7 @@ class UnstyledAddParticipantDialog extends React.PureComponent<
       endTime: this.props.endTime,
       bookingDay: this.props.bookingDay,
       participantNames: this.props.participantNames.concat([
-        `${formInput.firstName} ${formInput.lastName}` as NonEmptyString,
+        `${formInput.firstName.trim()} ${formInput.lastName.trim()}` as NonEmptyString,
       ]),
     });
   }
