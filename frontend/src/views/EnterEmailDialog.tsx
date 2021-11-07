@@ -164,7 +164,6 @@ function EmailForm(props: SettingsFormProps) {
             fullWidth
             label={'E-Mail'}
             autoComplete="email"
-            type="email"
             error={!!fieldState.error}
             helperText={fieldState.error ? fieldState.error.message : null}
             {...field}
