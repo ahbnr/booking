@@ -17,27 +17,13 @@ import { initMailTransporter } from './mail/MailTransporter';
 import { container } from 'tsyringe';
 import helmet from 'helmet';
 import schedule_clear_outdated_bookings from './task_scheduling/schedule_clear_outdated_bookings';
+import { DemoDataGenerator } from './utils/DemoDataGenerator';
 
 const { DEV_MODE, DEBUG_TIME_NOW } = process.env;
 
 const port = process.env.PORT || 3000;
 
-async function init() {
-  if (DEBUG_TIME_NOW != null) {
-    LuxonSettings.now = () => DateTime.fromISO(DEBUG_TIME_NOW).toMillis();
-  }
-
-  initMailTransporter();
-
-  // setup i18n translations
-  await i18nextInit();
-
-  // setup database
-  const db = container.resolve(DatabaseController);
-  await db.init();
-
-  schedule_clear_outdated_bookings();
-
+async function runServer() {
   const app = express();
 
   // secure HTTP headers
@@ -97,6 +83,42 @@ async function init() {
       );
     }
   });
+}
+
+async function genDemoData() {
+  const generator = container.resolve(DemoDataGenerator);
+
+  await generator.genDemoData();
+
+  console.log('Generated demo data.');
+  process.exit(0);
+}
+
+async function init() {
+  if (DEBUG_TIME_NOW != null) {
+    LuxonSettings.now = () => DateTime.fromISO(DEBUG_TIME_NOW).toMillis();
+  }
+
+  initMailTransporter();
+
+  // setup i18n translations
+  await i18nextInit();
+
+  // setup database
+  const db = container.resolve(DatabaseController);
+  await db.init();
+
+  schedule_clear_outdated_bookings();
+
+  if (process.argv.length > 2) {
+    if (process.argv[2] == 'gen-demo-data') {
+      await genDemoData();
+    } else {
+      console.error(`Unknown command: ${process.argv[2]}`);
+    }
+  } else {
+    await runServer();
+  }
 }
 
 // noinspection JSIgnoredPromiseFromCall

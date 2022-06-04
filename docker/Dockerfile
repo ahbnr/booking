@@ -34,9 +34,6 @@ RUN apk add --no-cache  sudo
 
 RUN echo "=== Set service file as entrypoint"
 
-COPY setup-data /usr/local/bin/setup-data
-RUN chmod +x /usr/local/bin/setup-data
-
 COPY start-services /usr/local/bin/start-services
 RUN chmod +x /usr/local/bin/start-services
 

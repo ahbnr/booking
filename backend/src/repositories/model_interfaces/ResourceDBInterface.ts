@@ -34,4 +34,8 @@ export default class ResourceDBInterface {
       weekdayIds: (await this.getWeekdays()).map((weekday) => weekday.id),
     });
   }
+
+  public async destroy() {
+    await this.resource.destroy();
+  }
 }

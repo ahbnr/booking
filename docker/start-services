@@ -5,7 +5,8 @@ set -ex
 # let us give the MariaDB server some time to properly start
 sleep 15s
 
-/bin/sh /usr/local/bin/setup-data
+# Setup demo data
+sudo -u booking DB_PROD_HOST=$DB_PROD_HOST yarn workspace backend gen-demo-data
 
 cd /home/booking/booking
 sudo -u booking API_URL=http://booking:3000 yarn workspace frontend start-prod &
