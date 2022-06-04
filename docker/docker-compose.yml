@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  booking:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    environment:
+      DB_PROD_HOST: db
+  db:
+    image: "mariadb:10"
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: yes
+      MARIADB_DATABASE: bookingdb
+      MARIADB_USER: booking
+      MARIADB_PASSWORD: password

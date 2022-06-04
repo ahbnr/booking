@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -ex
+
+# let us give the MariaDB server some time to properly start
+sleep 15s
+
+/bin/sh /usr/local/bin/setup-data
+
+cd /home/booking/booking
+sudo -u booking API_URL=http://booking:3000 yarn workspace frontend start-prod &
+sudo -u booking DB_PROD_HOST=$DB_PROD_HOST yarn workspace backend start-prod &
+
+# let us give the booking backend server some time to properly start
+sleep 10s
+# show root password
+printf "\nBooking Root Password: $(cat backend/root-password.txt)\n\n"
+
+wait -n
+exit $?
