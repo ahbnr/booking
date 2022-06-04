@@ -48,7 +48,7 @@
     "fp-ts": "^2.8.3",
     "io-ts": "^2.2.11",
     "luxon": "^1.25.0",
-    "validator": "^13.1.17"
+    "validator": "^13.7.0"
   },
   "eslintConfig": {
     "extends": "react-app"
