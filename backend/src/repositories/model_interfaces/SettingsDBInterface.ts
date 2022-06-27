@@ -19,6 +19,7 @@ export default class SettingsDBInterface {
   @LazyGetter()
   public get data(): SettingsData {
     return noRefinementChecks<SettingsData>({
+      enableBookingDeadline: this.settings.enableBookingDeadline,
       bookingDeadlineMillis: this.settings.bookingDeadlineMillis,
       maxBookingWeekDistance: this.settings.maxBookingWeekDistance,
       requireMailConfirmation: this.settings.requireMailConfirmation,

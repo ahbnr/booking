@@ -15,6 +15,9 @@ import {
 } from '../types/Validation';
 import BlockedDateRepository from '../repositories/BlockedDateRepository';
 
+/**
+ * Computes the start and end time of a booking for a given day and timeslot etc.
+ */
 export default async function getBookingInterval(
   dayDate: DateTime,
   weekday: WeekdayName,
@@ -43,6 +46,7 @@ export default async function getBookingInterval(
 
   const earliestBookingDate = computeEarliestBookingDate(
     weekday,
+    settings.data.enableBookingDeadline,
     settings.data.bookingDeadlineMillis
   );
 

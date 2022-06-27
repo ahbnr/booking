@@ -12,6 +12,12 @@ export class Settings extends BaseModel<Settings> {
   public id!: number;
 
   // You may want to restrict users from booking a slot just a few hours before the target day
+  // This setting enables/disables this feature
+  @NotEmpty
+  @Column({ defaultValue: true })
+  public enableBookingDeadline!: boolean;
+
+  // You may want to restrict users from booking a slot just a few hours before the target day
   // This setting defines the duration in milliseconds before a booking day until which booking is possible.
   @NotEmpty
   @Column({ defaultValue: 0 })

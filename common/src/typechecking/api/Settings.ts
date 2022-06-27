@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 
 export const SettingsData = t.type({
+  enableBookingDeadline: t.boolean,
   bookingDeadlineMillis: t.number,
   maxBookingWeekDistance: t.number,
   requireMailConfirmation: t.boolean,

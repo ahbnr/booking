@@ -12,6 +12,7 @@ export default async function computeBookingConditions(
 
   const earliestBookingDate = computeEarliestBookingDate(
     weekday,
+    settings.data.enableBookingDeadline,
     settings.data.bookingDeadlineMillis
   );
 

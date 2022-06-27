@@ -6,6 +6,7 @@ import TimeslotView from './TimeslotView';
 import { Client } from '../Client';
 import {
   BlockedDateGetInterface,
+  setTimeslotStartDate,
   timeslotCompare,
   TimeslotGetInterface,
 } from 'common';
@@ -170,6 +171,21 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
               timeslotCompare
             );
 
+            let timeslotsToRender = sortedTimeslots;
+            // If we are not an admin, show only those timeslots that can still be booked, i.e. those timeslots
+            // which have not yet started.
+            if (!this.props.isAuthenticated) {
+              const now = DateTime.now();
+              timeslotsToRender = sortedTimeslots.filter((timeslot) => {
+                const timeslotStartDate = setTimeslotStartDate(
+                  this.props.bookingDay,
+                  timeslot
+                );
+
+                return now <= timeslotStartDate;
+              });
+            }
+
             return (
               <>
                 <div className={this.props.classes.container}>
@@ -208,7 +224,7 @@ class UnstyledTimeslotsView extends React.PureComponent<Properties, State> {
                     emptyTitle="Keine Timeslots angelegt"
                     emptyMessage="Melden Sie sich als Administrator an und erstellen sie einige Timeslots."
                   >
-                    {sortedTimeslots.map((timeslot, index) => (
+                    {timeslotsToRender.map((timeslot, index) => (
                       <TimeslotView
                         key={timeslot.id}
                         index={index}

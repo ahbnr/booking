@@ -58,6 +58,7 @@ class UnstyledMainSettingsView extends React.PureComponent<Properties, State> {
     const deadlineMillis = formInput.bookingDeadlineHours * 3600000;
 
     const request = this.props.client.updateSettings({
+      enableBookingDeadline: formInput.enableBookingDeadline,
       bookingDeadlineMillis: deadlineMillis,
       maxBookingWeekDistance: formInput.maxBookingWeekDistanceDisabled
         ? -1
@@ -101,6 +102,7 @@ class UnstyledMainSettingsView extends React.PureComponent<Properties, State> {
 }
 
 interface IFormInput {
+  enableBookingDeadline: boolean;
   bookingDeadlineHours: number;
   maxBookingWeekDistanceDisabled: boolean;
   maxBookingWeekDistance: number;
@@ -123,6 +125,8 @@ const useFormStyles = makeStyles((theme) => ({
 }));
 
 function SettingsForm(props: SettingsFormProps) {
+  const enableBookingDeadline = props.remoteSettings.enableBookingDeadline;
+
   const bookingDeadlineHours = Math.ceil(
     props.remoteSettings.bookingDeadlineMillis / 3600000
   );
@@ -136,6 +140,7 @@ function SettingsForm(props: SettingsFormProps) {
 
   const { watch, handleSubmit, control } = useForm<IFormInput>({
     defaultValues: {
+      enableBookingDeadline,
       bookingDeadlineHours,
       maxBookingWeekDistanceDisabled,
       maxBookingWeekDistance,
@@ -143,6 +148,11 @@ function SettingsForm(props: SettingsFormProps) {
     },
   });
   const classes = useFormStyles();
+
+  const watchEnableBookingDeadline = watch(
+    'enableBookingDeadline',
+    enableBookingDeadline
+  );
 
   const watchMaxBookingWeekDistanceDisabled = watch(
     'maxBookingWeekDistanceDisabled',
@@ -152,27 +162,41 @@ function SettingsForm(props: SettingsFormProps) {
   return (
     <>
       <form className={classes.form} onSubmit={handleSubmit(props.onSubmit)}>
-        <Controller
-          name="bookingDeadlineHours"
-          control={control}
-          rules={{ required: true, min: 0 }}
-          render={({ field }) => (
-            <TextField
-              required
-              variant="outlined"
-              type="number"
-              margin="normal"
-              fullWidth
-              label={'Stunden bevor Anmeldeschluss'}
-              autoFocus
-              {...field}
-              onChange={(e) =>
-                field.onChange(Math.max(0, parseInt(e.target.value)))
-              }
-              value={Math.max(0, field.value)}
-            />
-          )}
-        />
+        <FormGroup row>
+          <Controller
+            control={control}
+            name="enableBookingDeadline"
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Buchungen nur bis zum vorherigen Tag erlauben."
+              />
+            )}
+          />
+        </FormGroup>
+        {watchEnableBookingDeadline && (
+          <Controller
+            name="bookingDeadlineHours"
+            control={control}
+            rules={{ required: true, min: 0 }}
+            render={({ field }) => (
+              <TextField
+                required
+                variant="outlined"
+                type="number"
+                margin="normal"
+                fullWidth
+                label={'Stunden bevor Anmeldeschluss'}
+                autoFocus
+                {...field}
+                onChange={(e) =>
+                  field.onChange(Math.max(0, parseInt(e.target.value)))
+                }
+                value={Math.max(0, field.value)}
+              />
+            )}
+          />
+        )}
         <FormGroup row>
           <Controller
             control={control}
